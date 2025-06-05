@@ -1,10 +1,10 @@
 import { DomainExceptionCode } from '../domain-exception-codes';
-import { Extension } from '../domain-exception';
+import { ApiExtensionError } from '../domain-exception';
 
 export type ErrorResponseBody = {
   timestamp: string;
   path: string | null;
   message: string;
-  extensions: Extension[];
+  extensions: ApiExtensionError[];
   code: DomainExceptionCode;
 };

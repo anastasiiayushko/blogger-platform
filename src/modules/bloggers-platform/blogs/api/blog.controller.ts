@@ -15,21 +15,21 @@ import { BlogInputDto } from './input-dto/blog.input-dto';
 import { BlogViewDto } from './view-dto/blog.view-dto';
 import { BlogQueryRepository } from '../infrastructure/query/blog.query-repository';
 import { GetBlogsQueryParamsInputDto } from './input-dto/get-blogs-query-params.input-dto';
-import { PostExternalService } from '../../posts/application/external-service/post.external-service';
 import { PostExternalInputDto } from '../../posts/application/external-service/dto/post.external-input-dto';
-import { PostsExternalQueryRepository } from '../../posts/infrastructure/external-query/posts.external-query-repository';
 import { GetPostQueryParams } from '../../posts/api/input-dto/get-post-query-params.input-dto';
 import { PostViewDTO } from '../../posts/api/view-dto/post.view-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { ObjectIdValidationPipe } from '../../../../core/pipes/object-id-validation-transform-pipe';
+import { PostService } from '../../posts/application/post.service';
+import { PostQueryRepository } from '../../posts/infrastructure/query/post.query-repository';
 
 @Controller('blogs')
 export class BlogController {
   constructor(
     private readonly blogService: BlogService,
     private readonly blogQueryRepository: BlogQueryRepository,
-    private readonly postExternalService: PostExternalService,
-    private readonly postEternalQueryRepository: PostsExternalQueryRepository,
+    private readonly postService: PostService,
+    private readonly postQueryRepository: PostQueryRepository,
   ) {}
 
   /**
@@ -108,7 +108,7 @@ export class BlogController {
     @Query() query: GetPostQueryParams,
   ): Promise<PaginatedViewDto<PostViewDTO[]>> {
     await this.blogQueryRepository.findOrNotFoundFail(blogId);
-    return await this.postEternalQueryRepository.getAll(query, {
+    return await this.postQueryRepository.getAll(query, {
       blogId: blogId,
     });
   }
@@ -125,10 +125,10 @@ export class BlogController {
     @Param('blogId', ObjectIdValidationPipe) blogId: string,
     @Body() inputDto: PostExternalInputDto,
   ): Promise<PostViewDTO> {
-    const postId = await this.postExternalService.createPostForBlog(
-      blogId,
-      inputDto,
-    );
-    return await this.postEternalQueryRepository.getByIdOrNotFoundFail(postId);
+    const postId = await this.postService.create({
+      blogId: blogId,
+      ...inputDto,
+    });
+    return await this.postQueryRepository.getByIdOrNotFoundFail(postId);
   }
 }

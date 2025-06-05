@@ -2,6 +2,8 @@ import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Model, Types } from 'mongoose';
 import { CreateUserDomainDto } from './dto/create-user.domain.dto';
 import { DateUtil } from '../../../core/utils/DateUtil';
+import { DomainException } from '../../../core/exceptions/domain-exception';
+import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
 
 export const loginConstraints = {
   minLength: 3,
@@ -84,13 +86,13 @@ export class User {
   @Prop(
     raw({
       recoveryCode: { type: String, default: null },
-      expirationDate: { type: Date, default: new Date() },
+      expirationDate: { type: Date, default: null },
       isConfirmed: { type: Boolean, default: false },
     }),
   )
   recoveryPasswordConfirm: {
     recoveryCode: string | null;
-    expirationDate: Date;
+    expirationDate: Date | null;
     isConfirmed: boolean;
   };
 
@@ -103,23 +105,75 @@ export class User {
   createdAt: Date;
   updatedAt: Date;
 
-  static createInstance(dto: CreateUserDomainDto, isEmailConfirmed = false) {
+  static createInstance(dto: CreateUserDomainDto) {
     const user = new this();
     user.email = dto.email;
     user.password = dto.passwordHash;
     user.login = dto.login;
     user.recoveryPasswordConfirm = {
       recoveryCode: null,
-      expirationDate: new Date(),
+      expirationDate: null,
       isConfirmed: false,
     };
 
     user.emailConfirmation = {
       expirationDate: DateUtil.add(new Date(), { hours: 1, minutes: 0 }),
-      isConfirmed: isEmailConfirmed,
+      isConfirmed: false,
       confirmationCode: new Types.ObjectId().toString(),
     };
     return user as UserDocument;
+  }
+
+  confirmEmail() {
+    if (this.emailConfirmation.isConfirmed) {
+      throw new DomainException({
+        code: DomainExceptionCode.BadRequest,
+        extensions: [{ field: 'code', message: 'Email is already confirmed' }],
+      });
+    }
+    this.emailConfirmation.isConfirmed = true;
+  }
+
+  /** задать новые настройки для подтверждения почты  */
+  generateNewCodeOfConfirmEmail() {
+    if (this.emailConfirmation.isConfirmed) {
+      throw new DomainException({
+        code: DomainExceptionCode.BadRequest,
+        extensions: [{ field: 'code', message: 'email is already confirmed' }],
+      });
+    }
+    this.emailConfirmation = {
+      expirationDate: DateUtil.add(new Date(), { hours: 1, minutes: 0 }),
+      isConfirmed: false,
+      confirmationCode: new Types.ObjectId().toString(),
+    };
+  }
+
+  /** задать новые настройки для сброса пароля  */
+  generateNewCodeOfRecoveryPassword() {
+    if (this.recoveryPasswordConfirm.isConfirmed) {
+      throw new DomainException({
+        code: DomainExceptionCode.BadRequest,
+        extensions: [{ field: 'ps', message: 'password is already confirmed' }],
+      });
+    }
+    this.recoveryPasswordConfirm = {
+      isConfirmed: false,
+      expirationDate: DateUtil.add(new Date(), { hours: 1, minutes: 0 }),
+      recoveryCode: new Types.ObjectId().toString(),
+    };
+  }
+
+  /** обновить пароль и установить флаг что параль успешно подтвержден */
+  updateNewPassword(newPasswordHash: string) {
+    if (this.recoveryPasswordConfirm.isConfirmed) {
+      throw new DomainException({
+        code: DomainExceptionCode.BadRequest,
+        extensions: [{ field: 'ps', message: 'password is already confirmed' }],
+      });
+    }
+    this.password = newPasswordHash;
+    this.recoveryPasswordConfirm.isConfirmed = true;
   }
 }
 

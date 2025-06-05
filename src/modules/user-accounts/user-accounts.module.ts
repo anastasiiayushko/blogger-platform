@@ -11,9 +11,13 @@ import { LocalStrategy } from './guards/local/local.strategy';
 import { CryptoService } from './application/crypto.service';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { NotificationsModule } from '../notifications/notifications.module';
+import { CreateUserService } from './application/create-user-service';
+import { BearerJwtStrategy } from './guards/bearer/bearer-jwt.strategy';
 
 @Module({
   imports: [
+    NotificationsModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -27,12 +31,14 @@ import { ConfigService } from '@nestjs/config';
   ],
   controllers: [UserController, AuthController],
   providers: [
+    CreateUserService,
     UserService,
     UsersRepository,
     UserQueryRepository,
     AuthService,
-    LocalStrategy,
     CryptoService,
+    LocalStrategy,
+    BearerJwtStrategy,
   ],
 })
 export class UserAccountsModule {}

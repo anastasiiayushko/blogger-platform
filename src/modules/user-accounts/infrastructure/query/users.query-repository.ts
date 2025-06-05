@@ -7,6 +7,7 @@ import { GetUsersQueryParams } from '../../api/input-dto/get-users-query-params.
 import { FilterQuery } from 'mongoose';
 import { DomainException } from '../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
+import { UserMeViewDto } from '../../api/view-dto/user-me.view-dto';
 
 @Injectable()
 export class UserQueryRepository {
@@ -32,6 +33,18 @@ export class UserQueryRepository {
       });
     }
     return UserViewDto.mapToView(user);
+  }
+
+  async getUserMeById(id: string): Promise<UserMeViewDto> {
+    const user = await this.UserModel.findById(id);
+    if (!user) {
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        message: 'User not found',
+        extensions: [],
+      });
+    }
+    return UserMeViewDto.mapToView(user);
   }
 
   async getAll(

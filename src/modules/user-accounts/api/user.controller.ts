@@ -11,12 +11,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UserService } from '../application/user.service';
-import { UserInputDTO } from './input-dto/users.input-dto';
 import { GetUsersQueryParams } from './input-dto/get-users-query-params.input-dto';
 import { UserQueryRepository } from '../infrastructure/query/users.query-repository';
 import { ObjectIdValidationPipe } from '../../../core/pipes/object-id-validation-transform-pipe';
 import { BasicAuthGuard } from '../guards/basic/basic-auth.guard';
+import { CreateUsersInputDto } from './input-dto/create-users.input-dto';
 
+@UseGuards(BasicAuthGuard)
 @Controller('users')
 export class UserController {
   constructor(
@@ -24,20 +25,17 @@ export class UserController {
     private readonly userQueryRepository: UserQueryRepository,
   ) {}
 
-  @UseGuards(BasicAuthGuard)
   @Get()
   async getAll(@Query() query: GetUsersQueryParams) {
     return this.userQueryRepository.getAll(query);
   }
 
-  @UseGuards(BasicAuthGuard)
   @Post()
-  async create(@Body() userInputDTO: UserInputDTO) {
-    const userId = await this.userService.createUser(userInputDTO, true);
+  async create(@Body() userInputDTO: CreateUsersInputDto) {
+    const userId = await this.userService.createUser(userInputDTO);
     return this.userQueryRepository.findOrNotFoundFail(userId);
   }
 
-  @UseGuards(BasicAuthGuard)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(@Param('id', ObjectIdValidationPipe) userId: string) {

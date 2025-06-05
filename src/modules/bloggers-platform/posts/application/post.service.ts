@@ -14,7 +14,7 @@ export class PostService {
   ) {}
 
   async create(dto: PostInputDTO): Promise<string> {
-    console.log(dto);
+
     const blog = await this.blogExternalQueryRepository.getByIdOrNotFoundFail(
       dto.blogId,
     );

@@ -10,16 +10,15 @@ export class TestingController {
 
   @Delete('all-data')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteAll() {
+  async deleteAll():Promise<{status: boolean}> {
     const collections = await this.databaseConnection.listCollections();
-    console.log(collections);
     const promises = collections.map((collection) =>
       this.databaseConnection.collection(collection.name).deleteMany({}),
     );
     await Promise.all(promises);
 
     return {
-      status: 'succeeded',
+      status: true,
     };
   }
 }

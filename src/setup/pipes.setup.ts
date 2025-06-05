@@ -4,12 +4,12 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import {
+  ApiExtensionError,
   DomainException,
-  Extension,
 } from '../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../core/exceptions/domain-exception-codes';
 
-function formatterError(errors: ValidationError[]): Extension[] {
+function formatterError(errors: ValidationError[]): ApiExtensionError[] {
   return errors.map((error) => {
     const message = Object.values(error?.constraints ?? {}).join(' ');
     const filedName = error.property;

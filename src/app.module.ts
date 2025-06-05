@@ -7,6 +7,10 @@ import { BloggersPlatformModule } from './modules/bloggers-platform/bloggers-pla
 import { TestingModule } from './modules/testing/testing.module';
 import { configModule } from './dynamic-config-module';
 import { ConfigService } from '@nestjs/config';
+import { APP_FILTER } from '@nestjs/core';
+import { AllExceptionsFilter } from './core/exceptions/filters/all-exceptions.filter';
+import { DomainExceptionsFilter } from './core/exceptions/filters/domain-exceptions.filter';
+import { CoreModule } from './core/core.module';
 
 @Module({
   imports: [
@@ -20,12 +24,22 @@ import { ConfigService } from '@nestjs/config';
         return { uri };
       },
     }),
-
     UserAccountsModule,
     BloggersPlatformModule,
     TestingModule,
+    CoreModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: DomainExceptionsFilter,
+    },
+  ],
 })
 export class AppModule {}

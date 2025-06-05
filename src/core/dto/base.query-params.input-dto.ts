@@ -17,7 +17,7 @@ export class BaseQueryParams {
   pageNumber: number = 1;
 
   @IsInt()
-  @Min(10)
+  @Min(1)
   @IsOptional()
   @Type(() => Number)
   pageSize: number = 10;

@@ -2,10 +2,9 @@ import { ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { DomainException } from '../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
-import { use } from 'passport';
 
 @Injectable()
-export class LocalAuthGuard extends AuthGuard('local') {
+export class BearerJwtAuthGuard extends AuthGuard('jwt') {
   handleRequest(
     err: any,
     user: any,
@@ -13,7 +12,7 @@ export class LocalAuthGuard extends AuthGuard('local') {
     context: ExecutionContext,
     status?: any,
   ): any {
-    console.info('local auth request', err, user, info);
+    console.info('bearer jwt auth', err, user, info);
     if (err || !user) {
       throw new DomainException({
         code: DomainExceptionCode.Unauthorized,

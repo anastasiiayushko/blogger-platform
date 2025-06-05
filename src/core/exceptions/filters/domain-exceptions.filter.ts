@@ -26,7 +26,7 @@ export class DomainExceptionsFilter implements ExceptionFilter {
 
     if (Array.isArray(extensions) && extensions.length > 0) {
       response.status(status).json({
-        errorMessages: extensions,
+        errorsMessages: extensions,
       });
       return;
     }

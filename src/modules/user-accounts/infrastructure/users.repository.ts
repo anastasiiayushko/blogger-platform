@@ -35,7 +35,27 @@ export class UsersRepository {
     await user.save();
   }
 
-  async findOrNotFoundFail(id: string): Promise<string> {
+  async findById(id: string): Promise<UserDocument | null> {
+    const user = await this.UserModel.findById(new Types.ObjectId(id));
+
+    return user;
+  }
+
+  async findByEmailConfirmationCode(
+    code: string,
+  ): Promise<UserDocument | null> {
+    return await this.UserModel.findOne({
+      'emailConfirmation.confirmationCode': code,
+    });
+  }
+
+  async findByRecoveryPasswordConfirmCode(
+    code: string,
+  ): Promise<UserDocument | null> {
+    return await this.UserModel.findOne({ 'recoveryPasswordConfirm.recoveryCode': code});
+  }
+
+  async findOrNotFoundFail(id: string): Promise<UserDocument> {
     const user = await this.UserModel.findById(new Types.ObjectId(id));
     if (!user) {
       throw new DomainException({
@@ -44,7 +64,7 @@ export class UsersRepository {
         extensions: [],
       });
     }
-    return user._id.toString();
+    return user;
   }
 
   /**
@@ -60,7 +80,7 @@ export class UsersRepository {
   async findByEmailOrLogin(
     loginOrEmail: string,
     email?: string,
-  ): Promise<UserType | null> {
+  ): Promise<UserDocument | null> {
     const user = await this.UserModel.findOne({
       $or: [
         {
@@ -74,12 +94,7 @@ export class UsersRepository {
     if (!user) {
       return null;
     }
-    return {
-      id: user._id.toString(),
-      email: user.email,
-      password: user.password,
-      login: user.login,
-    };
+    return user;
   }
 }
 

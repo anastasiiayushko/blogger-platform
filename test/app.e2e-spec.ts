@@ -13,7 +13,11 @@ describe('AppController (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    console.log('app', app);
     await app.init();
+  });
+  beforeAll(async () => {
+    console.log(app);
   });
 
   it('/ (GET)', () => {
