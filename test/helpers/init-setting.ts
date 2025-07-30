@@ -20,34 +20,36 @@ export const initSettings = async (
   //передаем callback, который получает ModuleBuilder, если хотим изменить настройку тестового модуля
   addSettingsToModuleBuilder?: (moduleBuilder: TestingModuleBuilder) => void,
 ): Promise<ReturnInitSetting> => {
-  const testingModuleBuilder: TestingModuleBuilder = Test.createTestingModule({
-    imports: [AppModule],
-  })
-    .overrideProvider(EmailNotificationService)
-    .useClass(EmailServiceMock);
+    const testingModuleBuilder: TestingModuleBuilder = Test.createTestingModule(
+      {
+        imports: [AppModule],
+      },
+    )
+      .overrideProvider(EmailNotificationService)
+      .useClass(EmailServiceMock);
 
-  if (addSettingsToModuleBuilder) {
-    addSettingsToModuleBuilder(testingModuleBuilder);
-  }
+    if (addSettingsToModuleBuilder) {
+      addSettingsToModuleBuilder(testingModuleBuilder);
+    }
 
-  const testingAppModule = await testingModuleBuilder.compile();
+    const testingAppModule = await testingModuleBuilder.compile();
 
-  const app = testingAppModule.createNestApplication();
+    const app = testingAppModule.createNestApplication();
 
-  appSetup(app);
+    appSetup(app);
 
-  await app.init();
+    await app.init();
 
-  const databaseConnection = app.get<Connection>(getConnectionToken());
-  const httpServer = app.getHttpServer();
-  const userTestManger = new UsersTestManagerHelper(app);
+    const databaseConnection = app.get<Connection>(getConnectionToken());
+    const httpServer = app.getHttpServer();
+    const userTestManger = new UsersTestManagerHelper(app);
 
-  await deleteAllData(app);
+    await deleteAllData(app);
 
-  return {
-    app,
-    databaseConnection,
-    // httpServer,
-    userTestManger,
-  };
+    return {
+      app,
+      databaseConnection,
+      userTestManger,
+    };
+
 };

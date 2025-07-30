@@ -56,19 +56,7 @@ export class UsersTestManagerHelper {
       );
       result.push(res.body);
     }
-    // const createdUser = userLength.map((_, index) => {
-    //   return this.createUser(
-    //     {
-    //       login: `test${index}`,
-    //       email: `test${index}@email.com`,
-    //       password: `test123456`,
-    //     },
-    //     basicAuth,
-    //   ).then((res) => {
-    //     console.log(res.body);
-    //     return res.body;
-    //   });
-    // });
+
     return await Promise.all(result);
   }
 
@@ -85,5 +73,9 @@ export class UsersTestManagerHelper {
       }).then((res) => res.body);
     });
     return await Promise.all(usersLoginInSystem);
+  }
+
+  async registrationUser(userInput:CreateUsersInputDto):ResponseBodySuperTest{
+    return await request(this.app.getHttpServer()).post('/api/auth/registration').send(userInput);
   }
 }

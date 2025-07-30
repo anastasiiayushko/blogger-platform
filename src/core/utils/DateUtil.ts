@@ -3,10 +3,8 @@ export class DateUtil {
     const targetDate = new Date(date);
     const h = isNaN(+hours) ? 0 : hours;
     const m = isNaN(+minutes) ? 0 : minutes;
-    console.log(h, m, targetDate, 'targetDate', hours, minutes, date);
     targetDate.setHours(targetDate.getHours() + h);
-    // targetDate.setMinutes(targetDate.getMinutes() + m);
-    console.log('return date', targetDate.toISOString());
+    targetDate.setMinutes(targetDate.getMinutes() + m);
     return targetDate;
   }
 

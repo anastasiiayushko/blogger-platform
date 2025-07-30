@@ -3,11 +3,14 @@ import { initSettings } from '../helpers/init-setting';
 import request from 'supertest';
 import { UsersRepository } from '../../src/modules/user-accounts/infrastructure/users.repository';
 import { ConfigService } from '@nestjs/config';
+import { UsersTestManagerHelper } from '../helpers/users-test-manager-helper';
 
 describe('Auth /registration-confirmation', () => {
+  const ORIGINAL_ENV = process.env;
   let app: INestApplication;
   let userRepository: UsersRepository;
   let configService: ConfigService;
+  let userTestManager: UsersTestManagerHelper;
 
   const userAuthData = {
     email: 'test@test.com',
@@ -16,32 +19,44 @@ describe('Auth /registration-confirmation', () => {
   };
 
   beforeAll(async () => {
-    const init = await initSettings();
-    app = init.app;
+      const init = await initSettings();
+      app = init.app;
+
+    userTestManager = init.userTestManger;
     userRepository = app.get<UsersRepository>(UsersRepository);
     configService = app.get<ConfigService>(ConfigService);
-
-    const userRes = await request(app.getHttpServer())
-      .post('/api/auth/registration')
-      .send(userAuthData);
-    expect(userRes.status).toBe(HttpStatus.NO_CONTENT);
   });
+
   afterAll(async () => {
     await app.close();
   });
 
   it('Should be return 204 and Email was verified. Account was activated', async () => {
+    const registerRes = await userTestManager.registrationUser(userAuthData);
+    expect(registerRes.status).toBe(HttpStatus.NO_CONTENT);
+
     const userDoc = await userRepository.findByEmailOrLogin(userAuthData.email);
     expect(userDoc).not.toBeNull();
     expect(userDoc!.emailConfirmation.isConfirmed).toBeFalsy();
     expect(typeof userDoc!.emailConfirmation.confirmationCode).toBe('string');
     expect(userDoc!.emailConfirmation.expirationDate).toBeInstanceOf(Date);
-    console.log(userDoc);
+
+    const confirmationRes = await request(app.getHttpServer())
+      .post('/api/auth/registration-confirmation')
+      .send({ code: userDoc!.emailConfirmation.confirmationCode });
+
+    expect(confirmationRes.status).toBe(HttpStatus.NO_CONTENT);
+    const confirmUserDoc = await userRepository.findByEmailOrLogin(
+      userAuthData.email,
+    );
+    expect(confirmUserDoc!.emailConfirmation.isConfirmed).toBeTruthy();
   });
 
-  it('Should be return 400  if the user with the given email or login already exists ', async () => {});
+  it( `should be return 400 if the code has already been confirmed`, async () => {
 
-  it('Should be return 400  if the  login no exists ', async () => {});
+  });
+
+  it(`If the confirmation code is incorrect, expired or already been applied`, async () => {});
 
   // it('Should return 429 if more than 5 requests in 10 seconds', async () => {
   //
