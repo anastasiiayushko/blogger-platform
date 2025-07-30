@@ -5,6 +5,7 @@ import { CreateUserDomainDto } from '../domin/dto/create-user.domain.dto';
 import { DomainException } from '../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
 import { Types } from 'mongoose';
+import { BaseExpirationInputDto } from '../../../core/dto/base.expiration-input-dto';
 
 @Injectable()
 export class UsersRepository {
@@ -27,8 +28,11 @@ export class UsersRepository {
     return !!result.deletedCount;
   }
 
-  create(dto: CreateUserDomainDto): UserDocument {
-    return this.UserModel.createInstance(dto);
+  create(
+    dto: CreateUserDomainDto,
+    expirationInputDto: BaseExpirationInputDto = { min: 5, hours: 0 },
+  ): UserDocument {
+    return this.UserModel.createInstance(dto, expirationInputDto);
   }
 
   async save(user: UserDocument) {
@@ -52,7 +56,9 @@ export class UsersRepository {
   async findByRecoveryPasswordConfirmCode(
     code: string,
   ): Promise<UserDocument | null> {
-    return await this.UserModel.findOne({ 'recoveryPasswordConfirm.recoveryCode': code});
+    return await this.UserModel.findOne({
+      'recoveryPasswordConfirm.recoveryCode': code,
+    });
   }
 
   async findOrNotFoundFail(id: string): Promise<UserDocument> {

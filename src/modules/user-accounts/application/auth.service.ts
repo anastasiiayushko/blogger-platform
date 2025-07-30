@@ -8,14 +8,16 @@ import { ConfigService } from '@nestjs/config';
 import { UserService } from './user.service';
 import { EmailNotificationService } from '../../notifications/emal.service';
 import { DateUtil } from '../../../core/utils/DateUtil';
-import { IsEmail } from 'class-validator';
 import { NewPasswordRecoveryInputDto } from '../api/input-dto/new-password-recovery.input-dto';
 import { CreateUserService } from './create-user-service';
 import { ValidateDomainDto } from '../../../core/decorators/validate-domain-dto/ValidateDomainDto';
 import { CreateUsersInputDto } from '../api/input-dto/create-users.input-dto';
+import { BaseExpirationInputDto } from '../../../core/dto/base.expiration-input-dto';
 
 @Injectable()
 export class AuthService {
+  private expirationConfirm: BaseExpirationInputDto;
+
   constructor(
     private createUserService: CreateUserService,
     protected userService: UserService,
@@ -24,7 +26,12 @@ export class AuthService {
     protected jwtService: JwtService,
     protected configService: ConfigService,
     protected emailNotificationService: EmailNotificationService,
-  ) {}
+  ) {
+    this.expirationConfirm = {
+      hours: this.configService.get<number>('EXPIRATION_DATE_HOURS') || 0,
+      min: this.configService.get<number>('EXPIRATION_DATE_MIN') || 0,
+    };
+  }
 
   async validateUser(loginOrEmail: string, password: string) {
     const user = await this.userRepository.findByEmailOrLogin(loginOrEmail);
@@ -108,7 +115,7 @@ export class AuthService {
         extensions: [{ field: 'code', message: 'email to be confirmed' }],
       });
     }
-    user.generateNewCodeOfConfirmEmail();
+    user.generateNewCodeOfConfirmEmail(this.expirationConfirm);
     await this.userRepository.save(user);
     this.emailNotificationService.confirmRegistration(
       user.email,
@@ -133,7 +140,7 @@ export class AuthService {
         extensions: [{ field: 'code', message: 'email to be confirmed' }],
       });
     }
-    user.generateNewCodeOfRecoveryPassword();
+    user.generateNewCodeOfRecoveryPassword(this.expirationConfirm);
     await this.userRepository.save(user);
     this.emailNotificationService.recoveryPassword(
       user.email,

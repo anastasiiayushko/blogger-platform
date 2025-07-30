@@ -13,7 +13,6 @@ export class LocalAuthGuard extends AuthGuard('local') {
     context: ExecutionContext,
     status?: any,
   ): any {
-    console.info('local auth request', err, user, info);
     if (err || !user) {
       throw new DomainException({
         code: DomainExceptionCode.Unauthorized,

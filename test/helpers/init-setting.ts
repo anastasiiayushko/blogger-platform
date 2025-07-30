@@ -6,6 +6,8 @@ import { getConnectionToken } from '@nestjs/mongoose';
 import { INestApplication } from '@nestjs/common';
 import { deleteAllData } from './delete-all-data';
 import { UsersTestManagerHelper } from './users-test-manager-helper';
+import { EmailNotificationService } from '../../src/modules/notifications/emal.service';
+import { EmailServiceMock } from '../mock/EmailServiceMock';
 
 type ReturnInitSetting = {
   app: INestApplication;
@@ -20,9 +22,10 @@ export const initSettings = async (
 ): Promise<ReturnInitSetting> => {
   const testingModuleBuilder: TestingModuleBuilder = Test.createTestingModule({
     imports: [AppModule],
-  });
-  // .overrideProvider(EmailService)
-  // .useClass(EmailServiceMock);
+  })
+    .overrideProvider(EmailNotificationService)
+    .useClass(EmailServiceMock);
+
   if (addSettingsToModuleBuilder) {
     addSettingsToModuleBuilder(testingModuleBuilder);
   }

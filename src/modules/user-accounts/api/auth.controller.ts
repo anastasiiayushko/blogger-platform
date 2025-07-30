@@ -9,10 +9,9 @@ import {
 } from '@nestjs/common';
 import { AuthService } from '../application/auth.service';
 import { LocalAuthGuard } from '../guards/local/local-auth.guard';
-import { ApiBody, ApiResponse } from '@nestjs/swagger';
+import { ApiResponse } from '@nestjs/swagger';
 import { CurrentUserFormRequest } from '../decorators/param/current-user-form-request.decorator';
 import { UserContextDto } from '../decorators/param/user-context.dto';
-import { UserService } from '../application/user.service';
 import { UserQueryRepository } from '../infrastructure/query/users.query-repository';
 import { AuthCodeInputDto } from './input-dto/auth-code.input-dto';
 import { EmailInputDto } from './input-dto/email.input-dto';
@@ -25,7 +24,6 @@ import { AccessTokenViewDto } from './view-dto/access-token.view-dto';
 export class AuthController {
   constructor(
     protected authService: AuthService,
-    protected userService: UserService,
     protected userQueryRepository: UserQueryRepository,
   ) {}
 

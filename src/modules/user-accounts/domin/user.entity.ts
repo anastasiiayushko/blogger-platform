@@ -4,6 +4,7 @@ import { CreateUserDomainDto } from './dto/create-user.domain.dto';
 import { DateUtil } from '../../../core/utils/DateUtil';
 import { DomainException } from '../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
+import { BaseExpirationInputDto } from '../../../core/dto/base.expiration-input-dto';
 
 export const loginConstraints = {
   minLength: 3,
@@ -105,7 +106,10 @@ export class User {
   createdAt: Date;
   updatedAt: Date;
 
-  static createInstance(dto: CreateUserDomainDto) {
+  static createInstance(
+    dto: CreateUserDomainDto,
+    expiration: BaseExpirationInputDto,
+  ) {
     const user = new this();
     user.email = dto.email;
     user.password = dto.passwordHash;
@@ -116,8 +120,13 @@ export class User {
       isConfirmed: false,
     };
 
+    const expirationDate = DateUtil.add(new Date(), {
+      hours: expiration.hours,
+      minutes: expiration.min,
+    });
+    console.log(expirationDate, 'expirationDate', new Date());
     user.emailConfirmation = {
-      expirationDate: DateUtil.add(new Date(), { hours: 1, minutes: 0 }),
+      expirationDate: expirationDate,
       isConfirmed: false,
       confirmationCode: new Types.ObjectId().toString(),
     };
@@ -135,7 +144,7 @@ export class User {
   }
 
   /** задать новые настройки для подтверждения почты  */
-  generateNewCodeOfConfirmEmail() {
+  generateNewCodeOfConfirmEmail(expiration: BaseExpirationInputDto) {
     if (this.emailConfirmation.isConfirmed) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,
@@ -143,14 +152,17 @@ export class User {
       });
     }
     this.emailConfirmation = {
-      expirationDate: DateUtil.add(new Date(), { hours: 1, minutes: 0 }),
+      expirationDate: DateUtil.add(new Date(), {
+        hours: expiration.hours,
+        minutes: expiration.min,
+      }),
       isConfirmed: false,
       confirmationCode: new Types.ObjectId().toString(),
     };
   }
 
   /** задать новые настройки для сброса пароля  */
-  generateNewCodeOfRecoveryPassword() {
+  generateNewCodeOfRecoveryPassword(expiration: BaseExpirationInputDto) {
     if (this.recoveryPasswordConfirm.isConfirmed) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,
@@ -159,7 +171,10 @@ export class User {
     }
     this.recoveryPasswordConfirm = {
       isConfirmed: false,
-      expirationDate: DateUtil.add(new Date(), { hours: 1, minutes: 0 }),
+      expirationDate: DateUtil.add(new Date(), {
+        hours: expiration.hours,
+        minutes: expiration.min,
+      }),
       recoveryCode: new Types.ObjectId().toString(),
     };
   }

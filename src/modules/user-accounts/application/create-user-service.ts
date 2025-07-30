@@ -5,11 +5,13 @@ import { CryptoService } from './crypto.service';
 import { DomainException } from '../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
 import { CreateUsersInputDto } from '../api/input-dto/create-users.input-dto';
+import { ConfigService } from '@nestjs/config';
 
 export class CreateUserService {
   constructor(
     private userRepository: UsersRepository,
     private cryptoService: CryptoService,
+    private configService: ConfigService,
     @InjectModel(User.name) private userModel: UserModelType,
   ) {}
 
@@ -30,18 +32,26 @@ export class CreateUserService {
     }
   }
 
-  private async createUserEntity(userDto: CreateUsersInputDto): Promise<UserDocument> {
+  private async createUserEntity(
+    userDto: CreateUsersInputDto,
+  ): Promise<UserDocument> {
     await this.validateUniqUser(userDto.login, userDto.email);
 
     const passwordHash = await this.cryptoService.createPasswordHash(
       userDto.password,
     );
 
-    const user = this.userModel.createInstance({
-      passwordHash: passwordHash,
-      email: userDto.email,
-      login: userDto.login,
-    });
+    const user = this.userModel.createInstance(
+      {
+        passwordHash: passwordHash,
+        email: userDto.email,
+        login: userDto.login,
+      },
+      {
+        hours: this.configService.get<number>('EXPIRATION_DATE_HOURS') || 0,
+        min: this.configService.get<number>('EXPIRATION_DATE_MIN') || 0,
+      },
+    );
     await this.userRepository.save(user);
 
     return user;
