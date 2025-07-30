@@ -1,11 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument, UserModelType } from '../domin/user.entity';
-import { CreateUserDomainDto } from '../domin/dto/create-user.domain.dto';
 import { DomainException } from '../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
 import { Types } from 'mongoose';
-import { BaseExpirationInputDto } from '../../../core/dto/base.expiration-input-dto';
 
 @Injectable()
 export class UsersRepository {
@@ -26,13 +24,6 @@ export class UsersRepository {
       _id: new Types.ObjectId(id),
     });
     return !!result.deletedCount;
-  }
-
-  create(
-    dto: CreateUserDomainDto,
-    expirationInputDto: BaseExpirationInputDto = { min: 5, hours: 0 },
-  ): UserDocument {
-    return this.UserModel.createInstance(dto, expirationInputDto);
   }
 
   async save(user: UserDocument) {

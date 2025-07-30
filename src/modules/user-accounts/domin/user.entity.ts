@@ -119,12 +119,10 @@ export class User {
       expirationDate: null,
       isConfirmed: false,
     };
-
     const expirationDate = DateUtil.add(new Date(), {
       hours: expiration.hours,
       minutes: expiration.min,
     });
-    console.log(expirationDate, 'expirationDate', new Date());
     user.emailConfirmation = {
       expirationDate: expirationDate,
       isConfirmed: false,

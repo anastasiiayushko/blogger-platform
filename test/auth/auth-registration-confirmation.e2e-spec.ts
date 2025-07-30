@@ -4,6 +4,8 @@ import request from 'supertest';
 import { UsersRepository } from '../../src/modules/user-accounts/infrastructure/users.repository';
 import { ConfigService } from '@nestjs/config';
 import { UsersTestManagerHelper } from '../helpers/users-test-manager-helper';
+import { randomUUID } from 'crypto';
+import { delay } from '../helpers/delay-helper';
 
 describe('Auth /registration-confirmation', () => {
   const ORIGINAL_ENV = process.env;
@@ -19,8 +21,8 @@ describe('Auth /registration-confirmation', () => {
   };
 
   beforeAll(async () => {
-      const init = await initSettings();
-      app = init.app;
+    const init = await initSettings();
+    app = init.app;
 
     userTestManager = init.userTestManger;
     userRepository = app.get<UsersRepository>(UsersRepository);
@@ -52,11 +54,79 @@ describe('Auth /registration-confirmation', () => {
     expect(confirmUserDoc!.emailConfirmation.isConfirmed).toBeTruthy();
   });
 
-  it( `should be return 400 if the code has already been confirmed`, async () => {
+  it(`should be return 400 if the code has already been confirmed`, async () => {
+    const userDoc = await userRepository.findByEmailOrLogin(userAuthData.email);
+    expect(userDoc!.emailConfirmation.isConfirmed).toBeTruthy();
 
+    const confirmationRes = await request(app.getHttpServer())
+      .post('/api/auth/registration-confirmation')
+      .send({ code: userDoc!.emailConfirmation.confirmationCode });
+
+    expect(confirmationRes.status).toBe(HttpStatus.BAD_REQUEST);
+    expect(confirmationRes.body).toEqual({
+      errorsMessages: [{ field: 'code', message: expect.any(String) }],
+    });
   });
 
-  it(`If the confirmation code is incorrect, expired or already been applied`, async () => {});
+  it(`should be return 400 if code confirmation invalid`, async () => {
+    const registerRes = await userTestManager.registrationUser({
+      login: 'user1',
+      email: 'user1@gmail.com',
+      password: 'user123456',
+    });
+    expect(registerRes.status).toBe(HttpStatus.NO_CONTENT);
+
+    const confirmationRes = await request(app.getHttpServer())
+      .post('/api/auth/registration-confirmation')
+      .send({ code: randomUUID() });
+
+    expect(confirmationRes.status).toBe(HttpStatus.BAD_REQUEST);
+    expect(confirmationRes.body).toEqual({
+      errorsMessages: [{ field: 'code', message: expect.any(String) }],
+    });
+
+    const userDoc = await userRepository.findByEmailOrLogin('user1@gmail.com');
+    expect(userDoc!.emailConfirmation.isConfirmed).toBeFalsy();
+  });
+
+  it(`should be return 400 if code confirmation expired`, async () => {
+    console.log('Регистрируем пользователя...');
+    const registerRes = await userTestManager.registrationUser({
+      login: 'user2',
+      email: 'user2@gmail.com',
+      password: 'user123456',
+    });
+    console.log('Регистрируемый пользователь завершён.');
+    expect(registerRes.status).toBe(HttpStatus.NO_CONTENT);
+
+    const userDoc = await userRepository.findByEmailOrLogin('user2@gmail.com');
+    expect(userDoc!.emailConfirmation.isConfirmed).toBeFalsy();
+    console.log('Получен пользователь:', userDoc);
+    //
+    // jest.useFakeTimers(); // Имитируем таймер
+    // // // Перематываем время на 70 секунд вперед
+    // jest.setSystemTime(Date.now() + 70_000);
+    // ⏰ Мокаем системное время +70 сек
+    // const now = Date.now();
+    // jest.spyOn(global.Date, 'now').mockReturnValue(now + 100_000);
+
+    await delay(500);
+    console.log('Выполняем запрос подтверждения...');
+    const confirmationRes = await request(app.getHttpServer())
+      .post('/api/auth/registration-confirmation')
+      .send({ code: userDoc!.emailConfirmation.confirmationCode });
+
+    // jest.useRealTimers(); // Возвращаем нормальный таймер
+
+    expect(confirmationRes.status).toBe(HttpStatus.BAD_REQUEST);
+    expect(confirmationRes.body).toEqual({
+      errorsMessages: [{ field: 'code', message: expect.any(String) }],
+    });
+
+    const userDoc2 = await userRepository.findByEmailOrLogin('user2@gmail.com');
+    expect(userDoc2!.emailConfirmation.isConfirmed).toBeFalsy();
+    // jest.spyOn(global.Date, 'now').mockRestore(); // Вернули как было
+  });
 
   // it('Should return 429 if more than 5 requests in 10 seconds', async () => {
   //

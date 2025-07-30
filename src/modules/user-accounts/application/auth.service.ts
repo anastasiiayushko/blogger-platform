@@ -5,7 +5,6 @@ import { JwtService } from '@nestjs/jwt';
 import { DomainException } from '../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
 import { ConfigService } from '@nestjs/config';
-import { UserService } from './user.service';
 import { EmailNotificationService } from '../../notifications/emal.service';
 import { DateUtil } from '../../../core/utils/DateUtil';
 import { NewPasswordRecoveryInputDto } from '../api/input-dto/new-password-recovery.input-dto';
@@ -20,7 +19,6 @@ export class AuthService {
 
   constructor(
     private createUserService: CreateUserService,
-    protected userService: UserService,
     protected userRepository: UsersRepository,
     protected cryptoService: CryptoService,
     protected jwtService: JwtService,
