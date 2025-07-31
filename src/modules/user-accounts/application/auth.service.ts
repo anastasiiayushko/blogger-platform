@@ -98,19 +98,16 @@ export class AuthService {
 
   async recoverEmailConfirm(email: string) {
     const user = await this.userRepository.findByEmailOrLogin(email);
-    if (!user) {
+    if (!user || user.emailConfirmation.isConfirmed) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,
         extensions: [
-          { field: 'code', message: 'Confirmation Code is invalid' },
+          {
+            field: 'email',
+            message:
+              'If your email exists and is not confirmed, a confirmation message will be sent',
+          },
         ],
-      });
-    }
-
-    if (user.emailConfirmation.isConfirmed) {
-      throw new DomainException({
-        code: DomainExceptionCode.BadRequest,
-        extensions: [{ field: 'code', message: 'email to be confirmed' }],
       });
     }
     user.generateNewCodeOfConfirmEmail(this.expirationConfirm);
@@ -123,21 +120,19 @@ export class AuthService {
 
   async recoverPassword(email: string) {
     const user = await this.userRepository.findByEmailOrLogin(email);
-    if (!user) {
+    if (!user || user.recoveryPasswordConfirm.isConfirmed) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,
         extensions: [
-          { field: 'code', message: 'Confirmation Code is invalid' },
+          {
+            field: 'email',
+            message:
+              'If your email exists and is not confirmed, a confirmation message will be sent',
+          },
         ],
       });
     }
 
-    if (user.recoveryPasswordConfirm.isConfirmed) {
-      throw new DomainException({
-        code: DomainExceptionCode.BadRequest,
-        extensions: [{ field: 'code', message: 'email to be confirmed' }],
-      });
-    }
     user.generateNewCodeOfRecoveryPassword(this.expirationConfirm);
     await this.userRepository.save(user);
     this.emailNotificationService.recoveryPassword(
@@ -150,16 +145,8 @@ export class AuthService {
     const user = await this.userRepository.findByRecoveryPasswordConfirmCode(
       newPassRecoveryDto.recoveryCode,
     );
-    if (!user) {
-      throw new DomainException({
-        code: DomainExceptionCode.BadRequest,
-        extensions: [
-          { field: 'code', message: 'Confirmation Code is invalid' },
-        ],
-      });
-    }
-
     if (
+      !user ||
       user.recoveryPasswordConfirm.isConfirmed ||
       DateUtil.hasExpired(
         new Date(),
@@ -168,9 +155,7 @@ export class AuthService {
     ) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,
-        extensions: [
-          { field: 'code', message: 'Confirmation Code is invalid' },
-        ],
+        extensions: [{ field: 'code', message: 'some error occurred.' }],
       });
     }
 
