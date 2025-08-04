@@ -32,12 +32,12 @@ describe('Auth /registration-email-resending', () => {
     await app.close();
   });
 
-  it('Should be return 204 and email resending.', async () => {
+  it('should send email with new code if user exists but not confirmed yet; status 204.', async () => {
     const authRes = await userTestManager.registrationUser(userNika);
     expect(authRes.status).toBe(HttpStatus.NO_CONTENT);
 
-    const user = await userRepository.findByEmailOrLogin(userNika.email);
-    expect(user!.emailConfirmation!.isConfirmed).toBeFalsy();
+    const userRes = await userRepository.findByEmailOrLogin(userNika.email);
+    expect(userRes!.emailConfirmation.isConfirmed).toBeFalsy();
 
     const resendingRes = await request(app.getHttpServer())
       .post('/api/auth/registration-email-resending')
@@ -47,9 +47,14 @@ describe('Auth /registration-email-resending', () => {
     const userNewConfirmedCode = await userRepository.findByEmailOrLogin(
       userNika.email,
     );
-    expect(userNewConfirmedCode!.emailConfirmation!.isConfirmed).toBeFalsy();
+    expect(userNewConfirmedCode!.emailConfirmation.isConfirmed).toBeFalsy();
+    expect(
+      userNewConfirmedCode!.emailConfirmation.confirmationCode,
+    ).not.toEqual(userRes!.emailConfirmation.confirmationCode);
 
-    const oldExpirationDate = new Date(user!.emailConfirmation.expirationDate);
+    const oldExpirationDate = new Date(
+      userRes!.emailConfirmation.expirationDate,
+    );
     const newExpirationDate = new Date(
       userNewConfirmedCode!.emailConfirmation.expirationDate,
     );
@@ -63,7 +68,7 @@ describe('Auth /registration-email-resending', () => {
     const user = await userRepository.findByEmailOrLogin(userNika.email);
 
     expect(user).not.toBeNull();
-    expect(user!.emailConfirmation!.isConfirmed).toBeFalsy();
+    expect(user!.emailConfirmation.isConfirmed).toBeFalsy();
 
     const confirmationRes = await request(app.getHttpServer())
       .post('/api/auth/registration-confirmation')
@@ -75,7 +80,7 @@ describe('Auth /registration-email-resending', () => {
       userNika.email,
     );
 
-    expect(userConfirmed!.emailConfirmation!.isConfirmed).toBeTruthy();
+    expect(userConfirmed!.emailConfirmation.isConfirmed).toBeTruthy();
 
     const resendingRes = await request(app.getHttpServer())
       .post('/api/auth/registration-email-resending')

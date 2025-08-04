@@ -73,7 +73,20 @@ describe('Auth /registration', () => {
       { field: expect.any(String), message: expect.any(String) },
     ]);
   });
-
+  it('should sign in user after registration', async () => {
+    const registerRes = await userTestManger.registrationUser({
+      login: 'anastasiia',
+      email: 'nastyaushko20@gmail.com',
+      password: 'user123456',
+    });
+    expect(registerRes.status).toBe(HttpStatus.NO_CONTENT);
+    const loginRes = await userTestManger.login({
+      loginOrEmail: 'nastyaushko20@gmail.com',
+      password: 'user123456',
+    });
+    expect(loginRes.status).toBe(HttpStatus.OK);
+    expect(loginRes.body.accessToken).toEqual(expect.any(String));
+  });
   // it('Should return 429 if more than 5 requests in 10 seconds', async () => {
   //
   //   for (let i = 0; i < 5; i++) {
