@@ -20,6 +20,8 @@ import { CommentsExternalQueryRepository } from '../../comments/infrastructure/e
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { CommentViewDTO } from '../../comments/api/view-dto/comment.view-dto';
 import { ObjectIdValidationPipe } from '../../../../core/pipes/object-id-validation-transform-pipe';
+import { CommandBus } from '@nestjs/cqrs';
+import { CreatePostCommand } from '../application/usecases/create-post.usecases';
 
 @Controller('posts')
 export class PostController {
@@ -27,6 +29,7 @@ export class PostController {
     private readonly postService: PostService,
     private readonly postQueryRepository: PostQueryRepository,
     private readonly commentsExternalQueryRepository: CommentsExternalQueryRepository,
+    protected commandBus: CommandBus,
   ) {}
 
   @Get()
@@ -43,8 +46,15 @@ export class PostController {
 
   @Post()
   async create(@Body() postInput: PostInputDTO): Promise<PostViewDTO> {
-    console.log(postInput);
-    const postId = await this.postService.create(postInput);
+    const postId = await this.commandBus.execute<CreatePostCommand>(
+      new CreatePostCommand(
+        postInput.blogId,
+        postInput.content,
+        postInput.shortDescription,
+        postInput.title,
+      ),
+    );
+    // const postId = await this.postService.create(postInput);
     return this.postQueryRepository.getByIdOrNotFoundFail(postId);
   }
 

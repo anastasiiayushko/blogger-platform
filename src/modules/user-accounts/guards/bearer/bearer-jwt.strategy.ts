@@ -3,8 +3,6 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthService } from '../../application/auth.service';
 import { UserContextDto } from '../../decorators/param/user-context.dto';
-import { DomainException } from '../../../../core/exceptions/domain-exception';
-import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -21,7 +19,6 @@ export class BearerJwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any): Promise<UserContextDto> {
-    console.log('payload', payload);
     return { id: payload.userId };
   }
 }

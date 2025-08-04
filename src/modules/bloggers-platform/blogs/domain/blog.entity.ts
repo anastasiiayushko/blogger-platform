@@ -15,7 +15,10 @@ export const blogWebsitUrlConstraints = {
   maxLength: 100,
 };
 
-@Schema({ timestamps: true })
+@Schema({
+  timestamps: true,
+  optimisticConcurrency: true, //  Optimistic Concurrency Control (OCC) — через versionKey
+})
 export class Blog {
   /**
    * Name of the blog

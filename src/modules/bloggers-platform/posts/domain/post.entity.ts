@@ -18,7 +18,11 @@ export const postContentConstraints = {
   maxLength: 1000,
 };
 
-@Schema({ timestamps: true })
+@Schema({
+  timestamps: true,
+  optimisticConcurrency: true, //  Optimistic Concurrency Control (OCC) — через versionKey
+  // strict: 'throw',
+})
 export class Post {
   /**
    * Title of the post (max 30 characters, trimmed)

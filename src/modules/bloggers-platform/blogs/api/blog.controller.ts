@@ -9,8 +9,8 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
-import { BlogService } from '../application/blog.service';
 import { BlogInputDto } from './input-dto/blog.input-dto';
 import { BlogViewDto } from './view-dto/blog.view-dto';
 import { BlogQueryRepository } from '../infrastructure/query/blog.query-repository';
@@ -20,16 +20,20 @@ import { GetPostQueryParams } from '../../posts/api/input-dto/get-post-query-par
 import { PostViewDTO } from '../../posts/api/view-dto/post.view-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { ObjectIdValidationPipe } from '../../../../core/pipes/object-id-validation-transform-pipe';
-import { PostService } from '../../posts/application/post.service';
 import { PostQueryRepository } from '../../posts/infrastructure/query/post.query-repository';
+import { CommandBus } from '@nestjs/cqrs';
+import { CreateBlogCommand } from '../application/usecases/create-blog.usecases';
+import { BasicAuthGuard } from '../../../user-accounts/guards/basic/basic-auth.guard';
+import { DeleteBlogCommand } from '../application/usecases/delete-blog.usecases';
+import { UpdateBlogCommand } from '../application/usecases/update-blog.usecases';
+import { CreatePostCommand } from '../../posts/application/usecases/create-post.usecases';
 
 @Controller('blogs')
 export class BlogController {
   constructor(
-    private readonly blogService: BlogService,
     private readonly blogQueryRepository: BlogQueryRepository,
-    private readonly postService: PostService,
     private readonly postQueryRepository: PostQueryRepository,
+    private commandBus: CommandBus,
   ) {}
 
   /**
@@ -60,9 +64,16 @@ export class BlogController {
    * @param {BlogInputDto} inputDto - The input DTO containing the data for the new blog.
    * @returns {BlogViewDto} - The view DTO of the newly created blog.
    */
+  @UseGuards(BasicAuthGuard)
   @Post()
   async create(@Body() inputDto: BlogInputDto): Promise<BlogViewDto> {
-    const blogId = await this.blogService.create(inputDto);
+    const blogId = await this.commandBus.execute<CreateBlogCommand>(
+      new CreateBlogCommand(
+        inputDto.name,
+        inputDto.description,
+        inputDto.websiteUrl,
+      ),
+    );
     return await this.blogQueryRepository.findOrNotFoundFail(blogId);
   }
 
@@ -74,12 +85,16 @@ export class BlogController {
    * @returns {HttpStatus.NO_CONTENT} - A status indicating that the blog was successfully updated.
    */
   @Put(':id')
+  @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async update(
     @Param('id', ObjectIdValidationPipe) id: string,
     @Body() inputDto: BlogInputDto,
   ) {
-    return await this.blogService.update(id, inputDto);
+    return await this.commandBus.execute<UpdateBlogCommand>(
+      new UpdateBlogCommand(id, inputDto),
+    );
+    // return await this.blogService.update(id, inputDto);
   }
 
   /**
@@ -90,9 +105,12 @@ export class BlogController {
    */
 
   @Delete(':id')
+  @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(@Param('id', ObjectIdValidationPipe) id: string) {
-    return await this.blogService.delete(id);
+    return await this.commandBus.execute<DeleteBlogCommand>(
+      new DeleteBlogCommand(id),
+    );
   }
 
   /**
@@ -121,14 +139,19 @@ export class BlogController {
    * @returns {PostViewDto | HttpStatus.NOT_FOUND} - The view DTO of the newly created post or a NOT_FOUND status if the blog does not exist.
    */
   @Post(':blogId/posts')
+  @UseGuards(BasicAuthGuard)
   async createPost(
     @Param('blogId', ObjectIdValidationPipe) blogId: string,
     @Body() inputDto: PostExternalInputDto,
   ): Promise<PostViewDTO> {
-    const postId = await this.postService.create({
-      blogId: blogId,
-      ...inputDto,
-    });
+    const postId = await this.commandBus.execute<CreatePostCommand>(
+      new CreatePostCommand(
+        blogId,
+        inputDto.content,
+        inputDto.shortDescription,
+        inputDto.title,
+      ),
+    );
     return await this.postQueryRepository.getByIdOrNotFoundFail(postId);
   }
 }

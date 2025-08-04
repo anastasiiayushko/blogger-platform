@@ -12,7 +12,7 @@ export class BearerJwtAuthGuard extends AuthGuard('jwt') {
     context: ExecutionContext,
     status?: any,
   ): any {
-    console.info('bearer jwt auth', err, user, info);
+
     if (err || !user) {
       throw new DomainException({
         code: DomainExceptionCode.Unauthorized,

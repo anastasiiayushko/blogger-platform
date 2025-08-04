@@ -21,7 +21,10 @@ export const emailConstraints = {
   match: /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/,
 };
 
-@Schema({ timestamps: true })
+@Schema({
+  timestamps: true,
+  optimisticConcurrency: true, //  Optimistic Concurrency Control (OCC) — через versionKey
+})
 export class User {
   /**
    * Email of the user

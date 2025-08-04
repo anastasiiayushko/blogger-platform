@@ -24,7 +24,7 @@ export class BlogRepository {
    * @returns {BlogDocument | null} - The ID of the find blog.
    * @throws {DomainException} - If no blog is found with the given ID.
    */
-  async findOrNotFoundFail(id: string): Promise<BlogDocument | null> {
+  async findOrNotFoundFail(id: string): Promise<BlogDocument> {
     const blog = await this.BlogModel.findById(id);
     if (!blog) {
       //TODO: replace with domain exception
