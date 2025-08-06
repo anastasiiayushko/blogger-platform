@@ -37,18 +37,19 @@ export class CommentsQueryRepository {
       postId: new Types.ObjectId(filterContext.postId),
     };
 
-    const comments = await this.CommentModel.find(filterContext)
+    const comments = await this.CommentModel.find(filter)
       .sort({ [query.sortBy]: query.sortDirection })
       .skip(query.calculateSkip())
       .limit(query.pageSize);
 
     const totalCount = await this.CommentModel.countDocuments(filter);
+    const itemsMapped = comments.map((item) => CommentViewDTO.mapToView(item, 'None'))
 
     return PaginatedViewDto.mapToView({
       size: query.pageSize,
       totalCount: totalCount,
       page: query.pageNumber,
-      items: comments.map((item) => CommentViewDTO.mapToView(item, 'None')),
+      items: itemsMapped
     });
   }
 }

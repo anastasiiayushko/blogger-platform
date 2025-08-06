@@ -5,14 +5,31 @@ import {
 } from './commentator.raw-schema';
 import { HydratedDocument, Model, Types } from 'mongoose';
 import { LikeRawSchema, RawLikeSchema } from './like.raw-schema';
+import { CreateCommentDomainDto } from './dto/create-comment.domain.dto';
 
-@Schema({ timestamps: true })
+export const commentContentConstraints = {
+  minLength: 30,
+  maxLength: 300,
+};
+
+@Schema({
+  timestamps: true,
+  optimisticConcurrency: true,
+})
 export class Comment {
   /**
    * @type{String}
    * Content of the comment
    */
-  @Prop({ type: String, required: true })
+  @Prop({
+    type: String,
+    required: true,
+    trim: true,
+    length: {
+      min: commentContentConstraints.minLength,
+      max: commentContentConstraints.maxLength,
+    },
+  })
   content: string;
   /**
    * ID of the post witch for create comment
@@ -46,9 +63,26 @@ export class Comment {
    */
   createdAt: Date;
   updatedAt: Date;
+
+  static createInstance(dto: CreateCommentDomainDto): CommentDocument {
+    const comment = new this();
+    comment.content = dto.content;
+    comment.postId = new Types.ObjectId(dto.postId);
+    comment.commentatorInfo = {
+      userId: new Types.ObjectId(dto.userId),
+      userLogin: dto.userLogin,
+    };
+    comment.likesInfo = {
+      likesCount: 0,
+      dislikesCount: 0,
+    };
+    return comment as CommentDocument;
+  }
 }
 
 export const CommentSchema = SchemaFactory.createForClass(Comment);
+//Register methods entity in schema
+CommentSchema.loadClass(Comment);
 export type CommentDocument = HydratedDocument<Comment>;
 
-export type CommentModelType = Model<Comment>;
+export type CommentModelType = Model<CommentDocument> & typeof Comment;

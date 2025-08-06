@@ -19,13 +19,14 @@ export class CommentViewDTO {
   likesInfo: LikesInfoDTO;
   createdAt: string;
 
+//::TODO setStatus adding enum type
   static mapToView(item: CommentDocument, setStatus: string): CommentViewDTO {
     const comment = new CommentViewDTO();
     comment.id = item._id.toString();
     comment.content = item.content;
     comment.postId = item.postId.toString();
     comment.commentatorInfo = {
-      userId: item.commentatorInfo.userLogin.toString(),
+      userId: item.commentatorInfo.userId.toString(),
       userLogin: item.commentatorInfo.userLogin,
     };
     comment.likesInfo = {

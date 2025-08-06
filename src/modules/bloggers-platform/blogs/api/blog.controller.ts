@@ -27,6 +27,7 @@ import { BasicAuthGuard } from '../../../user-accounts/guards/basic/basic-auth.g
 import { DeleteBlogCommand } from '../application/usecases/delete-blog.usecases';
 import { UpdateBlogCommand } from '../application/usecases/update-blog.usecases';
 import { CreatePostCommand } from '../../posts/application/usecases/create-post.usecases';
+import { Public } from '../../../user-accounts/guards/decorators/public.decorators';
 
 @Controller('blogs')
 export class BlogController {
@@ -64,6 +65,7 @@ export class BlogController {
    * @param {BlogInputDto} inputDto - The input DTO containing the data for the new blog.
    * @returns {BlogViewDto} - The view DTO of the newly created blog.
    */
+
   @UseGuards(BasicAuthGuard)
   @Post()
   async create(@Body() inputDto: BlogInputDto): Promise<BlogViewDto> {

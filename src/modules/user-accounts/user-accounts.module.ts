@@ -14,6 +14,8 @@ import { ConfigService } from '@nestjs/config';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { CreateUserService } from './application/create-user-service';
 import { BearerJwtStrategy } from './guards/bearer/bearer-jwt.strategy';
+import { BasicAuthGuard } from './guards/basic/basic-auth.guard';
+import { UsersExternalQueryRepository } from './infrastructure/query/users-external.query-repository';
 
 @Module({
   imports: [
@@ -39,6 +41,8 @@ import { BearerJwtStrategy } from './guards/bearer/bearer-jwt.strategy';
     CryptoService,
     LocalStrategy,
     BearerJwtStrategy,
+    UsersExternalQueryRepository,
   ],
+  exports: [BearerJwtStrategy, UsersExternalQueryRepository],
 })
 export class UserAccountsModule {}

@@ -3,7 +3,7 @@ import { Types } from 'mongoose';
 
 @Schema({ _id: false })
 export class CommentatorRawSchema {
-  @Prop({ required: Types.ObjectId, type: String })
+  @Prop({ required: true, type: Types.ObjectId })
   userId: Types.ObjectId;
 
   @Prop({ required: true, type: String })

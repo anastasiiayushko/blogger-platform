@@ -5,7 +5,7 @@ import { DomainExceptionCode } from '../exceptions/domain-exception-codes';
 
 @Injectable()
 export class ObjectIdValidationTransformPipe implements PipeTransform {
-  transform(value: any, metadata: ArgumentMetadata): any {
+  transform(value: any, metadata: ArgumentMetadata): Types.ObjectId {
     if (!isValidObjectId(value)) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,
@@ -25,7 +25,7 @@ export class ObjectIdValidationTransformPipe implements PipeTransform {
 
 @Injectable()
 export class ObjectIdValidationPipe implements PipeTransform {
-  transform(value: any): any {
+  transform(value: any): string {
     if (!isValidObjectId(value)) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,

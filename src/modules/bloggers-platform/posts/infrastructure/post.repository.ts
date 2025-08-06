@@ -16,7 +16,7 @@ export class PostRepository {
   async findById(id: string): Promise<PostDocument | null> {
     return this.PostModel.findById(id);
   }
-  async getByIdOrNotFoundFail(id: string): Promise<PostDocument> {
+  async getByIdOrNotFoundFail(id: string ): Promise<PostDocument> {
     const post = await this.PostModel.findById(id);
     if (!post) {
       throw new DomainException({

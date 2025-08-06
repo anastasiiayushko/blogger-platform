@@ -19,6 +19,7 @@ export class BearerJwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any): Promise<UserContextDto> {
+    console.log('validaet', payload);
     return { id: payload.userId };
   }
 }
