@@ -9,7 +9,7 @@ import {
  * Raw Sub Schema.
  * The last three likes are sorted by time.
  */
-@Schema({ _id: false })
+@Schema({ _id: false , versionKey: false})
 class PostUserLikeItem {
   /**
    *  Date when the like was added

@@ -5,8 +5,10 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Res,
   UseGuards,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { AuthService } from '../application/auth.service';
 import { LocalAuthGuard } from '../guards/local/local-auth.guard';
 import { ApiResponse } from '@nestjs/swagger';
@@ -30,8 +32,22 @@ export class AuthController {
   @Post('/login')
   @HttpCode(HttpStatus.OK)
   @UseGuards(LocalAuthGuard)
-  login(@CurrentUserFormRequest() user: UserContextDto): AccessTokenViewDto {
-    return this.authService.login(user.id);
+  login(
+    @CurrentUserFormRequest() user: UserContextDto,
+    @Res({ passthrough: true }) res: Response,
+  ): AccessTokenViewDto {
+    const result = this.authService.login(user.id);
+    res.cookie('refreshToken', result.accessToken, {
+      httpOnly: true,
+      secure: true,
+    });
+    return result;
+  }
+
+  @Post('/refresh-token')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async refreshToken() {
+    return { accessToken: 'accessToken' };
   }
 
   @ApiResponse({

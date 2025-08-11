@@ -18,7 +18,6 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
     let message = 'Unknown exception occurred.';
-    console.log(exception);
     if (exception instanceof Error) {
       message = exception.message + exception.stack;
     }

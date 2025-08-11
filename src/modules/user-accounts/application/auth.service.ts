@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { UsersRepository } from '../infrastructure/users.repository';
 import { CryptoService } from './crypto.service';
 import { JwtService } from '@nestjs/jwt';
@@ -12,6 +12,10 @@ import { CreateUserService } from './create-user-service';
 import { ValidateDomainDto } from '../../../core/decorators/validate-domain-dto/ValidateDomainDto';
 import { CreateUsersInputDto } from '../api/input-dto/create-users.input-dto';
 import { BaseExpirationInputDto } from '../../../core/dto/base.expiration-input-dto';
+import {
+  ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
+  REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
+} from '../constants/auth-tokens.inject-constants';
 
 @Injectable()
 export class AuthService {
@@ -21,9 +25,12 @@ export class AuthService {
     private createUserService: CreateUserService,
     protected userRepository: UsersRepository,
     protected cryptoService: CryptoService,
-    protected jwtService: JwtService,
     protected configService: ConfigService,
     protected emailNotificationService: EmailNotificationService,
+    @Inject(ACCESS_TOKEN_STRATEGY_INJECT_TOKEN)
+    private accessTokenContext: JwtService,
+    @Inject(REFRESH_TOKEN_STRATEGY_INJECT_TOKEN)
+    private refreshTokenContext: JwtService,
   ) {
     this.expirationConfirm = {
       hours: this.configService.get<number>('EXPIRATION_DATE_HOURS') || 0,
@@ -47,15 +54,7 @@ export class AuthService {
   }
 
   login(userId: string) {
-    const secret = this.configService.get<string>('JWT_AT_SECRET');
-    const expiresIn = this.configService.get<string>('JWT_AT_EXPIRES');
-    if (!secret || !expiresIn) {
-      throw new Error(`For create token, should be setting param not empty`);
-    }
-    const accessToken = this.jwtService.sign(
-      { userId: userId },
-      { secret: secret, expiresIn: expiresIn },
-    );
+    const accessToken = this.accessTokenContext.sign({ userId: userId });
 
     return { accessToken: accessToken };
   }

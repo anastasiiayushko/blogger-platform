@@ -1,10 +1,17 @@
 import { PostDocument } from '../../domain/post.entity';
+import { LikeStatusEnum } from '../../../likes/domain/like-status.enum';
 
 type NewestLikeView = {
   addedAt: string;
   userId: string;
   login: string;
 };
+
+export class PostNewestLikeViewDto {
+  addedAt: string;
+  userId: string;
+  login: string;
+}
 
 export class PostViewDTO {
   id: string;
@@ -18,10 +25,10 @@ export class PostViewDTO {
     likesCount: number;
     dislikesCount: number;
     myStatus: string;
-    newestLikes: NewestLikeView[];
+    newestLikes: PostNewestLikeViewDto[];
   };
 
-  static mapToView(item: PostDocument, setStatus: string): PostViewDTO {
+  static mapToView(item: PostDocument, setStatus: LikeStatusEnum): PostViewDTO {
     const post = new PostViewDTO();
     post.id = item._id.toString();
     post.title = item.title;

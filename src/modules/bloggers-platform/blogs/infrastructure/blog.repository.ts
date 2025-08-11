@@ -10,6 +10,7 @@ import { Types } from 'mongoose';
 export class BlogRepository {
   constructor(@InjectModel(Blog.name) private BlogModel: BlogModelType) {}
 
+
   async findById(id: string): Promise<BlogDocument | null> {
     const blog = await this.BlogModel.findById(id);
     if (!blog) {

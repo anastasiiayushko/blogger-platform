@@ -1,7 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { CommentViewDTO } from '../../api/view-dto/comment.view-dto';
-import { Comment, CommentModelType } from '../../domain/comment.entity';
+import {
+  Comment,
+  CommentDocument,
+  CommentModelType,
+} from '../../domain/comment.entity';
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated.view-dto';
 import { GetCommentsQueryParams } from '../../api/input-dto/get-comments-query-params.input-dto';
 import { FilterQuery, Types } from 'mongoose';
@@ -14,7 +17,7 @@ export class CommentsQueryRepository {
     @InjectModel(Comment.name) private readonly CommentModel: CommentModelType,
   ) {}
 
-  async getByIdOrNotFoundFail(id: string): Promise<CommentViewDTO> {
+  async getByIdOrNotFoundFail(id: string): Promise<CommentDocument> {
     const comment = await this.CommentModel.findOne({
       _id: id,
     });
@@ -26,13 +29,13 @@ export class CommentsQueryRepository {
       });
     }
 
-    return CommentViewDTO.mapToView(comment, 'None');
+    return comment;
   }
 
   async getAll(
     query: GetCommentsQueryParams,
     filterContext: { postId: string },
-  ): Promise<PaginatedViewDto<CommentViewDTO[]>> {
+  ): Promise<PaginatedViewDto<CommentDocument[]>> {
     const filter: FilterQuery<Comment> = {
       postId: new Types.ObjectId(filterContext.postId),
     };
@@ -43,13 +46,12 @@ export class CommentsQueryRepository {
       .limit(query.pageSize);
 
     const totalCount = await this.CommentModel.countDocuments(filter);
-    const itemsMapped = comments.map((item) => CommentViewDTO.mapToView(item, 'None'))
 
     return PaginatedViewDto.mapToView({
       size: query.pageSize,
       totalCount: totalCount,
       page: query.pageNumber,
-      items: itemsMapped
+      items: comments,
     });
   }
 }

@@ -6,9 +6,10 @@ import {
 import { HydratedDocument, Model, Types } from 'mongoose';
 import { LikeRawSchema, RawLikeSchema } from './like.raw-schema';
 import { CreateCommentDomainDto } from './dto/create-comment.domain.dto';
+import { UpdateLikesInfoCommentDomainDto } from './dto/update-likes-info-comment.domain.dto';
 
 export const commentContentConstraints = {
-  minLength: 30,
+  minLength: 20,
   maxLength: 300,
 };
 
@@ -77,6 +78,15 @@ export class Comment {
       dislikesCount: 0,
     };
     return comment as CommentDocument;
+  }
+
+  updateContent(content: string) {
+    this.content = content;
+  }
+
+  updateLikesInfo(likesInfo: UpdateLikesInfoCommentDomainDto) {
+    this.likesInfo.likesCount = likesInfo.likesCount;
+    this.likesInfo.dislikesCount = likesInfo.dislikesCount;
   }
 }
 

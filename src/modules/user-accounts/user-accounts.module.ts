@@ -9,27 +9,39 @@ import { AuthController } from './api/auth.controller';
 import { AuthService } from './application/auth.service';
 import { LocalStrategy } from './guards/local/local.strategy';
 import { CryptoService } from './application/crypto.service';
-import { JwtModule } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
+import { JwtModule, JwtService } from '@nestjs/jwt';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { CreateUserService } from './application/create-user-service';
 import { BearerJwtStrategy } from './guards/bearer/bearer-jwt.strategy';
-import { BasicAuthGuard } from './guards/basic/basic-auth.guard';
-import { UsersExternalQueryRepository } from './infrastructure/query/users-external.query-repository';
+import { UsersExternalQueryRepository } from './infrastructure/external-query/users-external.query-repository';
+import { UserAccountConfig } from './config/user-account.config';
+import {
+  ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
+  REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
+} from './constants/auth-tokens.inject-constants';
+import {
+  SecurityDevice,
+  SecurityDeviceSchema,
+} from './domin/security-device.entity';
+import { SecurityDeviceRepository } from './infrastructure/security-device.repository';
+import { CreateUserDeviceHandler } from './application/securety-devices-usecases/create-security-device.usecase';
+
+const cmdHandlerSecurityDevice = [CreateUserDeviceHandler];
 
 @Module({
   imports: [
     NotificationsModule,
-    JwtModule.registerAsync({
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_AT_SECRET'),
-        signOptions: {
-          expiresIn: configService.get<string>('JWT_AT_EXPIRES'),
-        },
-      }),
-    }),
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]), // локально подключаем сущности
+    JwtModule,
+    MongooseModule.forFeature([
+      {
+        name: User.name,
+        schema: UserSchema,
+      },
+      {
+        name: SecurityDevice.name,
+        schema: SecurityDeviceSchema,
+      },
+    ]), // локально подключаем сущности
   ],
   controllers: [UserController, AuthController],
   providers: [
@@ -42,6 +54,31 @@ import { UsersExternalQueryRepository } from './infrastructure/query/users-exter
     LocalStrategy,
     BearerJwtStrategy,
     UsersExternalQueryRepository,
+    UserAccountConfig,
+    SecurityDeviceRepository,
+    ...cmdHandlerSecurityDevice,
+    //пример инстанцирования через токен
+    //если надо внедрить несколько раз один и тот же класс
+    {
+      provide: ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
+      useFactory: (userAccountConfig: UserAccountConfig): JwtService => {
+        return new JwtService({
+          secret: userAccountConfig.jwtAccessSecret,
+          signOptions: { expiresIn: userAccountConfig.jwtAccessExpiresIn },
+        });
+      },
+      inject: [UserAccountConfig],
+    },
+    {
+      provide: REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
+      useFactory: (userAccountConfig: UserAccountConfig): JwtService => {
+        return new JwtService({
+          secret: userAccountConfig.jwtRefreshSecret,
+          signOptions: { expiresIn: userAccountConfig.jwtRefreshExpiresIn },
+        });
+      },
+      inject: [UserAccountConfig],
+    },
   ],
   exports: [BearerJwtStrategy, UsersExternalQueryRepository],
 })

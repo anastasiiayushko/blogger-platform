@@ -6,6 +6,7 @@ import {
 import { CreatePostDomainDto } from './dto/create-post.domain.dto';
 import { HydratedDocument, Model, Types } from 'mongoose';
 import { UpdatePostDomainDto } from './dto/update-post.domain.dto';
+import { UpdateExtendedLikesPostDomainDTO } from './dto/update-extended-likes-post.domain.dto';
 
 export const postTitleConstraints = {
   maxLength: 30,
@@ -121,6 +122,12 @@ export class Post {
     this.content = dto.content;
     this.shortDescription = dto.shortDescription;
     this.title = dto.title;
+  }
+
+  updateExtendedLikesInfo(dto: UpdateExtendedLikesPostDomainDTO) {
+    this.extendedLikesInfo.newestLikes = dto.newestLikes;
+    this.extendedLikesInfo.likesCount = dto.likesCount;
+    this.extendedLikesInfo.dislikesCount = dto.dislikesCount;
   }
 }
 

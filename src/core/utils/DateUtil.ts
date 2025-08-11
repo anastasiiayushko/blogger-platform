@@ -10,10 +10,6 @@ export class DateUtil {
   }
 
   static hasExpired(current: Date, expiration: Date): boolean {
-    console.log('hasExpired start');
-    console.log(current, expiration);
-    console.log(current > expiration);
-    console.log('hasExpired end');
     return current > expiration;
   }
 }

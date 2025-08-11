@@ -9,13 +9,11 @@ import { Post, PostSchema } from './posts/domain/post.entity';
 import { PostController } from './posts/api/post.controller';
 import { PostRepository } from './posts/infrastructure/post.repository';
 import { BlogsExternalQueryRepository } from './blogs/infrastructure/external-query/blogs.external-query-repository';
-import { PostQueryRepository } from './posts/infrastructure/query/post.query-repository';
-import { PostsExternalQueryRepository } from './posts/infrastructure/external-query/posts.external-query-repository';
+import { PostQueryRepository } from './posts/infrastructure/query-repository/post.query-repository';
 import { Comment, CommentSchema } from './comments/domain/comment.entity';
 import { CommentsQueryRepository } from './comments/infrastructure/query/comments.query-repository';
 import { CommentController } from './comments/api/comment.controller';
 import { CreateBlogHandler } from './blogs/application/usecases/create-blog.usecases';
-import { CqrsModule } from '@nestjs/cqrs';
 import { DeleteBlogHandler } from './blogs/application/usecases/delete-blog.usecases';
 import { UpdateBlogHandler } from './blogs/application/usecases/update-blog.usecases';
 import { CreatePostHandler } from './posts/application/usecases/create-post.usecases';
@@ -24,32 +22,55 @@ import { DeletePostHandler } from './posts/application/usecases/delete-post.usec
 import { UserAccountsModule } from '../user-accounts/user-accounts.module';
 import { CommentRepository } from './comments/infrastructure/comment.repository';
 import { CreateCommentHandler } from './comments/application/usecases/create-comment.usecases';
-import {
-  GetCommentsByPostWithPagingQueryHandler
-} from './comments/application/queries/get-comments-by-post-with-paging.query';
-import { GetCommentByIdQueryHandler } from './comments/application/queries/get-comment-by-id.query';
+import { GetCommentsByPostWithPagingQueryHandler } from './comments/application/queries-usecases/get-comments-by-post-with-paging.query';
+import { GetCommentByIdQueryHandler } from './comments/application/queries-usecases/get-comment-by-id.query';
+import { UpdateCommentHandler } from './comments/application/usecases/update-comment.usecases';
+import { DeleteCommentHandler } from './comments/application/usecases/delete-comment.usecases';
+import { Like, LikeSchema } from './likes/domain/like.entety';
+import { LikeStatusCommentHandler } from './comments/application/usecases/like-status-comment.usecase';
+import { LikeUpsertService } from './likes/application/services/like-upsert.service';
+import { LikeRepository } from './likes/infrastucture/repository/like-repository';
+import { LikeQueryRepository } from './likes/infrastucture/query-repository/like-query-repository';
+import { LikeMapQueryService } from './likes/application/services/like-map.query-service';
+import { GetPostWithPagingQueryHandler } from './posts/application/query-usecases/get-posts-with-paging.query-handler';
+import { GetPostByIdQueryHandler } from './posts/application/query-usecases/get-post-by-id.query-handler';
+import { SetLikeStatusPostHandler } from './posts/application/usecases/set-like-status-post.usecase';
+import { GetBlogByIdQueryHandler } from './blogs/application/query-usecases/get-blog-by-id.query-usecase';
+import { GetBlogsWithPagingQueryHandler } from './blogs/application/query-usecases/get-blogs-with-paging.query-usecase';
 
 const cmdBlogHandler = [
   CreateBlogHandler,
   DeleteBlogHandler,
   UpdateBlogHandler,
+  GetBlogsWithPagingQueryHandler,
+  GetBlogByIdQueryHandler,
 ];
 
 const cmdPostHandler = [
   CreatePostHandler,
   UpdatePostHandler,
   DeletePostHandler,
+  SetLikeStatusPostHandler,
+  GetPostByIdQueryHandler,
+  GetPostWithPagingQueryHandler,
 ];
-const cmdCommentHandler = [CreateCommentHandler, GetCommentsByPostWithPagingQueryHandler, GetCommentByIdQueryHandler];
+const cmdCommentHandler = [
+  CreateCommentHandler,
+  GetCommentsByPostWithPagingQueryHandler,
+  GetCommentByIdQueryHandler,
+  UpdateCommentHandler,
+  DeleteCommentHandler,
+  LikeStatusCommentHandler,
+];
 
 @Module({
   imports: [
-    CqrsModule,
     // Регистрация сущностей (схем) в модуле
     MongooseModule.forFeature([
       { name: Blog.name, schema: BlogSchema },
       { name: Post.name, schema: PostSchema },
       { name: Comment.name, schema: CommentSchema },
+      { name: Like.name, schema: LikeSchema },
     ]),
     UserAccountsModule,
   ],
@@ -61,9 +82,12 @@ const cmdCommentHandler = [CreateCommentHandler, GetCommentsByPostWithPagingQuer
     BlogsExternalQueryRepository,
     PostRepository,
     PostQueryRepository,
-    PostsExternalQueryRepository,
     CommentsQueryRepository,
     CommentRepository,
+    LikeRepository,
+    LikeQueryRepository,
+    LikeUpsertService,
+    LikeMapQueryService,
     ...cmdBlogHandler,
     ...cmdPostHandler,
     ...cmdCommentHandler,

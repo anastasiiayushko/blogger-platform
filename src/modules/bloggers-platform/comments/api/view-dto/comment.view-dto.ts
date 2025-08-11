@@ -15,7 +15,7 @@ export class CommentViewDTO {
   id: string;
   content: string;
   commentatorInfo: CommentatorInfoDTO;
-  postId: string;
+  // postId: string;
   likesInfo: LikesInfoDTO;
   createdAt: string;
 
@@ -24,7 +24,7 @@ export class CommentViewDTO {
     const comment = new CommentViewDTO();
     comment.id = item._id.toString();
     comment.content = item.content;
-    comment.postId = item.postId.toString();
+    // comment.postId = item.postId.toString();
     comment.commentatorInfo = {
       userId: item.commentatorInfo.userId.toString(),
       userLogin: item.commentatorInfo.userLogin,

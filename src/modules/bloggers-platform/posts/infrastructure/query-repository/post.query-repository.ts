@@ -1,7 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Post, PostModelType } from '../../domain/post.entity';
-import { PostViewDTO } from '../../api/view-dto/post.view-dto';
+import { Post, PostDocument, PostModelType } from '../../domain/post.entity';
 import { GetPostQueryParams } from '../../api/input-dto/get-post-query-params.input-dto';
 import { GetPostFilterContextInputDTO } from './dto/get-post-filter-context-input-dto';
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated.view-dto';
@@ -15,10 +14,10 @@ export class PostQueryRepository {
     @InjectModel(Post.name) private readonly PostModel: PostModelType,
   ) {}
 
-  async getByIdOrNotFoundFail(id: string): Promise<PostViewDTO> {
+  async getByIdOrNotFoundFail(id: string): Promise<PostDocument> {
     const post = await this.PostModel.findOne({
       _id: id,
-    });
+    }).lean();
 
     if (!post) {
       throw new DomainException({
@@ -27,13 +26,13 @@ export class PostQueryRepository {
       });
     }
 
-    return PostViewDTO.mapToView(post, 'None');
+    return post;
   }
 
   async getAll(
     query: GetPostQueryParams,
-    filterContext?: GetPostFilterContextInputDTO,
-  ): Promise<PaginatedViewDto<PostViewDTO[]>> {
+    filterContext: GetPostFilterContextInputDTO | null = null,
+  ): Promise<PaginatedViewDto<PostDocument[]>> {
     const filter: FilterQuery<Post> = {};
 
     if (filterContext?.blogId) {
@@ -43,12 +42,11 @@ export class PostQueryRepository {
     const posts = await this.PostModel.find(filter)
       .sort({ [query.sortBy]: query.sortDirection })
       .skip(query.calculateSkip())
-      .limit(query.pageSize)
-      .lean();
+      .limit(query.pageSize);
 
     const totalCount = await this.PostModel.countDocuments(filter);
     return PaginatedViewDto.mapToView({
-      items: posts.map((item) => PostViewDTO.mapToView(item, 'None')),
+      items: posts,
       page: query.pageNumber,
       totalCount: totalCount,
       size: query.pageSize,

@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UsersExternalQueryRepository } from '../../../../user-accounts/infrastructure/query/users-external.query-repository';
-import { PostQueryRepository } from '../../../posts/infrastructure/query/post.query-repository';
+import { UsersExternalQueryRepository } from '../../../../user-accounts/infrastructure/external-query/users-external.query-repository';
+import { PostQueryRepository } from '../../../posts/infrastructure/query-repository/post.query-repository';
 import { Comment, CommentModelType } from '../../domain/comment.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { CommentRepository } from '../../infrastructure/comment.repository';

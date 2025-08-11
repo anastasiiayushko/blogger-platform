@@ -5,6 +5,10 @@ import { DomainExceptionCode } from '../../../../core/exceptions/domain-exceptio
 
 @Injectable()
 export class BearerJwtAuthGuard extends AuthGuard('jwt') {
+  canActivate(context: ExecutionContext) {
+    return super.canActivate(context);
+  }
+
   handleRequest(
     err: any,
     user: any,
@@ -12,7 +16,6 @@ export class BearerJwtAuthGuard extends AuthGuard('jwt') {
     context: ExecutionContext,
     status?: any,
   ): any {
-
     if (err || !user) {
       throw new DomainException({
         code: DomainExceptionCode.Unauthorized,

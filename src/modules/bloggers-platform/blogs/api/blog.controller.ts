@@ -13,28 +13,32 @@ import {
 } from '@nestjs/common';
 import { BlogInputDto } from './input-dto/blog.input-dto';
 import { BlogViewDto } from './view-dto/blog.view-dto';
-import { BlogQueryRepository } from '../infrastructure/query/blog.query-repository';
 import { GetBlogsQueryParamsInputDto } from './input-dto/get-blogs-query-params.input-dto';
 import { PostExternalInputDto } from '../../posts/application/external-service/dto/post.external-input-dto';
 import { GetPostQueryParams } from '../../posts/api/input-dto/get-post-query-params.input-dto';
 import { PostViewDTO } from '../../posts/api/view-dto/post.view-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { ObjectIdValidationPipe } from '../../../../core/pipes/object-id-validation-transform-pipe';
-import { PostQueryRepository } from '../../posts/infrastructure/query/post.query-repository';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateBlogCommand } from '../application/usecases/create-blog.usecases';
 import { BasicAuthGuard } from '../../../user-accounts/guards/basic/basic-auth.guard';
 import { DeleteBlogCommand } from '../application/usecases/delete-blog.usecases';
 import { UpdateBlogCommand } from '../application/usecases/update-blog.usecases';
 import { CreatePostCommand } from '../../posts/application/usecases/create-post.usecases';
-import { Public } from '../../../user-accounts/guards/decorators/public.decorators';
+import { GetPostsWithPagingQuery } from '../../posts/application/query-usecases/get-posts-with-paging.query-handler';
+import { BearerOptionalJwtAuthGuard } from '../../../user-accounts/guards/bearer/bearer-optional-jwt-auth.guard';
+import { UserContextDto } from '../../../user-accounts/decorators/param/user-context.dto';
+import { OptionalCurrentUserFormRequest } from '../../../user-accounts/decorators/param/options-current-user-from-request.decorator';
+import { GetPostByIdQuery } from '../../posts/application/query-usecases/get-post-by-id.query-handler';
+import { CurrentUserFormRequest } from '../../../user-accounts/decorators/param/current-user-form-request.decorator';
+import { GetBlogByIdQuery } from '../application/query-usecases/get-blog-by-id.query-usecase';
+import { GetBlogsWithPagingQuery } from '../application/query-usecases/get-blogs-with-paging.query-usecase';
 
 @Controller('blogs')
 export class BlogController {
   constructor(
-    private readonly blogQueryRepository: BlogQueryRepository,
-    private readonly postQueryRepository: PostQueryRepository,
-    private commandBus: CommandBus,
+    protected commandBus: CommandBus,
+    protected queryBus: QueryBus,
   ) {}
 
   /**
@@ -45,7 +49,7 @@ export class BlogController {
    */
   @Get(':id')
   async getById(@Param('id') id: string): Promise<BlogViewDto> {
-    return this.blogQueryRepository.findOrNotFoundFail(id);
+    return this.queryBus.execute<GetBlogByIdQuery>(new GetBlogByIdQuery(id));
   }
 
   /**
@@ -56,7 +60,9 @@ export class BlogController {
    */
   @Get()
   async getAll(@Query() query: GetBlogsQueryParamsInputDto) {
-    return this.blogQueryRepository.getAll(query);
+    return this.queryBus.execute<GetBlogsWithPagingQuery>(
+      new GetBlogsWithPagingQuery(query),
+    );
   }
 
   /**
@@ -76,7 +82,9 @@ export class BlogController {
         inputDto.websiteUrl,
       ),
     );
-    return await this.blogQueryRepository.findOrNotFoundFail(blogId);
+    return this.queryBus.execute<GetBlogByIdQuery>(
+      new GetBlogByIdQuery(blogId),
+    );
   }
 
   /**
@@ -123,14 +131,17 @@ export class BlogController {
    * @returns {PaginatedViewDto<PostViewDTO[]>} - A paginated list of post view DTOs.
    */
   @Get(':blogId/posts')
+  @UseGuards(BearerOptionalJwtAuthGuard)
   async getAllPosts(
     @Param('blogId', ObjectIdValidationPipe) blogId: string,
     @Query() query: GetPostQueryParams,
+    @OptionalCurrentUserFormRequest() user: UserContextDto | null,
   ): Promise<PaginatedViewDto<PostViewDTO[]>> {
-    await this.blogQueryRepository.findOrNotFoundFail(blogId);
-    return await this.postQueryRepository.getAll(query, {
-      blogId: blogId,
-    });
+    await this.queryBus.execute<GetBlogByIdQuery>(new GetBlogByIdQuery(blogId));
+
+    return this.queryBus.execute<GetPostsWithPagingQuery>(
+      new GetPostsWithPagingQuery(user?.id ?? null, query, { blogId: blogId }),
+    );
   }
 
   /**
@@ -154,6 +165,6 @@ export class BlogController {
         inputDto.title,
       ),
     );
-    return await this.postQueryRepository.getByIdOrNotFoundFail(postId);
+    return this.queryBus.execute(new GetPostByIdQuery(postId, null));
   }
 }
