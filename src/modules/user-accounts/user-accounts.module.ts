@@ -24,17 +24,28 @@ import {
   SecurityDeviceSchema,
 } from './domin/security-device.entity';
 import { SecurityDeviceRepository } from './infrastructure/security-device.repository';
-import { CreateSecurityDeviceHandler } from './application/securety-devices-usecases/create-security-device.usecase';
 import { AuthLoginHandler } from './application/auth-usecases/auth-login.usecase';
 import { RefreshTokenAuthGuard } from './guards/refresh-token/refresh-token-auth.guard';
-import { UpdateSecurityDeviceHandler } from './application/securety-devices-usecases/update-security-device.usecase';
 import { AuthRefreshTokenHandler } from './application/auth-usecases/auth-refresh-token.usecase';
+import { AuthLogoutHandler } from './application/auth-usecases/auth-logout.usecase';
+import { SecurityDevicesController } from './api/security-devices.controller';
+import { CreateSecurityDeviceHandler } from './application/security-devices-usecases/create-security-device.usecase';
+import { UpdateSecurityDeviceHandler } from './application/security-devices-usecases/update-security-device.usecase';
+import { DeleteDeviceByIdHandler } from './application/security-devices-usecases/delete-device-by-id.usecase';
+import { TerminateAllOtherDevicesHandler } from './application/security-devices-usecases/terminate-current-device.usecase';
+import { SecurityDeviceQueryRepository } from './infrastructure/query/security-device.query-repository';
 
 const cmdHandlerSecurityDevice = [
   CreateSecurityDeviceHandler,
   UpdateSecurityDeviceHandler,
+  DeleteDeviceByIdHandler,
+  TerminateAllOtherDevicesHandler,
 ];
-const cmdHandlerAuth = [AuthLoginHandler, AuthRefreshTokenHandler];
+const cmdHandlerAuth = [
+  AuthLoginHandler,
+  AuthRefreshTokenHandler,
+  AuthLogoutHandler,
+];
 
 @Module({
   imports: [
@@ -51,7 +62,7 @@ const cmdHandlerAuth = [AuthLoginHandler, AuthRefreshTokenHandler];
       },
     ]), // локально подключаем сущности
   ],
-  controllers: [UserController, AuthController],
+  controllers: [UserController, AuthController, SecurityDevicesController],
   providers: [
     CreateUserService,
     UserService,
@@ -65,6 +76,7 @@ const cmdHandlerAuth = [AuthLoginHandler, AuthRefreshTokenHandler];
     UsersExternalQueryRepository,
     UserAccountConfig,
     SecurityDeviceRepository,
+    SecurityDeviceQueryRepository,
     ...cmdHandlerSecurityDevice,
     ...cmdHandlerAuth,
     //пример инстанцирования через токен

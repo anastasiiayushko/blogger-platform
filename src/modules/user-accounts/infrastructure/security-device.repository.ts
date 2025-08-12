@@ -14,6 +14,24 @@ export class SecurityDeviceRepository {
     private readonly securityDeviceModel: SecurityDeviceModelType,
   ) {}
 
+  async findDeviceById(
+    deviceId: string,
+  ): Promise<SecurityDeviceDocument | null> {
+    return this.securityDeviceModel.findOne({
+      _id: new Types.ObjectId(deviceId),
+    });
+  }
+
+  async findDeviceByIdAndUserId(
+    deviceId: string,
+    userId: string,
+  ): Promise<SecurityDeviceDocument | null> {
+    return this.securityDeviceModel.findOne({
+      _id: new Types.ObjectId(deviceId),
+      userId: new Types.ObjectId(userId),
+    });
+  }
+
   async findActualDevice(
     deviceId: string,
     userId: string,
@@ -28,5 +46,25 @@ export class SecurityDeviceRepository {
 
   async save(securityDevice: SecurityDeviceDocument): Promise<void> {
     await securityDevice.save();
+  }
+
+  async deleteById(deviceId: string, userId: string): Promise<boolean> {
+    const result = await this.securityDeviceModel.deleteOne({
+      _id: new Types.ObjectId(deviceId),
+      userId: new Types.ObjectId(userId),
+    });
+    return result.deletedCount > 0;
+  }
+
+  async terminateAllOtherDevices(
+    currentDeviceId: string,
+    userId: string,
+  ): Promise<boolean> {
+    const result = await this.securityDeviceModel.deleteMany({
+      _id: { $ne: new Types.ObjectId(currentDeviceId) },
+      userId: new Types.ObjectId(userId),
+    });
+
+    return result.deletedCount > 0;
   }
 }

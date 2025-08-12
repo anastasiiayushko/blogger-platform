@@ -7,7 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { Types } from 'mongoose';
 import { DateUtil } from '../../../../core/utils/DateUtil';
-import { CreateSecurityDeviceCommand } from '../securety-devices-usecases/create-security-device.usecase';
+import { CreateSecurityDeviceCommand } from '../security-devices-usecases/create-security-device.usecase';
 
 export class AuthLoginCommand {
   constructor(

@@ -9,13 +9,7 @@ export class BearerJwtAuthGuard extends AuthGuard('jwt') {
     return super.canActivate(context);
   }
 
-  handleRequest(
-    err: any,
-    user: any,
-    info: any,
-    context: ExecutionContext,
-    status?: any,
-  ): any {
+  handleRequest(err: any, user: any): any {
     if (err || !user) {
       throw new DomainException({
         code: DomainExceptionCode.Unauthorized,

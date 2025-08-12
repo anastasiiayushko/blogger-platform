@@ -31,7 +31,8 @@ export class LikeStatusCommentHandler
     status,
   }: LikeStatusCommentCommand): Promise<void> {
     const comment = await this.commentRepository.findOrNotFoundFail(commentId);
-    const user = await this.userExternalQueryRepository.findOrNotFoundFail(userId);
+    const user =
+      await this.userExternalQueryRepository.findOrNotFoundFail(userId);
 
     await this.likeUpsertService.upsert({
       authorName: user.login,

@@ -18,20 +18,28 @@ export class RefreshTokenAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const refreshToken = request.cookies['refreshToken'];
+    const response = context.switchToHttp().getResponse();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const refreshToken: string | null = request.cookies['refreshToken'] ?? null;
+
     if (!refreshToken) {
+      response.clearCookie('refreshToken');
+
       throw new DomainException({
         code: DomainExceptionCode.Unauthorized,
       });
     }
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const refreshPayload =
         await this.refreshTokenContext.verify(refreshToken);
-      console.log('refreshPayload', refreshPayload);
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       request.refreshTokenPayload = refreshPayload;
 
       return true;
-    } catch (e) {
+    } catch (e: unknown) {
+      response.clearCookie('refreshToken');
       throw new DomainException({
         code: DomainExceptionCode.Unauthorized,
       });

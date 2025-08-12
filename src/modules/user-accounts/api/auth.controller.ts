@@ -34,6 +34,7 @@ import {
   RefreshTokenPayloadFromRequest,
 } from '../decorators/param/refresh-token-payload-from-request.decorators';
 import { AuthRefreshTokenCommand } from '../application/auth-usecases/auth-refresh-token.usecase';
+import { AuthLogoutCommand } from '../application/auth-usecases/auth-logout.usecase';
 
 @Controller('auth')
 export class AuthController {
@@ -54,7 +55,6 @@ export class AuthController {
     const result = await this.commandBus.execute<AuthLoginCommand>(
       new AuthLoginCommand(user.id, agentAndIp.ip, agentAndIp.userAgent),
     );
-
     res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: true,
@@ -133,7 +133,16 @@ export class AuthController {
   }
 
   @Post('/logout')
-  signOut() {
-    return '/logout';
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(RefreshTokenAuthGuard)
+  async signOut(
+    @RefreshTokenPayloadFromRequest() payload: RefreshTokenPayloadDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<void> {
+    res.clearCookie('refreshToken');
+    await this.commandBus.execute<AuthLogoutCommand>(
+      new AuthLogoutCommand(payload.deviceId, payload.userId),
+    );
+    return;
   }
 }
