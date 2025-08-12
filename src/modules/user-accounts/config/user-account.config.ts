@@ -27,15 +27,16 @@ export class UserAccountConfig {
       this.configService.get<string>('JWT_AT_SECRET'),
     );
     this.jwtAccessExpiresIn = String(
-      this.configService.get<string>('JWT_AT_EXPIRES'),
+      this.configService.get<string>('JWT_AT_EXPIRES_IN'),
     );
 
     this.jwtRefreshSecret = String(
       this.configService.get<string>('JWT_RT_SECRET'),
     );
     this.jwtRefreshExpiresIn = String(
-      this.configService.get<string>('JWT_RT_EXPIRES'),
+      this.configService.get<string>('JWT_RT_EXPIRES_IN'),
     );
+    console.log('user-account.config.ts', this.jwtAccessSecret, '');
     configValidationUtility.validateConfig(this);
   }
 }

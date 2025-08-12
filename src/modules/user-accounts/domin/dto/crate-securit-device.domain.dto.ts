@@ -1,10 +1,10 @@
 import { Types } from 'mongoose';
-import { Prop } from '@nestjs/mongoose';
 
 export class CreateSecurityDeviceDomainDto {
+  deviceId: Types.ObjectId;
   ip: string;
   title: string;
-  userId: Types.ObjectId;
+  userId: string;
   lastActiveDate: Date;
   expirationDate: Date;
 }

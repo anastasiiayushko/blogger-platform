@@ -1,21 +1,25 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { SecurityDevice, SecurityDeviceModelType } from '../../domin/security-device.entity';
+import {
+  SecurityDevice,
+  SecurityDeviceModelType,
+} from '../../domin/security-device.entity';
 import { SecurityDeviceRepository } from '../../infrastructure/security-device.repository';
+import { DomainException } from '../../../../core/exceptions/domain-exception';
+import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 
 type CreateSecurityDeviceCmdType = {
   userId: string;
-  deviceId: Types.ObjectId;
+  deviceId: string;
   ip: string;
   agent: string;
   lastActiveDate: Date;
   expirationDate: Date;
 };
 
-export class CreateSecurityDeviceCommand {
+export class UpdateSecurityDeviceCommand {
   readonly userId: string;
-  readonly deviceId: Types.ObjectId;
+  readonly deviceId: string;
   readonly ip: string;
   readonly agent: string;
   readonly lastActiveDate: Date;
@@ -26,9 +30,9 @@ export class CreateSecurityDeviceCommand {
   }
 }
 
-@CommandHandler(CreateSecurityDeviceCommand)
-export class CreateSecurityDeviceHandler
-  implements ICommandHandler<CreateSecurityDeviceCommand>
+@CommandHandler(UpdateSecurityDeviceCommand)
+export class UpdateSecurityDeviceHandler
+  implements ICommandHandler<UpdateSecurityDeviceCommand>
 {
   constructor(
     @InjectModel(SecurityDevice.name)
@@ -36,16 +40,26 @@ export class CreateSecurityDeviceHandler
     private readonly securityDeviceRepository: SecurityDeviceRepository,
   ) {}
 
-  async execute(command: CreateSecurityDeviceCommand): Promise<void> {
-    const device = this.securityDeviceModel.createInstance({
+  async execute(command: UpdateSecurityDeviceCommand): Promise<void> {
+    const device = await this.securityDeviceRepository.findActualDevice(
+      command.deviceId,
+      command.userId,
+      command.lastActiveDate,
+    );
+
+    if (!device) {
+      throw new DomainException({
+        code: DomainExceptionCode.Unauthorized,
+      });
+    }
+
+    device.updateDevice({
       ip: command.ip,
       title: command.agent,
-      userId: command.userId,
-      deviceId: command.deviceId,
       lastActiveDate: command.lastActiveDate,
       expirationDate: command.expirationDate,
-    })
-    console.log(device);
+    });
+
     await this.securityDeviceRepository.save(device);
   }
 }

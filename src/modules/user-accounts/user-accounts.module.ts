@@ -24,9 +24,17 @@ import {
   SecurityDeviceSchema,
 } from './domin/security-device.entity';
 import { SecurityDeviceRepository } from './infrastructure/security-device.repository';
-import { CreateUserDeviceHandler } from './application/securety-devices-usecases/create-security-device.usecase';
+import { CreateSecurityDeviceHandler } from './application/securety-devices-usecases/create-security-device.usecase';
+import { AuthLoginHandler } from './application/auth-usecases/auth-login.usecase';
+import { RefreshTokenAuthGuard } from './guards/refresh-token/refresh-token-auth.guard';
+import { UpdateSecurityDeviceHandler } from './application/securety-devices-usecases/update-security-device.usecase';
+import { AuthRefreshTokenHandler } from './application/auth-usecases/auth-refresh-token.usecase';
 
-const cmdHandlerSecurityDevice = [CreateUserDeviceHandler];
+const cmdHandlerSecurityDevice = [
+  CreateSecurityDeviceHandler,
+  UpdateSecurityDeviceHandler,
+];
+const cmdHandlerAuth = [AuthLoginHandler, AuthRefreshTokenHandler];
 
 @Module({
   imports: [
@@ -53,10 +61,12 @@ const cmdHandlerSecurityDevice = [CreateUserDeviceHandler];
     CryptoService,
     LocalStrategy,
     BearerJwtStrategy,
+    RefreshTokenAuthGuard,
     UsersExternalQueryRepository,
     UserAccountConfig,
     SecurityDeviceRepository,
     ...cmdHandlerSecurityDevice,
+    ...cmdHandlerAuth,
     //пример инстанцирования через токен
     //если надо внедрить несколько раз один и тот же класс
     {

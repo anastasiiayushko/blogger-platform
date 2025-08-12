@@ -14,9 +14,15 @@ export class SecurityDeviceRepository {
     private readonly securityDeviceModel: SecurityDeviceModelType,
   ) {}
 
-  async findById(id: string): Promise<SecurityDeviceDocument | null> {
+  async findActualDevice(
+    deviceId: string,
+    userId: string,
+    lastActiveDate: Date,
+  ): Promise<SecurityDeviceDocument | null> {
     return this.securityDeviceModel.findById({
-      _id: new Types.ObjectId(id),
+      _id: new Types.ObjectId(deviceId),
+      userId: new Types.ObjectId(userId),
+      lastActiveDate: lastActiveDate,
     });
   }
 

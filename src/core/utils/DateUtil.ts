@@ -12,4 +12,8 @@ export class DateUtil {
   static hasExpired(current: Date, expiration: Date): boolean {
     return current > expiration;
   }
+
+  static convertUnixToUTC(unix: number): Date {
+    return new Date(unix * 1000);
+  }
 }

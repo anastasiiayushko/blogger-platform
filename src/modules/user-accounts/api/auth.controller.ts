@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Ip,
   Post,
   Res,
   UseGuards,
@@ -21,33 +22,68 @@ import { NewPasswordRecoveryInputDto } from './input-dto/new-password-recovery.i
 import { CreateUsersInputDto } from './input-dto/create-users.input-dto';
 import { BearerJwtAuthGuard } from '../guards/bearer/bearer-jwt-auth.guard';
 import { AccessTokenViewDto } from './view-dto/access-token.view-dto';
+import { CommandBus } from '@nestjs/cqrs';
+import { AuthLoginCommand } from '../application/auth-usecases/auth-login.usecase';
+import {
+  UserAgentAndIpDto,
+  UserAgentAndIpParam,
+} from '../decorators/param/user-agent-and-ip.param-decorator';
+import { RefreshTokenAuthGuard } from '../guards/refresh-token/refresh-token-auth.guard';
+import {
+  RefreshTokenPayloadDto,
+  RefreshTokenPayloadFromRequest,
+} from '../decorators/param/refresh-token-payload-from-request.decorators';
+import { AuthRefreshTokenCommand } from '../application/auth-usecases/auth-refresh-token.usecase';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     protected authService: AuthService,
     protected userQueryRepository: UserQueryRepository,
+    protected commandBus: CommandBus,
   ) {}
 
   @Post('/login')
   @HttpCode(HttpStatus.OK)
   @UseGuards(LocalAuthGuard)
-  login(
+  async login(
+    @UserAgentAndIpParam() agentAndIp: UserAgentAndIpDto,
     @CurrentUserFormRequest() user: UserContextDto,
     @Res({ passthrough: true }) res: Response,
-  ): AccessTokenViewDto {
-    const result = this.authService.login(user.id);
-    res.cookie('refreshToken', result.accessToken, {
+  ): Promise<AccessTokenViewDto> {
+    const result = await this.commandBus.execute<AuthLoginCommand>(
+      new AuthLoginCommand(user.id, agentAndIp.ip, agentAndIp.userAgent),
+    );
+
+    res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: true,
     });
-    return result;
+    return { accessToken: result.accessToken };
   }
 
   @Post('/refresh-token')
+  @UseGuards(RefreshTokenAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async refreshToken() {
-    return { accessToken: 'accessToken' };
+  async refreshToken(
+    @UserAgentAndIpParam() agentAndIp: UserAgentAndIpDto,
+    @RefreshTokenPayloadFromRequest()
+    refreshTokenPayload: RefreshTokenPayloadDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<AccessTokenViewDto> {
+    const result = await this.commandBus.execute<AuthRefreshTokenCommand>(
+      new AuthRefreshTokenCommand({
+        userId: refreshTokenPayload.userId,
+        deviceId: refreshTokenPayload.deviceId,
+        ip: agentAndIp.ip,
+        agent: agentAndIp.userAgent,
+      }),
+    );
+    res.cookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+      secure: true,
+    });
+    return { accessToken: result.accessToken };
   }
 
   @ApiResponse({
