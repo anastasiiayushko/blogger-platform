@@ -16,9 +16,11 @@ import { UserQueryRepository } from '../infrastructure/query/users.query-reposit
 import { ObjectIdValidationPipe } from '../../../core/pipes/object-id-validation-transform-pipe';
 import { BasicAuthGuard } from '../guards/basic/basic-auth.guard';
 import { CreateUsersInputDto } from './input-dto/create-users.input-dto';
+import { SkipThrottle } from '@nestjs/throttler';
 
-@UseGuards(BasicAuthGuard)
 @Controller('users')
+@UseGuards(BasicAuthGuard)
+@SkipThrottle()
 export class UserController {
   constructor(
     private readonly userService: UserService,

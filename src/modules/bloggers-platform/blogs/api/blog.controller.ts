@@ -30,11 +30,12 @@ import { BearerOptionalJwtAuthGuard } from '../../../user-accounts/guards/bearer
 import { UserContextDto } from '../../../user-accounts/decorators/param/user-context.dto';
 import { OptionalCurrentUserFormRequest } from '../../../user-accounts/decorators/param/options-current-user-from-request.decorator';
 import { GetPostByIdQuery } from '../../posts/application/query-usecases/get-post-by-id.query-handler';
-import { CurrentUserFormRequest } from '../../../user-accounts/decorators/param/current-user-form-request.decorator';
 import { GetBlogByIdQuery } from '../application/query-usecases/get-blog-by-id.query-usecase';
 import { GetBlogsWithPagingQuery } from '../application/query-usecases/get-blogs-with-paging.query-usecase';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @Controller('blogs')
+@SkipThrottle()
 export class BlogController {
   constructor(
     protected commandBus: CommandBus,

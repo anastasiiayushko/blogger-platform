@@ -34,6 +34,7 @@ import { UpdateSecurityDeviceHandler } from './application/security-devices-usec
 import { DeleteDeviceByIdHandler } from './application/security-devices-usecases/delete-device-by-id.usecase';
 import { TerminateAllOtherDevicesHandler } from './application/security-devices-usecases/terminate-current-device.usecase';
 import { SecurityDeviceQueryRepository } from './infrastructure/query/security-device.query-repository';
+import { UserConfirmationConfig } from './config/user-confirmation.config';
 
 const cmdHandlerSecurityDevice = [
   CreateSecurityDeviceHandler,
@@ -46,6 +47,8 @@ const cmdHandlerAuth = [
   AuthRefreshTokenHandler,
   AuthLogoutHandler,
 ];
+
+const configs = [UserAccountConfig, UserConfirmationConfig];
 
 @Module({
   imports: [
@@ -74,9 +77,9 @@ const cmdHandlerAuth = [
     BearerJwtStrategy,
     RefreshTokenAuthGuard,
     UsersExternalQueryRepository,
-    UserAccountConfig,
     SecurityDeviceRepository,
     SecurityDeviceQueryRepository,
+    ...configs,
     ...cmdHandlerSecurityDevice,
     ...cmdHandlerAuth,
     //пример инстанцирования через токен
@@ -85,8 +88,8 @@ const cmdHandlerAuth = [
       provide: ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
       useFactory: (userAccountConfig: UserAccountConfig): JwtService => {
         return new JwtService({
-          secret: userAccountConfig.jwtAccessSecret,
-          signOptions: { expiresIn: userAccountConfig.jwtAccessExpiresIn },
+          secret: userAccountConfig.assessTokenSecret,
+          signOptions: { expiresIn: userAccountConfig.assessTokenExpiresIn },
         });
       },
       inject: [UserAccountConfig],
@@ -95,13 +98,21 @@ const cmdHandlerAuth = [
       provide: REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
       useFactory: (userAccountConfig: UserAccountConfig): JwtService => {
         return new JwtService({
-          secret: userAccountConfig.jwtRefreshSecret,
-          signOptions: { expiresIn: userAccountConfig.jwtRefreshExpiresIn },
+          secret: userAccountConfig.refreshTokenSecret,
+          signOptions: { expiresIn: userAccountConfig.refreshTokenExpiresIn },
         });
       },
       inject: [UserAccountConfig],
     },
   ],
-  exports: [BearerJwtStrategy, UsersExternalQueryRepository],
+  exports: [
+    BearerJwtStrategy,
+    UsersExternalQueryRepository,
+    /** при использование  guard через @UseGuard(nameGard), можно не экспортирована поставщиков которые инжектируются в через конструктор
+     *  Nest автоматически видит зависимости guard’а через импорт модуля
+     * */
+    // REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
+    // ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
+  ],
 })
 export class UserAccountsModule {}

@@ -22,8 +22,10 @@ import { LikeStatusCommentCommand } from '../application/usecases/like-status-co
 import { LikeStatusInputDto } from '../../likes/api/input-dto/like-status.input-dto';
 import { OptionalCurrentUserFormRequest } from '../../../user-accounts/decorators/param/options-current-user-from-request.decorator';
 import { GetCommentByIdQuery } from '../application/queries-usecases/get-comment-by-id.query';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @Controller('comments')
+@SkipThrottle()
 export class CommentController {
   constructor(
     protected commandBus: CommandBus,
@@ -50,7 +52,6 @@ export class CommentController {
     @Body() inputDto: LikeStatusInputDto,
     @CurrentUserFormRequest() user: UserContextDto,
   ) {
-
     return await this.commandBus.execute<LikeStatusCommentCommand>(
       new LikeStatusCommentCommand(commentId, user.id, inputDto.likeStatus),
     );

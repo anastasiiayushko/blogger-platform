@@ -35,7 +35,7 @@ export class SecurityDevice {
     return securityDevice as SecurityDeviceDocument;
   }
 
-  updateDevice(dto: UpdateSecurityDeviceDomainDto) {
+  updateDevice(dto: UpdateSecurityDeviceDomainDto): void {
     this.ip = dto.ip;
     this.title = dto.title;
     this.lastActiveDate = dto.lastActiveDate;

@@ -4,7 +4,6 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  Ip,
   Post,
   Res,
   UseGuards,
@@ -35,6 +34,7 @@ import {
 } from '../decorators/param/refresh-token-payload-from-request.decorators';
 import { AuthRefreshTokenCommand } from '../application/auth-usecases/auth-refresh-token.usecase';
 import { AuthLogoutCommand } from '../application/auth-usecases/auth-logout.usecase';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController {
@@ -64,7 +64,8 @@ export class AuthController {
 
   @Post('/refresh-token')
   @UseGuards(RefreshTokenAuthGuard)
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @SkipThrottle()
+  @HttpCode(HttpStatus.OK)
   async refreshToken(
     @UserAgentAndIpParam() agentAndIp: UserAgentAndIpDto,
     @RefreshTokenPayloadFromRequest()
@@ -126,8 +127,9 @@ export class AuthController {
     await this.authService.updatePassword(newPassRecoveryDto);
   }
 
-  @UseGuards(BearerJwtAuthGuard)
   @Get('/me')
+  @UseGuards(BearerJwtAuthGuard)
+  @SkipThrottle()
   async me(@CurrentUserFormRequest() user: UserContextDto) {
     return await this.userQueryRepository.getUserMeById(user.id);
   }
@@ -135,6 +137,7 @@ export class AuthController {
   @Post('/logout')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(RefreshTokenAuthGuard)
+  @SkipThrottle()
   async signOut(
     @RefreshTokenPayloadFromRequest() payload: RefreshTokenPayloadDto,
     @Res({ passthrough: true }) res: Response,

@@ -18,8 +18,10 @@ import { SecurityDeviceQueryRepository } from '../infrastructure/query/security-
 import { TerminateAllOtherDevicesCommand } from '../application/security-devices-usecases/terminate-current-device.usecase';
 import { SecurityDeviceViewDto } from './view-dto/security-device.view-dto';
 import { DeleteDeviceByIdCommand } from '../application/security-devices-usecases/delete-device-by-id.usecase';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @Controller('/security/devices')
+@SkipThrottle()
 export class SecurityDevicesController {
   constructor(
     protected commandBus: CommandBus,

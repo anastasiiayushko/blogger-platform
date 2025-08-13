@@ -5,14 +5,14 @@ import { CryptoService } from './crypto.service';
 import { DomainException } from '../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
 import { CreateUsersInputDto } from '../api/input-dto/create-users.input-dto';
-import { ConfigService } from '@nestjs/config';
+import { UserConfirmationConfig } from '../config/user-confirmation.config';
 
 export class CreateUserService {
   constructor(
     private userRepository: UsersRepository,
     private cryptoService: CryptoService,
-    private configService: ConfigService,
     @InjectModel(User.name) private userModel: UserModelType,
+    private userConfirmationConfig: UserConfirmationConfig,
   ) {}
 
   private async validateUniqUser(login: string, email: string): Promise<void> {
@@ -48,8 +48,8 @@ export class CreateUserService {
         login: userDto.login,
       },
       {
-        hours: this.configService.get<number>('EXPIRATION_DATE_HOURS') || 0,
-        min: this.configService.get<number>('EXPIRATION_DATE_MIN') || 0,
+        hours: this.userConfirmationConfig.emailExpiresInHours,
+        min: this.userConfirmationConfig.emailExpiresInMin,
       },
     );
     await this.userRepository.save(user);

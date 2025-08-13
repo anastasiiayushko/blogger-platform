@@ -13,6 +13,7 @@ import { ConfigService } from '@nestjs/config';
 @Catch(DomainException)
 export class DomainExceptionsFilter implements ExceptionFilter {
   constructor(protected configService: ConfigService) {}
+
   catch(exception: DomainException, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -63,6 +64,8 @@ export class DomainExceptionsFilter implements ExceptionFilter {
         return HttpStatus.UNAUTHORIZED;
       case DomainExceptionCode.InternalServerError:
         return HttpStatus.INTERNAL_SERVER_ERROR;
+      case DomainExceptionCode.ManyRequests:
+        return HttpStatus.TOO_MANY_REQUESTS;
       default:
         return HttpStatus.I_AM_A_TEAPOT;
     }

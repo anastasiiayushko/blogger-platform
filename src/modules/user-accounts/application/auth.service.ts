@@ -1,42 +1,25 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { UsersRepository } from '../infrastructure/users.repository';
 import { CryptoService } from './crypto.service';
-import { JwtService } from '@nestjs/jwt';
 import { DomainException } from '../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
-import { ConfigService } from '@nestjs/config';
 import { EmailNotificationService } from '../../notifications/emal.service';
 import { DateUtil } from '../../../core/utils/DateUtil';
 import { NewPasswordRecoveryInputDto } from '../api/input-dto/new-password-recovery.input-dto';
 import { CreateUserService } from './create-user-service';
 import { ValidateDomainDto } from '../../../core/decorators/validate-domain-dto/ValidateDomainDto';
 import { CreateUsersInputDto } from '../api/input-dto/create-users.input-dto';
-import { BaseExpirationInputDto } from '../../../core/dto/base.expiration-input-dto';
-import {
-  ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
-  REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
-} from '../constants/auth-tokens.inject-constants';
+import { UserConfirmationConfig } from '../config/user-confirmation.config';
 
 @Injectable()
 export class AuthService {
-  private expirationConfirm: BaseExpirationInputDto;
-
   constructor(
     private createUserService: CreateUserService,
     protected userRepository: UsersRepository,
     protected cryptoService: CryptoService,
-    protected configService: ConfigService,
     protected emailNotificationService: EmailNotificationService,
-    @Inject(ACCESS_TOKEN_STRATEGY_INJECT_TOKEN)
-    private accessTokenContext: JwtService,
-    @Inject(REFRESH_TOKEN_STRATEGY_INJECT_TOKEN)
-    private refreshTokenContext: JwtService,
-  ) {
-    this.expirationConfirm = {
-      hours: this.configService.get<number>('EXPIRATION_DATE_HOURS') || 0,
-      min: this.configService.get<number>('EXPIRATION_DATE_MIN') || 0,
-    };
-  }
+    private userConfirmationConfig: UserConfirmationConfig,
+  ) {}
 
   async validateUser(loginOrEmail: string, password: string) {
     const user = await this.userRepository.findByEmailOrLogin(loginOrEmail);
@@ -51,12 +34,6 @@ export class AuthService {
       return null;
     }
     return user;
-  }
-
-  login(userId: string) {
-    const accessToken = this.accessTokenContext.sign({ userId: userId });
-
-    return { accessToken: accessToken };
   }
 
   @ValidateDomainDto(CreateUsersInputDto)
@@ -109,7 +86,10 @@ export class AuthService {
         ],
       });
     }
-    user.generateNewCodeOfConfirmEmail(this.expirationConfirm);
+    user.generateNewCodeOfConfirmEmail({
+      hours: this.userConfirmationConfig.emailExpiresInHours,
+      min: this.userConfirmationConfig.emailExpiresInMin,
+    });
     await this.userRepository.save(user);
     this.emailNotificationService.confirmRegistration(
       user.email,
@@ -132,7 +112,10 @@ export class AuthService {
       });
     }
 
-    user.generateNewCodeOfRecoveryPassword(this.expirationConfirm);
+    user.generateNewCodeOfRecoveryPassword({
+      hours: this.userConfirmationConfig.recoveryPasswordExpiresInHours,
+      min: this.userConfirmationConfig.recoveryPasswordExpiresInMin,
+    });
     await this.userRepository.save(user);
     this.emailNotificationService.recoveryPassword(
       user.email,

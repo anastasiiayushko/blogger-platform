@@ -5,38 +5,40 @@ import { configValidationUtility } from '../../../setup/config-validation.utilit
 
 @Injectable()
 export class UserAccountConfig {
-  @IsNotEmpty({ message: 'Set Env variable JWT_AT_SECRET, example: secret' })
-  jwtAccessSecret: string;
+  @IsNotEmpty({
+    message: 'Set Env variable ACCESS_TOKEN_SECRET, example: secret',
+  })
+  assessTokenSecret: string;
 
   @IsNotEmpty({
-    message: 'Set Env variable JWT_AT_EXPIRES, example: 1m, 1h, 1d',
+    message: 'Set Env variable ASSESS_TOKEN_EXPIRES_IN, example: 1m, 1h, 1d',
   })
-  jwtAccessExpiresIn: string;
+  assessTokenExpiresIn: string;
 
   @IsNotEmpty({
     message: 'Set Env variable JWT_REFRESH_SECRET, example: secret',
   })
-  jwtRefreshSecret: string;
+  refreshTokenSecret: string;
   @IsNotEmpty({
     message: 'Set Env variable JWT_AT_EXPIRES, example: 1m, 1h, 1d',
   })
-  jwtRefreshExpiresIn: string;
+  refreshTokenExpiresIn: string;
 
   constructor(private configService: ConfigService) {
-    this.jwtAccessSecret = String(
-      this.configService.get<string>('JWT_AT_SECRET'),
+    this.assessTokenSecret = String(
+      this.configService.get<string>('ACCESS_TOKEN_SECRET'),
     );
-    this.jwtAccessExpiresIn = String(
-      this.configService.get<string>('JWT_AT_EXPIRES_IN'),
+    this.assessTokenExpiresIn = String(
+      this.configService.get<string>('ASSESS_TOKEN_EXPIRES_IN'),
     );
 
-    this.jwtRefreshSecret = String(
-      this.configService.get<string>('JWT_RT_SECRET'),
+    this.refreshTokenSecret = String(
+      this.configService.get<string>('REFRESH_TOKEN_SECRET'),
     );
-    this.jwtRefreshExpiresIn = String(
-      this.configService.get<string>('JWT_RT_EXPIRES_IN'),
+    this.refreshTokenExpiresIn = String(
+      this.configService.get<string>('REFRESH_TOKEN_EXPIRES_IN'),
     );
-    console.log('user-account.config.ts', this.jwtAccessSecret, '');
+    console.log('user-account.config.ts', this.refreshTokenSecret, '');
     configValidationUtility.validateConfig(this);
   }
 }

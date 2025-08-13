@@ -36,8 +36,10 @@ import { GetPostByIdQuery } from '../application/query-usecases/get-post-by-id.q
 import { GetPostsWithPagingQuery } from '../application/query-usecases/get-posts-with-paging.query-handler';
 import { LikeStatusInputDto } from '../../likes/api/input-dto/like-status.input-dto';
 import { SetLikeStatusPostCommand } from '../application/usecases/set-like-status-post.usecase';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @Controller('posts')
+@SkipThrottle()
 export class PostController {
   constructor(
     protected commandBus: CommandBus,

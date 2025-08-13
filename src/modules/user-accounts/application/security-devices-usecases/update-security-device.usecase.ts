@@ -7,6 +7,7 @@ import {
 import { SecurityDeviceRepository } from '../../infrastructure/security-device.repository';
 import { DomainException } from '../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
+import { DateUtil } from '../../../../core/utils/DateUtil';
 
 type CreateSecurityDeviceCmdType = {
   userId: string;
@@ -41,12 +42,13 @@ export class UpdateSecurityDeviceHandler
   ) {}
 
   async execute(command: UpdateSecurityDeviceCommand): Promise<void> {
+    console.log('command', command);
     const device = await this.securityDeviceRepository.findActualDevice(
       command.deviceId,
       command.userId,
       command.lastActiveDate,
     );
-
+    console.log('fiend device', device);
     if (!device) {
       throw new DomainException({
         code: DomainExceptionCode.Unauthorized,

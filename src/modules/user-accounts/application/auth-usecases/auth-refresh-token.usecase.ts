@@ -65,7 +65,6 @@ export class AuthRefreshTokenHandler
     return {
       accessToken: this.accessTokenContext.sign({ userId: command.userId }),
       refreshToken: refreshToken,
-      // refreshToken: refreshToken,
     };
   }
 }
