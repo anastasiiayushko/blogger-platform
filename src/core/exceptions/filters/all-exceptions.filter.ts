@@ -22,6 +22,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
       message = exception.message + exception.stack;
     }
 
+    console.log(exception)
+
     const status = HttpStatus.INTERNAL_SERVER_ERROR;
     const responseBody = this.buildResponseBody(request.url, message);
 

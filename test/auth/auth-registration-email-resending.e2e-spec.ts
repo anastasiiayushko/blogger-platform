@@ -2,17 +2,14 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import { initSettings } from '../helpers/init-setting';
 import request from 'supertest';
 import { UsersRepository } from '../../src/modules/user-accounts/infrastructure/users.repository';
-import { ConfigService } from '@nestjs/config';
-import { UsersTestManagerHelper } from '../helpers/users-test-manager-helper';
-import { randomUUID } from 'crypto';
-import { delay } from '../helpers/delay-helper';
 import * as process from 'node:process';
+import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
 
 describe('Auth /registration-email-resending', () => {
   const ORIGINAL_ENV = process.env;
   let app: INestApplication;
   let userRepository: UsersRepository;
-  let userTestManager: UsersTestManagerHelper;
+  let userTestManager: UsersApiManagerHelper;
 
   const userNika = {
     login: 'nika',

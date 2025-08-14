@@ -3,15 +3,15 @@ import { initSettings } from '../helpers/init-setting';
 import { UserViewDto } from '../../src/modules/user-accounts/api/view-dto/users.view-dto';
 import { UsersRepository } from '../../src/modules/user-accounts/infrastructure/users.repository';
 import { getAuthHeaderBasicTest } from '../helpers/common-helpers';
-import { UsersTestManagerHelper } from '../helpers/users-test-manager-helper';
 import * as mongoose from 'mongoose';
+import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
 
 describe('UserController DELETE (e2e) ', () => {
   const basicAuth = getAuthHeaderBasicTest();
 
   let app: INestApplication;
   let userRepository: UsersRepository;
-  let userTestManger: UsersTestManagerHelper;
+  let userTestManger: UsersApiManagerHelper;
   let createdUser: UserViewDto;
 
   beforeAll(async () => {

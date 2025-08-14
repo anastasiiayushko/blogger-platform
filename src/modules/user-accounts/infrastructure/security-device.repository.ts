@@ -37,7 +37,7 @@ export class SecurityDeviceRepository {
     userId: string,
     lastActiveDate: Date,
   ): Promise<SecurityDeviceDocument | null> {
-    return this.securityDeviceModel.findById({
+    return this.securityDeviceModel.findOne({
       _id: new Types.ObjectId(deviceId),
       userId: new Types.ObjectId(userId),
       lastActiveDate: lastActiveDate,

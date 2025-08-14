@@ -38,10 +38,10 @@ export class UserConfirmationConfig {
     );
 
     this.recoveryPasswordExpiresInMin = Number(
-      this.configService.get('USER_PASSWORD_CONFIRMATION_EXPIRES_IN_MIN'),
+      this.configService.get('USER_RECOVERY_PASSWORD_CONFIRMATION_MIN'),
     );
     this.recoveryPasswordExpiresInHours = Number(
-      this.configService.get('USER_PASSWORD_CONFIRMATION_EXPIRES_IN_HOURS'),
+      this.configService.get('USER_RECOVERY_PASSWORD_CONFIRMATION_HOURS'),
     );
     configValidationUtility.validateConfig(this);
   }

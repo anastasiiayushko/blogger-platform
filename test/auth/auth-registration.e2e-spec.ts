@@ -1,14 +1,14 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { initSettings } from '../helpers/init-setting';
-import { UsersTestManagerHelper } from '../helpers/users-test-manager-helper';
 import { getAuthHeaderBasicTest } from '../helpers/common-helpers';
 import request from 'supertest';
 import { UsersRepository } from '../../src/modules/user-accounts/infrastructure/users.repository';
+import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
 
 describe('Auth /registration', () => {
   const basicAuth = getAuthHeaderBasicTest();
   let app: INestApplication;
-  let userTestManger: UsersTestManagerHelper;
+  let userTestManger: UsersApiManagerHelper;
   let userRepository: UsersRepository;
 
   const existingUser = {

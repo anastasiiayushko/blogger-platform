@@ -99,6 +99,7 @@ export class AuthService {
 
   async recoverPassword(email: string) {
     const user = await this.userRepository.findByEmailOrLogin(email);
+
     if (!user || user.recoveryPasswordConfirm.isConfirmed) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,
@@ -111,6 +112,7 @@ export class AuthService {
         ],
       });
     }
+
 
     user.generateNewCodeOfRecoveryPassword({
       hours: this.userConfirmationConfig.recoveryPasswordExpiresInHours,
@@ -127,6 +129,7 @@ export class AuthService {
     const user = await this.userRepository.findByRecoveryPasswordConfirmCode(
       newPassRecoveryDto.recoveryCode,
     );
+
     if (
       !user ||
       user.recoveryPasswordConfirm.isConfirmed ||

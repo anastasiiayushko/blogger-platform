@@ -7,6 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { DateUtil } from '../../../../core/utils/DateUtil';
 import { UpdateSecurityDeviceCommand } from '../security-devices-usecases/update-security-device.usecase';
+import { UserAccountConfig } from '../../config/user-account.config';
 
 type AuthRefreshTokenCmdType = {
   deviceId: string;
@@ -40,16 +41,19 @@ export class AuthRefreshTokenHandler
     @Inject(REFRESH_TOKEN_STRATEGY_INJECT_TOKEN)
     private refreshTokenContext: JwtService,
     protected commandBus: CommandBus,
+    private userAccountConfig: UserAccountConfig,
   ) {}
 
   async execute(
     command: AuthRefreshTokenCommand,
   ): Promise<AuthRefreshTokenResponse> {
-    const refreshToken = this.refreshTokenContext.sign({
+
+    const newRefreshToken = await this.refreshTokenContext.signAsync({
       userId: command.userId,
       deviceId: command.deviceId,
     });
-    const decode = this.refreshTokenContext.decode(refreshToken);
+
+    const decode = this.refreshTokenContext.decode(newRefreshToken);
 
     await this.commandBus.execute<UpdateSecurityDeviceCommand>(
       new UpdateSecurityDeviceCommand({
@@ -64,7 +68,7 @@ export class AuthRefreshTokenHandler
 
     return {
       accessToken: this.accessTokenContext.sign({ userId: command.userId }),
-      refreshToken: refreshToken,
+      refreshToken: newRefreshToken,
     };
   }
 }

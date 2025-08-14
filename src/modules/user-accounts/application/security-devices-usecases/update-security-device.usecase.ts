@@ -27,7 +27,12 @@ export class UpdateSecurityDeviceCommand {
   readonly expirationDate: Date;
 
   constructor(dto: CreateSecurityDeviceCmdType) {
-    Object.assign(this, dto);
+    this.userId = dto.userId;
+    this.deviceId = dto.deviceId;
+    this.ip = dto.ip;
+    this.agent = dto.agent;
+    this.lastActiveDate = dto.lastActiveDate;
+    this.expirationDate = dto.expirationDate;
   }
 }
 
@@ -42,13 +47,12 @@ export class UpdateSecurityDeviceHandler
   ) {}
 
   async execute(command: UpdateSecurityDeviceCommand): Promise<void> {
-    console.log('command', command);
-    const device = await this.securityDeviceRepository.findActualDevice(
+    const device = await this.securityDeviceRepository.findDeviceByIdAndUserId(
       command.deviceId,
       command.userId,
-      command.lastActiveDate,
     );
-    console.log('fiend device', device);
+
+
     if (!device) {
       throw new DomainException({
         code: DomainExceptionCode.Unauthorized,
@@ -62,6 +66,9 @@ export class UpdateSecurityDeviceHandler
       expirationDate: command.expirationDate,
     });
 
+    console.log('1',device);
+
     await this.securityDeviceRepository.save(device);
+
   }
 }

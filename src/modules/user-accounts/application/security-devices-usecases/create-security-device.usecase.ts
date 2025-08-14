@@ -45,7 +45,6 @@ export class CreateSecurityDeviceHandler
       lastActiveDate: command.lastActiveDate,
       expirationDate: command.expirationDate,
     })
-    console.log(device);
     await this.securityDeviceRepository.save(device);
   }
 }

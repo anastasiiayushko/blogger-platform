@@ -1,17 +1,17 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { initSettings } from '../helpers/init-setting';
-import { UsersTestManagerHelper } from '../helpers/users-test-manager-helper';
 import { getAuthHeaderBasicTest } from '../helpers/common-helpers';
 import request from 'supertest';
 import { UserMeViewDto } from '../../src/modules/user-accounts/api/view-dto/user-me.view-dto';
 import { JwtService } from '@nestjs/jwt';
 import * as process from 'node:process';
+import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
 
 describe('Auth /me', () => {
   const ORIGINAL_ENV = process.env;
   const basicAuth = getAuthHeaderBasicTest();
   let app: INestApplication;
-  let userTestManger: UsersTestManagerHelper;
+  let userTestManger: UsersApiManagerHelper;
   let jwtService: JwtService;
 
   const userAuthData = {

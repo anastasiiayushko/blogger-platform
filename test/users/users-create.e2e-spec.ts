@@ -4,14 +4,14 @@ import { UserViewDto } from '../../src/modules/user-accounts/api/view-dto/users.
 import { UsersRepository } from '../../src/modules/user-accounts/infrastructure/users.repository';
 import { ApiErrorResultType } from '../type/response-super-test';
 import { getAuthHeaderBasicTest } from '../helpers/common-helpers';
-import { UsersTestManagerHelper } from '../helpers/users-test-manager-helper';
+import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
 
 describe('UserController CREATED (e2e) ', () => {
   const basicAuth = getAuthHeaderBasicTest();
 
   let app: INestApplication;
   let userRepository: UsersRepository;
-  let userTestManger: UsersTestManagerHelper;
+  let userTestManger: UsersApiManagerHelper;
 
   beforeEach(async () => {
     const init = await initSettings();

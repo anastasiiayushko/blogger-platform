@@ -1,13 +1,15 @@
 import { INestApplication } from '@nestjs/common';
-import { UserViewDto } from '../../src/modules/user-accounts/api/view-dto/users.view-dto';
 import request from 'supertest';
-import { CreateUsersInputDto } from '../../src/modules/user-accounts/api/input-dto/create-users.input-dto';
-import { ResponseBodySuperTest } from '../type/response-super-test';
-import { LoginInputDto } from '../../src/modules/user-accounts/api/input-dto/login.input-dto';
-import { AccessTokenViewDto } from '../../src/modules/user-accounts/api/view-dto/access-token.view-dto';
-import { delay } from './common-helpers';
 
-export class UsersTestManagerHelper {
+import { CreateUsersInputDto } from '../../../src/modules/user-accounts/api/input-dto/create-users.input-dto';
+import { ResponseBodySuperTest } from '../../type/response-super-test';
+import { UserViewDto } from '../../../src/modules/user-accounts/api/view-dto/users.view-dto';
+import { LoginInputDto } from '../../../src/modules/user-accounts/api/input-dto/login.input-dto';
+import { AccessTokenViewDto } from '../../../src/modules/user-accounts/api/view-dto/access-token.view-dto';
+import { delay } from '../common-helpers';
+
+export class UsersApiManagerHelper {
+  private URL_PATH_USERS = '/api/security-devices';
   constructor(private app: INestApplication) {}
 
   async createUser(
@@ -31,9 +33,11 @@ export class UsersTestManagerHelper {
 
   async login(
     loginInputDTO: LoginInputDto,
+    userAgent: string = 'Chrome',
   ): ResponseBodySuperTest<AccessTokenViewDto> {
     return request(this.app.getHttpServer())
       .post('/api/auth/login')
+      .set('User-Agent', userAgent)
       .send(loginInputDTO);
   }
 
@@ -75,7 +79,16 @@ export class UsersTestManagerHelper {
     return await Promise.all(usersLoginInSystem);
   }
 
-  async registrationUser(userInput:CreateUsersInputDto):ResponseBodySuperTest{
-    return await request(this.app.getHttpServer()).post('/api/auth/registration').send(userInput);
+  async registrationUser(
+    userInput: CreateUsersInputDto,
+  ): ResponseBodySuperTest {
+    return await request(this.app.getHttpServer())
+      .post('/api/auth/registration')
+      .send(userInput);
+  }
+
+
+  async refreshToken(cookies:string[]){
+    return await request(this.app.getHttpServer()).post(URL + '/refresh-token').set('Cookie', cookies.join('; '))
   }
 }

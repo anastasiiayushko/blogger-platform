@@ -34,34 +34,14 @@ export class RefreshTokenAuthGuard implements CanActivate {
 
     if (!refreshToken) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      response.clearCookie('refreshToken');
-
+      // response.clearCookie('refreshToken');
       throw new DomainException({
         code: DomainExceptionCode.Unauthorized,
       });
     }
+    let refreshPayload: RefreshTokenPayloadTYpe;
     try {
-      const refreshPayload: RefreshTokenPayloadTYpe =
-        await this.refreshTokenContext.verify(refreshToken);
-      const foundDeviceActual =
-        await this.securityDeviceRepository.findActualDevice(
-          refreshPayload.deviceId,
-          refreshPayload.userId,
-          DateUtil.convertUnixToUTC(refreshPayload.iat),
-        );
-
-      if (!foundDeviceActual) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        response.clearCookie('refreshToken');
-        throw new DomainException({
-          code: DomainExceptionCode.Unauthorized,
-        });
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      request.refreshTokenPayload = refreshPayload;
-
-      return true;
+      refreshPayload = await this.refreshTokenContext.verify(refreshToken);
     } catch (e: unknown) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       response.clearCookie('refreshToken');
@@ -69,5 +49,29 @@ export class RefreshTokenAuthGuard implements CanActivate {
         code: DomainExceptionCode.Unauthorized,
       });
     }
+
+console.log('date,',  DateUtil.convertUnixToUTC(refreshPayload.iat))
+
+    const foundDeviceActual =
+      await this.securityDeviceRepository.findActualDevice(
+        refreshPayload.deviceId,
+        refreshPayload.userId,
+        DateUtil.convertUnixToUTC(refreshPayload.iat),
+      );
+
+    console.log("foundDeviceActual:", foundDeviceActual);
+
+    if (!foundDeviceActual) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      response.clearCookie('refreshToken');
+      throw new DomainException({
+        code: DomainExceptionCode.Unauthorized,
+      });
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    request.refreshTokenPayload = refreshPayload;
+
+    return true;
   }
 }
