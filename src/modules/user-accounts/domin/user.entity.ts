@@ -25,6 +25,7 @@ export const emailConstraints = {
   timestamps: true,
   optimisticConcurrency: true, //  Optimistic Concurrency Control (OCC) — через versionKey
 })
+
 export class User {
   /**
    * Email of the user

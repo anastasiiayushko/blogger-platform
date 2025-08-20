@@ -14,6 +14,7 @@ import { CoreConfig } from './core/core.config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { DomainException } from './core/exceptions/domain-exception';
 import { DomainExceptionCode } from './core/exceptions/domain-exception-codes';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
@@ -27,6 +28,15 @@ import { DomainExceptionCode } from './core/exceptions/domain-exception-codes';
         return { uri };
       },
       inject: [CoreConfig],
+    }),
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: 'localhost',
+      port: 5432,
+      username: 'postgres',
+      password: 'sa',
+      database: 'BloggerPlatformDev',
+      synchronize: false, // Указывает, следует ли автоматически создавать схему базы данных при каждом запуске приложения
     }),
     UserAccountsModule,
     BloggersPlatformModule,

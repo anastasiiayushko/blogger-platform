@@ -35,6 +35,8 @@ import { DeleteDeviceByIdHandler } from './application/security-devices-usecases
 import { TerminateAllOtherDevicesHandler } from './application/security-devices-usecases/terminate-current-device.usecase';
 import { SecurityDeviceQueryRepository } from './infrastructure/query/security-device.query-repository';
 import { UserConfirmationConfig } from './config/user-confirmation.config';
+import { SaUsersController } from './api/sa-users.controller';
+import { UsersSqlRepository } from './infrastructure/sql/users.sql-repository';
 
 const cmdHandlerSecurityDevice = [
   CreateSecurityDeviceHandler,
@@ -65,7 +67,12 @@ const configs = [UserAccountConfig, UserConfirmationConfig];
       },
     ]), // локально подключаем сущности
   ],
-  controllers: [UserController, AuthController, SecurityDevicesController],
+  controllers: [
+    UserController,
+    AuthController,
+    SecurityDevicesController,
+    SaUsersController,
+  ],
   providers: [
     CreateUserService,
     UserService,
@@ -79,6 +86,7 @@ const configs = [UserAccountConfig, UserConfirmationConfig];
     UsersExternalQueryRepository,
     SecurityDeviceRepository,
     SecurityDeviceQueryRepository,
+    UsersSqlRepository,
     ...configs,
     ...cmdHandlerSecurityDevice,
     ...cmdHandlerAuth,

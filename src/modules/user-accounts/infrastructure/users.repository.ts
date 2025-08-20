@@ -95,9 +95,3 @@ export class UsersRepository {
   }
 }
 
-type UserType = {
-  id: string;
-  email: string;
-  password: string;
-  login: string;
-};
