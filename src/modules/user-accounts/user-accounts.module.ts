@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { UserController } from './api/user.controller';
-import { UserService } from './application/user.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './domin/user.entity';
 import { UsersRepository } from './infrastructure/users.repository';
@@ -37,6 +35,11 @@ import { SecurityDeviceQueryRepository } from './infrastructure/query/security-d
 import { UserConfirmationConfig } from './config/user-confirmation.config';
 import { SaUsersController } from './api/sa-users.controller';
 import { UsersSqlRepository } from './infrastructure/sql/users.sql-repository';
+import { UsersQuerySqlRepository } from './infrastructure/sql/query/users.query-sql-repository';
+import { UsersExternalQuerySqlRepository } from './infrastructure/sql/external-query/users-external.query-sql-repository';
+import { SaCreateUserHandler } from './application/sa-users-usecases/sa-create-user.usecase';
+import { EmailConfirmationSqlRepository } from './infrastructure/sql/email-confirmation.sql-repository';
+import { SaDeleteUserHandler } from './application/sa-users-usecases/sa-delete-user.usecase';
 
 const cmdHandlerSecurityDevice = [
   CreateSecurityDeviceHandler,
@@ -50,7 +53,22 @@ const cmdHandlerAuth = [
   AuthLogoutHandler,
 ];
 
+const cmdSaHandlerUser = [SaCreateUserHandler, SaDeleteUserHandler];
 const configs = [UserAccountConfig, UserConfirmationConfig];
+
+const mongooseRepository = [
+  UsersRepository,
+  UserQueryRepository,
+  SecurityDeviceRepository,
+  SecurityDeviceQueryRepository,
+  UsersExternalQueryRepository,
+];
+const sqlRepository = [
+  UsersSqlRepository,
+  UsersQuerySqlRepository,
+  UsersExternalQuerySqlRepository,
+  EmailConfirmationSqlRepository,
+];
 
 @Module({
   imports: [
@@ -67,29 +85,20 @@ const configs = [UserAccountConfig, UserConfirmationConfig];
       },
     ]), // локально подключаем сущности
   ],
-  controllers: [
-    UserController,
-    AuthController,
-    SecurityDevicesController,
-    SaUsersController,
-  ],
+  controllers: [AuthController, SecurityDevicesController, SaUsersController],
   providers: [
     CreateUserService,
-    UserService,
-    UsersRepository,
-    UserQueryRepository,
     AuthService,
     CryptoService,
     LocalStrategy,
     BearerJwtStrategy,
     RefreshTokenAuthGuard,
-    UsersExternalQueryRepository,
-    SecurityDeviceRepository,
-    SecurityDeviceQueryRepository,
-    UsersSqlRepository,
+    ...mongooseRepository,
+    ...sqlRepository,
     ...configs,
     ...cmdHandlerSecurityDevice,
     ...cmdHandlerAuth,
+    ...cmdSaHandlerUser,
     //пример инстанцирования через токен
     //если надо внедрить несколько раз один и тот же класс
     {

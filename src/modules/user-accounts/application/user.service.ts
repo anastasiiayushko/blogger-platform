@@ -13,7 +13,7 @@ export class UserService {
 
   @ValidateDomainDto(CreateUsersInputDto)
   async createUser(userInputDTO: CreateUsersInputDto): Promise<string> {
-    return await this.createUserService.addNewUser(userInputDTO);
+    return await this.createUserService.addNewUserSa(userInputDTO);
   }
 
   async deleteUser(userId: string) {

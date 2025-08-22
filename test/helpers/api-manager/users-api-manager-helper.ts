@@ -10,6 +10,8 @@ import { delay } from '../common-helpers';
 
 export class UsersApiManagerHelper {
   private URL_PATH_USERS = '/api/security-devices';
+  private URL_SA_USERS = '/api/sa/users';
+
   constructor(private app: INestApplication) {}
 
   async createUser(
@@ -17,7 +19,7 @@ export class UsersApiManagerHelper {
     basicAuth: string,
   ): ResponseBodySuperTest<UserViewDto> {
     return await request(this.app.getHttpServer())
-      .post('/api/users')
+      .post(this.URL_SA_USERS)
       .set('Authorization', basicAuth)
       .send(userInputDTO);
   }
@@ -27,7 +29,7 @@ export class UsersApiManagerHelper {
     basicAuth: string,
   ): ResponseBodySuperTest<void> {
     return await request(this.app.getHttpServer())
-      .delete(`/api/users/${userId}`)
+      .delete(`${this.URL_SA_USERS}/${userId}`)
       .set('Authorization', basicAuth);
   }
 
@@ -87,8 +89,9 @@ export class UsersApiManagerHelper {
       .send(userInput);
   }
 
-
-  async refreshToken(cookies:string[]){
-    return await request(this.app.getHttpServer()).post(URL + '/refresh-token').set('Cookie', cookies.join('; '))
+  async refreshToken(cookies: string[]) {
+    return await request(this.app.getHttpServer())
+      .post(URL + '/refresh-token')
+      .set('Cookie', cookies.join('; '));
   }
 }

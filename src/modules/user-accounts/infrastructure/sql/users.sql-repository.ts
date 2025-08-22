@@ -24,6 +24,53 @@ export class UsersSqlRepository {
     return User.toDomain(userRow[0]);
   }
 
+  private async insert(user: User): Promise<UserSqlRow> {
+    const INSERT_SQL = `
+        INSERT INTO public."Users" (email, login, password)
+        VALUES ($1, $2, $3) RETURNING *;
+    `;
+    const inserted = await this.dataSource.query<UserSqlRow[]>(INSERT_SQL, [
+      user.email,
+      user.login,
+      user.password,
+    ]);
+    return inserted[0];
+  }
+
+  private async update(user: User): Promise<UserSqlRow> {
+    const UPDATE_SQL = `
+        UPDATE public."Users"
+        SET email=$1,
+            login=$2,
+            password=$3 'updatedAt' = $4
+        WHERE public."Users".id = $5 RETURNING *;
+        *
+    `;
+    const updated = await this.dataSource.query<UserSqlRow[]>(UPDATE_SQL, [
+      user.email,
+      user.login,
+      user.password,
+      new Date(),
+      user.id,
+    ]);
+    return updated?.[0];
+  }
+
+  async save(user: User): Promise<User> {
+    let result: UserSqlRow | null = null;
+
+    if (user.id) {
+      result = await this.update(user);
+    } else {
+      result = await this.insert(user);
+    }
+    if (!result) {
+      throw new Error('User saving failed');
+    }
+
+    return User.toDomain(result);
+  }
+
   /**
    * Created a new user by system.
    * @param {string} login - The LOGIN of the new user -  constrain uniq.
@@ -31,19 +78,13 @@ export class UsersSqlRepository {
    * @param {string} password -  The PASSWORD of the new user.
    * @returns {string} - The ID created user.
    */
-  async create(
-    login: string,
-    email: string,
-    password: string,
-  ): Promise<string> {
-    const inserted: UserSqlRow[] = await this.dataSource.query(
-      `
-          INSERT INTO public."Users"(login, email, password)
-          VALUES ($1, $2, $3) RETURNING *;
-      `,
-      [login, email, password],
-    );
-    return inserted?.[0].id;
+  async create(user: User): Promise<string> {
+    const inserted = await this.insert(user);
+    if (!inserted) {
+      throw new Error('Insert failed');
+    }
+
+    return inserted.id;
   }
 
   /**
@@ -57,14 +98,14 @@ export class UsersSqlRepository {
     //::TODO создать каскадное удаление или же вынести в команду
 
     // );
-    await this.dataSource.query(
-      `
-          DELETE
-          FROM public."RecoveryPasswordConfirms" as r
-          WHERE r."userId" = $1;
-      `,
-      [id],
-    );
+    // await this.dataSource.query(
+    //   `
+    //       DELETE
+    //       FROM public."RecoveryPasswordConfirms" as r
+    //       WHERE r."userId" = $1;
+    //   `,
+    //   [id],
+    // );
 
     const deletedRows: [[], number] = await this.dataSource.query(
       `
@@ -85,7 +126,7 @@ export class UsersSqlRepository {
    *
    * @param loginOrEmail - Логин или email пользователя (обязательный).
    * @param email - Email пользователя (необязательный). Если не указан, используется значение loginOrEmail.
-   * @returns Promise<UserDocument | null> - Найденный пользователь или null, если не найден.
+   * @returns Promise<User | null> - Найденный пользователь или null, если не найден.
    */
   async findByEmailOrLogin(
     loginOrEmail: string,

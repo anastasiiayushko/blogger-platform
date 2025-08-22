@@ -1,3 +1,5 @@
+import { CreateUserDomainDto } from '../dto/create-user.domain.dto';
+
 type PrimitiveType = {
   id: string | null;
   login: string;
@@ -20,8 +22,8 @@ export class User {
     public readonly createdAt: Date | null,
   ) {}
 
-  static createInstance(email: string, login: string, password: string): User {
-    return new User(null, email, login, password, null);
+  static createInstance(dto: CreateUserDomainDto): User {
+    return new User(null, dto.email, dto.login, dto.passwordHash, null);
   }
 
   /** Для маппера */

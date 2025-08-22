@@ -113,7 +113,6 @@ export class AuthService {
       });
     }
 
-
     user.generateNewCodeOfRecoveryPassword({
       hours: this.userConfirmationConfig.recoveryPasswordExpiresInHours,
       min: this.userConfirmationConfig.recoveryPasswordExpiresInMin,

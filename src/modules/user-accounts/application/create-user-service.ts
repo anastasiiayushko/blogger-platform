@@ -1,18 +1,17 @@
-import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument, UserModelType } from '../domin/user.entity';
-import { UsersRepository } from '../infrastructure/users.repository';
 import { CryptoService } from './crypto.service';
 import { DomainException } from '../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
 import { CreateUsersInputDto } from '../api/input-dto/create-users.input-dto';
-import { UserConfirmationConfig } from '../config/user-confirmation.config';
+import { UsersSqlRepository } from '../infrastructure/sql/users.sql-repository';
+import { User } from '../domin/sql-entity/user.sql-entity';
+import { Injectable } from '@nestjs/common';
+import { UserDocument } from '../domin/user.entity';
 
+@Injectable()
 export class CreateUserService {
   constructor(
-    private userRepository: UsersRepository,
-    private cryptoService: CryptoService,
-    @InjectModel(User.name) private userModel: UserModelType,
-    private userConfirmationConfig: UserConfirmationConfig,
+    protected userRepository: UsersSqlRepository,
+    protected cryptoService: CryptoService,
   ) {}
 
   private async validateUniqUser(login: string, email: string): Promise<void> {
@@ -32,46 +31,45 @@ export class CreateUserService {
     }
   }
 
-  private async createUserEntity(
-    userDto: CreateUsersInputDto,
-  ): Promise<UserDocument> {
+  /**
+   *
+   * Created User entity before all checked to uniq filed (login, email)
+   * @param {CreateUsersInputDto}  userDto - payload
+   * @returns {string} - User id
+   */
+  async createUserEntity(userDto: CreateUsersInputDto): Promise<string> {
     await this.validateUniqUser(userDto.login, userDto.email);
 
     const passwordHash = await this.cryptoService.createPasswordHash(
       userDto.password,
     );
 
-    const user = this.userModel.createInstance(
-      {
+    const userId = await this.userRepository.create(
+      User.createInstance({
         passwordHash: passwordHash,
         email: userDto.email,
         login: userDto.login,
-      },
-      {
-        hours: this.userConfirmationConfig.emailExpiresInHours,
-        min: this.userConfirmationConfig.emailExpiresInMin,
-      },
+      }),
     );
-    await this.userRepository.save(user);
 
-    return user;
+    return userId;
   }
 
+  //::TODO унести создание в usecase
   /** для админки (подтверждение почты автоматически)
    * @return {string} - идентификатор созданого пользователя
    * */
-  async addNewUser(userDto: CreateUsersInputDto): Promise<string> {
-    const user = await this.createUserEntity(userDto);
-    user.confirmEmail();
-    await this.userRepository.save(user);
-    return user._id.toString();
+  async addNewUserSa(userDto: CreateUsersInputDto): Promise<string> {
+    const userId = await this.createUserEntity(userDto);
+
+    return userId;
   }
 
+  //::TODO унести создание в usecase
   /** для клиента (регистрация без автоматического подтверждения)
    * @return {
    *   id - user._id
    *   emailConfirmationCode: code for verification email
-   *   email: user email
    * } - идентификатор созданого пользователя
    * */
   async registerUser(userDto: CreateUsersInputDto): Promise<{
@@ -79,7 +77,9 @@ export class CreateUserService {
     emailConfirmationCode: string;
     email: string;
   }> {
-    const user = await this.createUserEntity(userDto);
+    const user = (await this.createUserEntity(
+      userDto,
+    )) as unknown as UserDocument;
     return {
       id: user._id.toString(),
       emailConfirmationCode: user.emailConfirmation.confirmationCode,

@@ -4,4 +4,5 @@ export type UserSqlRow = {
   login: string;
   password: string;
   createdAt: Date;
+  updatedAt: Date;
 };

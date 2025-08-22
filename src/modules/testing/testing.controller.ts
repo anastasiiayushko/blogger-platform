@@ -2,12 +2,16 @@ import { Controller, Delete, HttpCode, HttpStatus } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { SkipThrottle } from '@nestjs/throttler';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { QueryBus } from '@nestjs/cqrs';
+import { DataSource } from 'typeorm';
 
 @Controller('testing')
 @SkipThrottle()
 export class TestingController {
   constructor(
     @InjectConnection() private readonly databaseConnection: Connection,
+    @InjectDataSource() private readonly dataSource: DataSource,
   ) {}
 
   @Delete('all-data')
@@ -19,6 +23,7 @@ export class TestingController {
     );
     await Promise.all(promises);
 
+    await this.dataSource.sql(`TRUNCATE TABLE "Usres" CASCADE;`);
     return {
       status: true,
     };

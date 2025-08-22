@@ -36,7 +36,7 @@ export class EmailConfirmationSqlRepository {
     const INSERT_SQL = `
         INSERT INTO public."EmailConfirmations"
             ("userId", code, "expirationAt", "isConfirmed")
-        VALUES ($1, $2, $3, $4) RETURNING *
+        VALUES ($1, $2, $3, $4) RETURNING *;
     `;
     const confirmationRow: EmailConfirmationSqlRow[] =
       await this.dataSource.query(INSERT_SQL, [
@@ -54,29 +54,31 @@ export class EmailConfirmationSqlRepository {
         UPDATE public."EmailConfirmations"
         SET code=$1,
             "expirationAt" =$2,
-            "isConfirmed"=$3
-        where public."EmailConfirmations" = $4 RETURNING *;
+            "isConfirmed"=$3,
+            "updateAt" = $4
+        where public."EmailConfirmations" = $5 RETURNING *;
     `;
     const confirmationRow: EmailConfirmationSqlRow[] =
       await this.dataSource.query(UPDATE_SQL, [
         userDto.code,
         userDto.expirationAt,
         userDto.isConfirmed,
+        new Date(),
         userDto.userId,
       ]);
 
     return EmailConfirmation.toDomain(confirmationRow[0]);
   }
 
-  async save(dtoInputType: InputType): Promise<void> {
-    if (dtoInputType.id) {
-      await this.create(dtoInputType);
+  async save(confirm: EmailConfirmation): Promise<void> {
+    if (confirm.id) {
+      await this.update(confirm.toPrimitives());
     } else {
-      await this.update(dtoInputType);
+      await this.create(confirm.toPrimitives());
     }
   }
 
-  async delete(userId: string): Promise<boolean> {
+  async deleteByUserId(userId: string): Promise<boolean> {
     const deleteResult: [[], number] = await this.dataSource.query(
       `
           DELETE
