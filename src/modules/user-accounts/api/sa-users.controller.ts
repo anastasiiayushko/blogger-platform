@@ -19,10 +19,12 @@ import { SaCreateUserCommand } from '../application/sa-users-usecases/sa-create-
 import { UuidValidationPipe } from '../../../core/pipes/uuid-validation-transform-pipe';
 import { SaDeleteUserCommand } from '../application/sa-users-usecases/sa-delete-user.usecase';
 import { GetUsersQueryParams } from './input-dto/get-users-query-params.input-dto';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @Injectable()
 @Controller('/sa/users')
 @UseGuards(BasicAuthGuard)
+@SkipThrottle()
 export class SaUsersController {
   constructor(
     protected userQwSqlRepository: UsersQuerySqlRepository,

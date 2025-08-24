@@ -1,16 +1,21 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { initSettings } from '../helpers/init-setting';
 import request from 'supertest';
-import { UsersRepository } from '../../src/modules/user-accounts/infrastructure/users.repository';
 import { randomUUID } from 'crypto';
-import * as process from 'node:process';
 import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
+import { UsersSqlRepository } from '../../src/modules/user-accounts/infrastructure/sql/users.sql-repository';
+import { EmailConfirmationSqlRepository } from '../../src/modules/user-accounts/infrastructure/sql/email-confirmation.sql-repository';
+import { EmailConfirmation } from '../../src/modules/user-accounts/domin/sql-entity/email-confirmation.sql-entity';
+import { UserConfirmationConfig } from '../../src/modules/user-accounts/config/user-confirmation.config';
+import { ApiErrorResultType } from '../type/response-super-test';
 
 describe('Auth /registration-confirmation', () => {
-  const ORIGINAL_ENV = process.env;
+  const PATH_URL_REG_CONFIRMATION = '/api/auth/registration-confirmation';
   let app: INestApplication;
-  let userRepository: UsersRepository;
+  let userRepository: UsersSqlRepository;
+  let emailConfirmationRepository: EmailConfirmationSqlRepository;
   let userTestManager: UsersApiManagerHelper;
+  let confirmConfig: UserConfirmationConfig;
 
   const userAuthData = {
     email: 'test@test.com',
@@ -22,11 +27,14 @@ describe('Auth /registration-confirmation', () => {
     const init = await initSettings();
     app = init.app;
     userTestManager = init.userTestManger;
-    userRepository = app.get<UsersRepository>(UsersRepository);
+    userRepository = app.get<UsersSqlRepository>(UsersSqlRepository);
+    emailConfirmationRepository = app.get<EmailConfirmationSqlRepository>(
+      EmailConfirmationSqlRepository,
+    );
+    confirmConfig = app.get<UserConfirmationConfig>(UserConfirmationConfig);
   });
 
   afterAll(async () => {
-    process.env.EXPIRATION_DATE_MIN = ORIGINAL_ENV.EXPIRATION_DATE_MIN;
     await app.close();
   });
 
@@ -34,33 +42,42 @@ describe('Auth /registration-confirmation', () => {
     const registerRes = await userTestManager.registrationUser(userAuthData);
     expect(registerRes.status).toBe(HttpStatus.NO_CONTENT);
 
-    const userDoc = await userRepository.findByEmailOrLogin(userAuthData.email);
-    expect(userDoc).not.toBeNull();
-    expect(userDoc!.emailConfirmation.isConfirmed).toBeFalsy();
-    expect(typeof userDoc!.emailConfirmation.confirmationCode).toBe('string');
-    expect(userDoc!.emailConfirmation.expirationDate).toBeInstanceOf(Date);
+    const User = await userRepository.findByEmailOrLogin(userAuthData.email);
+    expect(User).not.toBeNull();
 
-    const confirmationRes = await request(app.getHttpServer())
-      .post('/api/auth/registration-confirmation')
-      .send({ code: userDoc!.emailConfirmation.confirmationCode });
+    const EmailConfirmation = (await emailConfirmationRepository.findByUserId(
+      User!.id as string,
+    )) as unknown as EmailConfirmation;
+    expect(EmailConfirmation.isConfirmed).toBeFalsy();
+    expect(typeof EmailConfirmation.code).toBe('string');
+    expect(EmailConfirmation.expirationAt).toBeInstanceOf(Date);
 
-    expect(confirmationRes.status).toBe(HttpStatus.NO_CONTENT);
-    const confirmUserDoc = await userRepository.findByEmailOrLogin(
-      userAuthData.email,
-    );
-    expect(confirmUserDoc!.emailConfirmation.isConfirmed).toBeTruthy();
+    const confirmResponse = await request(app.getHttpServer())
+      .post(PATH_URL_REG_CONFIRMATION)
+      .send({ code: EmailConfirmation.code });
+
+    expect(confirmResponse.status).toBe(HttpStatus.NO_CONTENT);
+    const EmailConfirm = (await emailConfirmationRepository.findByUserId(
+      User!.id as string,
+    )) as unknown as EmailConfirmation;
+
+    expect(EmailConfirm.isConfirmed).toBeTruthy();
   });
 
   it(`should be return 400 if the code has already been confirmed`, async () => {
-    const userDoc = await userRepository.findByEmailOrLogin(userAuthData.email);
-    expect(userDoc!.emailConfirmation.isConfirmed).toBeTruthy();
+    const User = await userRepository.findByEmailOrLogin(userAuthData.email);
+    const EmailConfirmation = (await emailConfirmationRepository.findByUserId(
+      User!.id as string,
+    )) as unknown as EmailConfirmation;
+
+    expect(EmailConfirmation.isConfirmed).toBeTruthy();
 
     const confirmationRes = await request(app.getHttpServer())
-      .post('/api/auth/registration-confirmation')
-      .send({ code: userDoc!.emailConfirmation.confirmationCode });
+      .post(PATH_URL_REG_CONFIRMATION)
+      .send({ code: EmailConfirmation.code });
 
     expect(confirmationRes.status).toBe(HttpStatus.BAD_REQUEST);
-    expect(confirmationRes.body).toEqual({
+    expect(confirmationRes.body).toEqual<ApiErrorResultType>({
       errorsMessages: [{ field: 'code', message: expect.any(String) }],
     });
   });
@@ -73,21 +90,33 @@ describe('Auth /registration-confirmation', () => {
     });
     expect(registerRes.status).toBe(HttpStatus.NO_CONTENT);
 
-    const confirmationRes = await request(app.getHttpServer())
-      .post('/api/auth/registration-confirmation')
+    const User = await userRepository.findByEmailOrLogin('user1@gmail.com');
+
+    const EmailConfirmationBeforeConfirm =
+      (await emailConfirmationRepository.findByUserId(
+        User!.id as string,
+      )) as unknown as EmailConfirmation;
+
+    expect(EmailConfirmationBeforeConfirm.isConfirmed).toBeFalsy();
+
+    const rejectConfirmResponse = await request(app.getHttpServer())
+      .post(PATH_URL_REG_CONFIRMATION)
       .send({ code: randomUUID() });
 
-    expect(confirmationRes.status).toBe(HttpStatus.BAD_REQUEST);
-    expect(confirmationRes.body).toEqual({
+    expect(rejectConfirmResponse.status).toBe(HttpStatus.BAD_REQUEST);
+    expect(rejectConfirmResponse.body).toEqual<ApiErrorResultType>({
       errorsMessages: [{ field: 'code', message: expect.any(String) }],
     });
 
-    const userDoc = await userRepository.findByEmailOrLogin('user1@gmail.com');
-    expect(userDoc!.emailConfirmation.isConfirmed).toBeFalsy();
+    const EmailConfirmation = (await emailConfirmationRepository.findByUserId(
+      User!.id as string,
+    )) as unknown as EmailConfirmation;
+
+    expect(EmailConfirmation.isConfirmed).toBeFalsy();
   });
 
   it(`should be return 400 if code confirmation expired`, async () => {
-    process.env.EXPIRATION_DATE_MIN = '-2';
+    confirmConfig.emailExpiresInHours = -1;
     const registerRes = await userTestManager.registrationUser({
       login: 'user2',
       email: 'user2@gmail.com',
@@ -95,32 +124,41 @@ describe('Auth /registration-confirmation', () => {
     });
     expect(registerRes.status).toBe(HttpStatus.NO_CONTENT);
 
-    const userDoc = await userRepository.findByEmailOrLogin('user2@gmail.com');
-    expect(userDoc!.emailConfirmation.isConfirmed).toBeFalsy();
+    const User = await userRepository.findByEmailOrLogin('user2@gmail.com');
 
-    const confirmationRes = await request(app.getHttpServer())
-      .post('/api/auth/registration-confirmation')
-      .send({ code: userDoc!.emailConfirmation.confirmationCode });
+    const EmailConfirmationBeforeConfirm =
+      await emailConfirmationRepository.findByUserId(User!.id as string);
 
-    expect(confirmationRes.status).toBe(HttpStatus.BAD_REQUEST);
-    expect(confirmationRes.body).toEqual({
+    expect(EmailConfirmationBeforeConfirm!.isConfirmed).toBeFalsy();
+
+    const rejectConfirmResponse = await request(app.getHttpServer())
+      .post(PATH_URL_REG_CONFIRMATION)
+      .send({ code: EmailConfirmationBeforeConfirm!.code });
+
+    expect(rejectConfirmResponse.status).toBe(HttpStatus.BAD_REQUEST);
+    expect(rejectConfirmResponse.body).toEqual<ApiErrorResultType>({
       errorsMessages: [{ field: 'code', message: expect.any(String) }],
     });
 
-    const userDoc2 = await userRepository.findByEmailOrLogin('user2@gmail.com');
-    expect(userDoc2!.emailConfirmation.isConfirmed).toBeFalsy();
+    const EmailConfirmationAfterConfirm =
+      await emailConfirmationRepository.findByUserId(User!.id as string);
+
+    expect(EmailConfirmationAfterConfirm!.isConfirmed).toBeFalsy();
   });
 
-  // it('Should return 429 if more than 5 requests in 10 seconds', async () => {
-  //
-  //   for (let i = 0; i < 5; i++) {
-  //     await authRequests.authRegistration(userNika); // Или другой эндпоинт
-  //   }
-  //
-  //   // Делаем еще один запрос, чтобы превысить лимит
-  //   const res = await authRequests.authRegistration(userNika);
-  //
-  //   // Проверяем, что статус 429 (слишком много запросов)
-  //   expect(res.status).toBe(StatusCode.MANY_REQUEST_429);
-  // });
+  it('Should return 429 if more than 5 requests in 10 seconds', async () => {
+    for (let i = 0; i < 5; i++) {
+      await request(app.getHttpServer())
+        .post(PATH_URL_REG_CONFIRMATION)
+        .send({ code: randomUUID() }); // Или другой эндпоинт
+    }
+
+    // Делаем еще один запрос, чтобы превысить лимит
+    const res = await await request(app.getHttpServer())
+      .post(PATH_URL_REG_CONFIRMATION)
+      .send({ code: randomUUID() });
+
+    // Проверяем, что статус 429 (слишком много запросов)
+    expect(res.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
+  });
 });

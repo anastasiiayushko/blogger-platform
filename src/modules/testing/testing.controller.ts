@@ -3,7 +3,6 @@ import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { SkipThrottle } from '@nestjs/throttler';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { QueryBus } from '@nestjs/cqrs';
 import { DataSource } from 'typeorm';
 
 @Controller('testing')
@@ -23,7 +22,7 @@ export class TestingController {
     );
     await Promise.all(promises);
 
-    await this.dataSource.sql(`TRUNCATE TABLE "Usres" CASCADE;`);
+    await this.dataSource.query(`TRUNCATE TABLE public."Users" CASCADE;`);
     return {
       status: true,
     };

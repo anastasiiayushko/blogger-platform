@@ -17,7 +17,6 @@ export class UsersSqlRepository {
     const userRow = await this.dataSource.query<UserSqlRow[]>(SELECT_QUERY, [
       id,
     ]);
-    console.log(userRow);
     if (!userRow || !userRow.length) {
       return null;
     }
@@ -42,9 +41,9 @@ export class UsersSqlRepository {
         UPDATE public."Users"
         SET email=$1,
             login=$2,
-            password=$3 'updatedAt' = $4
+            password=$3,
+            "updatedAt" = $4
         WHERE public."Users".id = $5 RETURNING *;
-        *
     `;
     const updated = await this.dataSource.query<UserSqlRow[]>(UPDATE_SQL, [
       user.email,
@@ -81,7 +80,7 @@ export class UsersSqlRepository {
   async create(user: User): Promise<string> {
     const inserted = await this.insert(user);
     if (!inserted) {
-      throw new Error('Insert failed');
+      throw new Error('Insert user failed');
     }
 
     return inserted.id;
@@ -95,18 +94,6 @@ export class UsersSqlRepository {
    */
 
   async delete(id: string): Promise<boolean> {
-    //::TODO создать каскадное удаление или же вынести в команду
-
-    // );
-    // await this.dataSource.query(
-    //   `
-    //       DELETE
-    //       FROM public."RecoveryPasswordConfirms" as r
-    //       WHERE r."userId" = $1;
-    //   `,
-    //   [id],
-    // );
-
     const deletedRows: [[], number] = await this.dataSource.query(
       `
           DELETE

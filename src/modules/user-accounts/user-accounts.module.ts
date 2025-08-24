@@ -40,6 +40,12 @@ import { UsersExternalQuerySqlRepository } from './infrastructure/sql/external-q
 import { SaCreateUserHandler } from './application/sa-users-usecases/sa-create-user.usecase';
 import { EmailConfirmationSqlRepository } from './infrastructure/sql/email-confirmation.sql-repository';
 import { SaDeleteUserHandler } from './application/sa-users-usecases/sa-delete-user.usecase';
+import { PasswordRecoverySqlRepository } from './infrastructure/sql/password-recovery.sql-repository';
+import { AuthPasswordRecoveryCommandHandler } from './application/auth-usecases/auth-password-recovery.usecase';
+import { UpdatePasswordCommandHandler } from './application/auth-usecases/update-password.usecase';
+import { RegistrationConfirmationCommandHandler } from './application/auth-usecases/registration-confirmation.usecase';
+import { RegistrationUserHandler } from './application/auth-usecases/registration-user.usecase';
+import { RegistrationEmailResendingHandler } from './application/auth-usecases/registration-email-resending.usecase';
 
 const cmdHandlerSecurityDevice = [
   CreateSecurityDeviceHandler,
@@ -51,6 +57,11 @@ const cmdHandlerAuth = [
   AuthLoginHandler,
   AuthRefreshTokenHandler,
   AuthLogoutHandler,
+  AuthPasswordRecoveryCommandHandler,
+  UpdatePasswordCommandHandler,
+  RegistrationConfirmationCommandHandler,
+  RegistrationUserHandler,
+  RegistrationEmailResendingHandler,
 ];
 
 const cmdSaHandlerUser = [SaCreateUserHandler, SaDeleteUserHandler];
@@ -68,6 +79,7 @@ const sqlRepository = [
   UsersQuerySqlRepository,
   UsersExternalQuerySqlRepository,
   EmailConfirmationSqlRepository,
+  PasswordRecoverySqlRepository,
 ];
 
 @Module({

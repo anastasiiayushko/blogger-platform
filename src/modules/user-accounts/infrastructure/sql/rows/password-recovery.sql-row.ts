@@ -1,4 +1,4 @@
-export type EmailConfirmationSqlRow = {
+export type PasswordRecoverySqlRow = {
   id: string; // PK
   userId: string; // FK
   code: string;

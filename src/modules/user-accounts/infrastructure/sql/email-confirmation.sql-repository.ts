@@ -16,6 +16,22 @@ type InputType = {
 export class EmailConfirmationSqlRepository {
   constructor(@InjectDataSource() protected dataSource: DataSource) {}
 
+  async findByCode(code: string): Promise<EmailConfirmation | null> {
+    const confirmationRow: EmailConfirmationSqlRow[] =
+      await this.dataSource.query(
+        `
+            SELECT e."userId", e.code, e."expirationAt", e."isConfirmed", id
+            FROM public."EmailConfirmations" as e
+            where e."code" = $1`,
+        [code],
+      );
+    if (!confirmationRow || !confirmationRow.length) {
+      return null;
+    }
+
+    return EmailConfirmation.toDomain(confirmationRow[0]);
+  }
+
   async findByUserId(userId: string): Promise<EmailConfirmation | null> {
     const confirmationRow: EmailConfirmationSqlRow[] =
       await this.dataSource.query(
@@ -32,7 +48,7 @@ export class EmailConfirmationSqlRepository {
     return EmailConfirmation.toDomain(confirmationRow[0]);
   }
 
-  private async create(userDto: InputType): Promise<EmailConfirmation> {
+  private async insert(userDto: InputType): Promise<EmailConfirmationSqlRow> {
     const INSERT_SQL = `
         INSERT INTO public."EmailConfirmations"
             ("userId", code, "expirationAt", "isConfirmed")
@@ -45,18 +61,20 @@ export class EmailConfirmationSqlRepository {
         userDto.expirationAt,
         userDto.isConfirmed,
       ]);
-
-    return EmailConfirmation.toDomain(confirmationRow[0]);
+    if (!confirmationRow || !confirmationRow.length) {
+      throw new Error('No insert confirmation row');
+    }
+    return confirmationRow[0];
   }
 
-  private async update(userDto: InputType): Promise<EmailConfirmation> {
+  private async update(userDto: InputType): Promise<EmailConfirmationSqlRow> {
     const UPDATE_SQL = `
         UPDATE public."EmailConfirmations"
         SET code=$1,
-            "expirationAt" =$2,
-            "isConfirmed"=$3,
-            "updateAt" = $4
-        where public."EmailConfirmations" = $5 RETURNING *;
+            "expirationAt" = $2,
+            "isConfirmed" = $3,
+            "updatedAt" = $4
+        WHERE public."EmailConfirmations"."userId" = $5 RETURNING *;
     `;
     const confirmationRow: EmailConfirmationSqlRow[] =
       await this.dataSource.query(UPDATE_SQL, [
@@ -66,16 +84,20 @@ export class EmailConfirmationSqlRepository {
         new Date(),
         userDto.userId,
       ]);
+    if (!confirmationRow || !confirmationRow.length) {
+      throw new Error('No update confirmation row.');
+    }
 
-    return EmailConfirmation.toDomain(confirmationRow[0]);
+    return confirmationRow[0];
   }
 
   async save(confirm: EmailConfirmation): Promise<void> {
     if (confirm.id) {
       await this.update(confirm.toPrimitives());
-    } else {
-      await this.create(confirm.toPrimitives());
+      return;
     }
+    await this.insert(confirm.toPrimitives());
+    return;
   }
 
   async deleteByUserId(userId: string): Promise<boolean> {

@@ -1,10 +1,9 @@
-import { randomUUID } from 'crypto';
 import { DateUtil } from '../../../../core/utils/DateUtil';
-import { BaseExpirationInputDto } from '../../../../core/dto/base.expiration-input-dto';
+import { randomUUID } from 'crypto';
 import { DomainException } from '../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 
-type PrimitiveType = {
+export type PasswordRecoveryPrimitiveType = {
   id: string | null;
   userId: string;
   code: string;
@@ -12,7 +11,7 @@ type PrimitiveType = {
   isConfirmed: boolean;
 };
 
-export class EmailConfirmation {
+export class PasswordRecovery {
   private constructor(
     /** id=null указывает на то что это ново созданная запись*/
     public readonly id: string | null, // PK
@@ -25,46 +24,46 @@ export class EmailConfirmation {
   static createInstance(
     userId: string,
     expiration: { hours: number; min: number },
-  ): EmailConfirmation {
+  ): PasswordRecovery {
     const expirationAt = DateUtil.add(new Date(), {
       hours: expiration.hours,
       minutes: expiration.min,
     });
     const primaryId = null;
     const code = randomUUID();
-    return new EmailConfirmation(primaryId, userId, code, expirationAt, false);
+    return new PasswordRecovery(primaryId, userId, code, expirationAt, false);
   }
 
-  /** Подтвердить email, проверяя код и срок действия */
+  /** установить новые настройки для сброса пароля  */
+  regenerate(expiration: { hours: number; min: number }) {
+    if (this._isConfirmed) {
+      throw new DomainException({
+        code: DomainExceptionCode.BadRequest,
+        extensions: [{ field: 'ps', message: 'password is already confirmed' }],
+      });
+    }
+    this._isConfirmed = false;
+    this._code = randomUUID();
+    this._expirationAt = DateUtil.add(new Date(), {
+      hours: expiration.hours,
+      minutes: expiration.min,
+    });
+  }
+
+  /** обновить пароль и установить флаг что параль успешно подтвержден */
   confirm() {
     if (this._isConfirmed || this.isExpired()) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,
         extensions: [
           {
-            field: 'code',
-            message: `Email is already confirmed  isConfirmed = ${this._isConfirmed} or isExpired = ${this.isExpired()}`,
+            field: 'ps',
+            message: 'password is already confirmed or expired timeout',
           },
         ],
       });
     }
     this._isConfirmed = true;
-  }
-
-  /** Сгенерировать новый код (если ещё не подтверждено) */
-  regenerate(expiration: BaseExpirationInputDto) {
-    if (this._isConfirmed) {
-      throw new DomainException({
-        code: DomainExceptionCode.BadRequest,
-        extensions: [{ field: 'code', message: 'email is already confirmed' }],
-      });
-    }
-    this._code = randomUUID();
-    this._isConfirmed = false;
-    this._expirationAt = DateUtil.add(new Date(), {
-      hours: expiration.hours,
-      minutes: expiration.min,
-    });
   }
 
   isExpired(currentDate: Date = new Date()) {
@@ -85,7 +84,7 @@ export class EmailConfirmation {
   }
 
   /** Для маппера */
-  toPrimitives(): PrimitiveType {
+  toPrimitives(): PasswordRecoveryPrimitiveType {
     return {
       id: this.id,
       userId: this.userId,
@@ -102,8 +101,8 @@ export class EmailConfirmation {
     code: string;
     expirationAt: Date;
     isConfirmed: boolean;
-  }): EmailConfirmation {
-    return new EmailConfirmation(
+  }): PasswordRecovery {
+    return new PasswordRecovery(
       p.id,
       p.userId,
       p.code,

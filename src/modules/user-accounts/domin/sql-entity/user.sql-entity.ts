@@ -16,7 +16,7 @@ export class User {
     public readonly id: string | null,
     public readonly email: string,
     public readonly login: string,
-    public readonly password: string,
+    private _password: string,
     /** null указывает на то что это ново созданная запись,
      * значение атрибута устанавливается при создании строки*/
     public readonly createdAt: Date | null,
@@ -24,6 +24,14 @@ export class User {
 
   static createInstance(dto: CreateUserDomainDto): User {
     return new User(null, dto.email, dto.login, dto.passwordHash, null);
+  }
+
+  updatePassword(newPassword: string) {
+    this._password = newPassword;
+  }
+
+  get password() {
+    return this._password;
   }
 
   /** Для маппера */
@@ -43,7 +51,7 @@ export class User {
       id: user.id,
       email: user.email,
       login: user.login,
-      password: user.password,
+      password: user._password,
       createdAt: user.createdAt,
     };
   }

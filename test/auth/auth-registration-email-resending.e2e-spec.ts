@@ -1,15 +1,16 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { initSettings } from '../helpers/init-setting';
 import request from 'supertest';
-import { UsersRepository } from '../../src/modules/user-accounts/infrastructure/users.repository';
-import * as process from 'node:process';
 import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
+import { UsersSqlRepository } from '../../src/modules/user-accounts/infrastructure/sql/users.sql-repository';
+import { EmailConfirmationSqlRepository } from '../../src/modules/user-accounts/infrastructure/sql/email-confirmation.sql-repository';
+import { ApiErrorResultType } from '../type/response-super-test';
 
 describe('Auth /registration-email-resending', () => {
-  const ORIGINAL_ENV = process.env;
   let app: INestApplication;
-  let userRepository: UsersRepository;
+  let userRepository: UsersSqlRepository;
   let userTestManager: UsersApiManagerHelper;
+  let emailConfirmationRepository: EmailConfirmationSqlRepository;
 
   const userNika = {
     login: 'nika',
@@ -21,11 +22,13 @@ describe('Auth /registration-email-resending', () => {
     const init = await initSettings();
     app = init.app;
     userTestManager = init.userTestManger;
-    userRepository = app.get<UsersRepository>(UsersRepository);
+    userRepository = app.get<UsersSqlRepository>(UsersSqlRepository);
+    emailConfirmationRepository = app.get<EmailConfirmationSqlRepository>(
+      EmailConfirmationSqlRepository,
+    );
   });
 
   afterAll(async () => {
-    process.env.EXPIRATION_DATE_MIN = ORIGINAL_ENV.EXPIRATION_DATE_MIN;
     await app.close();
   });
 
@@ -33,27 +36,30 @@ describe('Auth /registration-email-resending', () => {
     const authRes = await userTestManager.registrationUser(userNika);
     expect(authRes.status).toBe(HttpStatus.NO_CONTENT);
 
-    const userRes = await userRepository.findByEmailOrLogin(userNika.email);
-    expect(userRes!.emailConfirmation.isConfirmed).toBeFalsy();
+    const User = await userRepository.findByEmailOrLogin(userNika.email);
+    const EmailConfirmation = await emailConfirmationRepository.findByUserId(
+      User!.id as string,
+    );
+    expect(EmailConfirmation!.isConfirmed).toBeFalsy();
 
     const resendingRes = await request(app.getHttpServer())
       .post('/api/auth/registration-email-resending')
       .send({ email: userNika.email });
+
     expect(resendingRes.status).toBe(HttpStatus.NO_CONTENT);
 
-    const userNewConfirmedCode = await userRepository.findByEmailOrLogin(
-      userNika.email,
-    );
-    expect(userNewConfirmedCode!.emailConfirmation.isConfirmed).toBeFalsy();
-    expect(
-      userNewConfirmedCode!.emailConfirmation.confirmationCode,
-    ).not.toEqual(userRes!.emailConfirmation.confirmationCode);
+    const EmailConfirmationResending =
+      await emailConfirmationRepository.findByUserId(User!.id as string);
 
-    const oldExpirationDate = new Date(
-      userRes!.emailConfirmation.expirationDate,
+    expect(EmailConfirmationResending!.isConfirmed).toBeFalsy();
+
+    expect(EmailConfirmation!.code).not.toEqual(
+      EmailConfirmationResending!.code,
     );
+
+    const oldExpirationDate = new Date(EmailConfirmation!.expirationAt);
     const newExpirationDate = new Date(
-      userNewConfirmedCode!.emailConfirmation.expirationDate,
+      EmailConfirmationResending!.expirationAt,
     );
 
     expect(oldExpirationDate.getTime()).toBeLessThan(
@@ -62,41 +68,54 @@ describe('Auth /registration-email-resending', () => {
   });
 
   it('Should be return 400 if account was activated', async () => {
-    const user = await userRepository.findByEmailOrLogin(userNika.email);
-
-    expect(user).not.toBeNull();
-    expect(user!.emailConfirmation.isConfirmed).toBeFalsy();
+    const User = await userRepository.findByEmailOrLogin(userNika.email);
+    const EmailConfirmation = await emailConfirmationRepository.findByUserId(
+      User!.id as string,
+    );
+    expect(EmailConfirmation!.isConfirmed).toBeFalsy();
 
     const confirmationRes = await request(app.getHttpServer())
       .post('/api/auth/registration-confirmation')
-      .send({ code: user?.emailConfirmation.confirmationCode });
+      .send({ code: EmailConfirmation!.code });
 
     expect(confirmationRes.status).toBe(HttpStatus.NO_CONTENT);
 
-    const userConfirmed = await userRepository.findByEmailOrLogin(
-      userNika.email,
+    const EmailConfirmed = await emailConfirmationRepository.findByUserId(
+      User!.id as string,
     );
 
-    expect(userConfirmed!.emailConfirmation.isConfirmed).toBeTruthy();
+    expect(EmailConfirmed!.isConfirmed).toBeTruthy();
 
     const resendingRes = await request(app.getHttpServer())
       .post('/api/auth/registration-email-resending')
       .send({ email: userNika.email });
 
     expect(resendingRes.status).toBe(HttpStatus.BAD_REQUEST);
-    expect(resendingRes.body).toEqual({
+    expect(resendingRes.body).toEqual<ApiErrorResultType>({
       errorsMessages: [{ field: 'email', message: expect.any(String) }],
     });
   });
 
-  it('Should be return 400 if email not existing', async () => {
+  it('Should be return 204 if email not existing (protected brute force attack)', async () => {
     const resendingRes = await request(app.getHttpServer())
       .post('/api/auth/registration-email-resending')
       .send({ email: 'noesiting@gmail.com' });
 
-    expect(resendingRes.status).toBe(HttpStatus.BAD_REQUEST);
-    expect(resendingRes.body).toEqual({
-      errorsMessages: [{ field: 'email', message: expect.any(String) }],
-    });
+    expect(resendingRes.status).toBe(HttpStatus.NO_CONTENT);
+    expect(resendingRes.body).toEqual({});
+  });
+
+  it('Should be return 429 if than 5 attempts from one IP-address during 10 seconds ', async () => {
+    for (let i = 0; i < 5; i++) {
+      await request(app.getHttpServer())
+        .post('/api/auth/registration-email-resending')
+        .send({ email: `noesiting${i}@gmail.com` });
+    }
+
+    const resManyAttempts = await request(app.getHttpServer())
+      .post('/api/auth/registration-email-resending')
+      .send({ email: `noesiting@gmail.com` });
+
+    expect(resManyAttempts.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
   });
 });

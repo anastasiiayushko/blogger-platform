@@ -19,11 +19,11 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     password: string,
   ): Promise<UserContextDto> {
     const user = await this.authService.validateUser(loginOrEmail, password);
-    if (!user) {
+    if (!user || !user.id) {
       throw new DomainException({
         code: DomainExceptionCode.Unauthorized,
       });
     }
-    return { id: user._id.toString() };
+    return { id: user.id };
   }
 }

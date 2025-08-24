@@ -1,7 +1,5 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { initSettings } from '../helpers/init-setting';
-import { UserViewDto } from '../../src/modules/user-accounts/api/view-dto/users.view-dto';
-import { UsersRepository } from '../../src/modules/user-accounts/infrastructure/users.repository';
 import { getAuthHeaderBasicTest } from '../helpers/common-helpers';
 import request from 'supertest';
 import { GetUsersQueryParams } from '../../src/modules/user-accounts/api/input-dto/get-users-query-params.input-dto';
@@ -9,21 +7,25 @@ import { PaginatedViewDto } from '../../src/core/dto/base.paginated.view-dto';
 import { UsersSortBy } from '../../src/modules/user-accounts/api/input-dto/users-sort-by';
 import { SortDirection } from '../../src/core/dto/base.query-params.input-dto';
 import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
+import { UsersSqlRepository } from '../../src/modules/user-accounts/infrastructure/sql/users.sql-repository';
+import { UserSqlViewDto } from '../../src/modules/user-accounts/infrastructure/sql/mapper/users.sql-view-dto';
 
 describe('UserController PAGINATION (e2e) ', () => {
   const basicAuth = getAuthHeaderBasicTest();
+  const PATH_URL = '/api/sa/users';
 
   let app: INestApplication;
-  let userRepository: UsersRepository;
+  let userRepository: UsersSqlRepository;
   let userTestManger: UsersApiManagerHelper;
-  let createdUsers: UserViewDto[] = [];
+  let createdUsers: UserSqlViewDto[] = [];
 
   beforeAll(async () => {
     const init = await initSettings();
     app = init.app;
     userTestManger = init.userTestManger;
-    userRepository = app.get<UsersRepository>(UsersRepository);
+    userRepository = app.get<UsersSqlRepository>(UsersSqlRepository);
     createdUsers = await userTestManger.createSeveralUsers(10, basicAuth);
+    console.log(createdUsers, 'createdUsers');
     expect(createdUsers.length).toBe(10);
   });
   afterAll(async () => {
@@ -32,19 +34,19 @@ describe('UserController PAGINATION (e2e) ', () => {
 
   it('Should return 401', async () => {
     const response = await request(app.getHttpServer())
-      .get('/api/users')
+      .get(PATH_URL)
       .set('Authorization', 'no:valid');
     expect(response.status).toBe(HttpStatus.UNAUTHORIZED);
   });
 
   it('Should be return list users and paging data', async () => {
     const response = await request(app.getHttpServer())
-      .get('/api/users')
+      .get(PATH_URL)
       .query({})
       .set('Authorization', basicAuth)
       .expect(HttpStatus.OK);
-    const data: PaginatedViewDto<UserViewDto[]> = response.body;
-
+    const data: PaginatedViewDto<UserSqlViewDto[]> = response.body;
+    console.log(data);
     expect(data.pageSize).toBe(10);
     expect(data.page).toBe(1);
     expect(data.totalCount).toBe(10);
@@ -60,10 +62,10 @@ describe('UserController PAGINATION (e2e) ', () => {
       sortDirection: SortDirection.Asc,
     };
     const response = await request(app.getHttpServer())
-      .get('/api/users')
+      .get(PATH_URL)
       .set('Authorization', basicAuth)
       .query(query);
-    const data: PaginatedViewDto<UserViewDto[]> = response.body;
+    const data: PaginatedViewDto<UserSqlViewDto[]> = response.body;
 
     expect(data.pageSize).toBe(3);
     expect(data.page).toBe(2);

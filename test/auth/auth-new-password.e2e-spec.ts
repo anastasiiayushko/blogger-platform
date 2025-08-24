@@ -1,84 +1,175 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { initSettings } from '../helpers/init-setting';
-import { getAuthHeaderBasicTest } from '../helpers/common-helpers';
+import {
+  generateRandomStringForTest,
+  getAuthHeaderBasicTest,
+} from '../helpers/common-helpers';
 import request from 'supertest';
-import { UsersRepository } from '../../src/modules/user-accounts/infrastructure/users.repository';
 import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
+import { UsersSqlRepository } from '../../src/modules/user-accounts/infrastructure/sql/users.sql-repository';
+import { PasswordRecoverySqlRepository } from '../../src/modules/user-accounts/infrastructure/sql/password-recovery.sql-repository';
+import { passwordConstraints } from '../../src/modules/user-accounts/domin/user.entity';
+import { randomUUID } from 'crypto';
+import { ApiErrorResultType } from '../type/response-super-test';
+import { UserConfirmationConfig } from '../../src/modules/user-accounts/config/user-confirmation.config';
 
 describe('Auth /new-password', () => {
   const basicAuth = getAuthHeaderBasicTest();
+  const PATH_URL_RECOVERY_PASS = `/api/auth/password-recovery`;
+  const PATH_URL_NEW_PASS = `/api/auth/new-password`;
   let app: INestApplication;
   let userTestManger: UsersApiManagerHelper;
-  let userRepository: UsersRepository;
+  let userRepository: UsersSqlRepository;
+  let recoveryPasswordRepository: PasswordRecoverySqlRepository;
+  let confirmationConfig: UserConfirmationConfig;
+  let registeredUserId: string;
 
-  const credExistingUser = {
-    email: 'test@test.com',
-    login: 'test',
-    password: 'test123456',
+  const infoRegisteredUser = {
+    email: 'supertest@gmail.com',
+    login: 'supertest',
+    password: 'supertest123456',
   };
+
   beforeAll(async () => {
     const init = await initSettings();
     app = init.app;
     userTestManger = init.userTestManger;
-    userRepository = app.get<UsersRepository>(UsersRepository);
+    confirmationConfig = app.get<UserConfirmationConfig>(
+      UserConfirmationConfig,
+    );
+    userRepository = app.get<UsersSqlRepository>(UsersSqlRepository);
+    recoveryPasswordRepository = app.get<PasswordRecoverySqlRepository>(
+      PasswordRecoverySqlRepository,
+    );
     const userRes = await userTestManger.createUser(
-      credExistingUser,
+      infoRegisteredUser,
       basicAuth,
     );
     expect(userRes.status).toBe(HttpStatus.CREATED);
+    registeredUserId = userRes.body.id;
   });
 
   afterAll(async () => {
     await app.close();
   });
 
-  it('should be return status 204 and success update password', async () => {
-    const recovery = await request(app.getHttpServer())
-      .post('/api/auth/password-recovery')
-      .send({ email: credExistingUser.email });
-    expect(recovery.status).toBe(HttpStatus.NO_CONTENT);
+  it('should be return status 204 If code is valid and new password is accepted', async () => {
+    const userBeforeUpdatePass =
+      await userRepository.findById(registeredUserId);
 
-    const userResultBefore = await userRepository.findByEmailOrLogin(
-      credExistingUser.email,
+    const recoveryPassResponse = await request(app.getHttpServer())
+      .post(PATH_URL_RECOVERY_PASS)
+      .send({ email: infoRegisteredUser.email });
+
+    expect(recoveryPassResponse.status).toBe(HttpStatus.NO_CONTENT);
+
+    const recoveryPassNotConfirmed =
+      await recoveryPasswordRepository.findByUserId(registeredUserId);
+    expect(recoveryPassNotConfirmed!.isConfirmed).toBeFalsy();
+
+    const newPasswordResponse = await request(app.getHttpServer())
+      .post(PATH_URL_NEW_PASS)
+      .send({
+        newPassword: generateRandomStringForTest(passwordConstraints.minLength),
+        recoveryCode: recoveryPassNotConfirmed!.code,
+      });
+
+    expect(newPasswordResponse.status).toBe(HttpStatus.NO_CONTENT);
+
+    const recoveryPasswordConfirm =
+      await recoveryPasswordRepository.findByUserId(registeredUserId);
+    expect(recoveryPasswordConfirm!.isConfirmed).toBeTruthy();
+
+    const userAfterUpdatePass = await userRepository.findById(registeredUserId);
+
+    expect(userAfterUpdatePass?.password).not.toBe(
+      userBeforeUpdatePass?.password,
     );
-    expect(userResultBefore!.recoveryPasswordConfirm.isConfirmed).toBeFalsy();
-
-    const newPassword = {
-      newPassword: 'newPassword123456',
-      recoveryCode: userResultBefore!.recoveryPasswordConfirm!.recoveryCode,
-    };
-    const newPasswordResult = await request(app.getHttpServer())
-      .post('/api/auth/new-password')
-      .send(newPassword);
-
-    expect(newPasswordResult.status).toBe(HttpStatus.NO_CONTENT);
-
-    const userResultAfter = await userRepository.findByEmailOrLogin(
-      credExistingUser.email,
-    );
-    expect(userResultAfter!.recoveryPasswordConfirm.isConfirmed).toBeTruthy();
   });
 
-  it('should be 400 if recovery code used', async () => {
-    const userResultBefore = await userRepository.findByEmailOrLogin(
-      credExistingUser.email,
-    );
-    expect(userResultBefore!.recoveryPasswordConfirm.isConfirmed).toBeTruthy();
+  it('should be 400 if has incorrect value (for incorrect password length)', async () => {
+    const userBeforeUpdatePass =
+      await userRepository.findById(registeredUserId);
 
     const newPassword = {
-      newPassword: 'newPassword123456',
-      recoveryCode: userResultBefore!.recoveryPasswordConfirm!.recoveryCode,
+      newPassword: generateRandomStringForTest(
+        passwordConstraints.minLength - 1,
+      ),
+      recoveryCode: randomUUID(),
     };
-    const errRes = await request(app.getHttpServer())
-      .post('/api/auth/new-password')
+    const rejectResponse = await request(app.getHttpServer())
+      .post(PATH_URL_NEW_PASS)
       .send(newPassword);
 
-    expect(errRes.status).toBe(HttpStatus.BAD_REQUEST);
-    expect(errRes.body).toEqual({
+    expect(rejectResponse.status).toBe(HttpStatus.BAD_REQUEST);
+
+    expect(rejectResponse.body).toEqual<ApiErrorResultType>({
       errorsMessages: [
         { field: expect.any(String), message: expect.any(String) },
       ],
     });
+
+    const userAfterUpdatePass = await userRepository.findById(registeredUserId);
+
+    expect(userAfterUpdatePass?.password).toBe(userBeforeUpdatePass?.password);
+  });
+
+  it('should be 400 if has incorrect value (or RecoveryCode is incorrect)', async () => {
+    const userBeforeUpdatePass =
+      await userRepository.findById(registeredUserId);
+
+    const newPassword = {
+      newPassword: generateRandomStringForTest(passwordConstraints.minLength),
+      recoveryCode: randomUUID(), // recovery code not valid
+    };
+    const rejectResponse = await request(app.getHttpServer())
+      .post(PATH_URL_NEW_PASS)
+      .send(newPassword);
+
+    expect(rejectResponse.status).toBe(HttpStatus.BAD_REQUEST);
+
+    expect(rejectResponse.body).toEqual<ApiErrorResultType>({
+      errorsMessages: [
+        { field: expect.any(String), message: expect.any(String) },
+      ],
+    });
+
+    const userAfterUpdatePass = await userRepository.findById(registeredUserId);
+
+    expect(userAfterUpdatePass?.password).toBe(userBeforeUpdatePass?.password);
+  });
+
+  //::TODO как можно для этого теста замокать конфиг
+  it('should be 400 if has incorrect value ( RecoveryCode is  expired)', async () => {
+    const userBeforeUpdatePass =
+      await userRepository.findById(registeredUserId);
+    confirmationConfig.emailExpiresInHours = -1;
+
+    await request(app.getHttpServer())
+      .post(PATH_URL_RECOVERY_PASS)
+      .send({ email: infoRegisteredUser.email });
+
+    const recoveryPasswordByUser =
+      await recoveryPasswordRepository.findByUserId(registeredUserId);
+
+    const codeExpiredResponse = await request(app.getHttpServer())
+      .post(PATH_URL_NEW_PASS)
+      .send({
+        newPassword: generateRandomStringForTest(passwordConstraints.minLength),
+        recoveryCode: recoveryPasswordByUser?.code,
+      });
+
+    expect(codeExpiredResponse.status).toBe(HttpStatus.BAD_REQUEST);
+
+    expect(codeExpiredResponse.body).toEqual<ApiErrorResultType>({
+      errorsMessages: [
+        { field: expect.any(String), message: expect.any(String) },
+      ],
+    });
+
+    const userAfterUpdatePass = await userRepository.findById(registeredUserId);
+
+    expect(userAfterUpdatePass?.password).toBe(userBeforeUpdatePass?.password);
   });
 
   it('Should be return 429 if than 5 attempts from one IP-address during 10 seconds ', async () => {

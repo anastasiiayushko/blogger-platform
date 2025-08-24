@@ -16,7 +16,7 @@ import { CurrentUserFormRequest } from '../decorators/param/current-user-form-re
 import { UserContextDto } from '../decorators/param/user-context.dto';
 import { UserQueryRepository } from '../infrastructure/query/users.query-repository';
 import { AuthCodeInputDto } from './input-dto/auth-code.input-dto';
-import { EmailInputDto } from './input-dto/email.input-dto';
+import { EmailInputModelDto } from './input-dto/email-input-model.dto';
 import { NewPasswordRecoveryInputDto } from './input-dto/new-password-recovery.input-dto';
 import { CreateUsersInputDto } from './input-dto/create-users.input-dto';
 import { BearerJwtAuthGuard } from '../guards/bearer/bearer-jwt-auth.guard';
@@ -35,6 +35,11 @@ import {
 import { AuthRefreshTokenCommand } from '../application/auth-usecases/auth-refresh-token.usecase';
 import { AuthLogoutCommand } from '../application/auth-usecases/auth-logout.usecase';
 import { SkipThrottle } from '@nestjs/throttler';
+import { AuthPasswordRecoveryCommand } from '../application/auth-usecases/auth-password-recovery.usecase';
+import { UpdatePasswordCommand } from '../application/auth-usecases/update-password.usecase';
+import { RegistrationConfirmationCommand } from '../application/auth-usecases/registration-confirmation.usecase';
+import { RegistrationUserCommand } from '../application/auth-usecases/registration-user.usecase';
+import { RegistrationEmailResendingCommand } from '../application/auth-usecases/registration-email-resending.usecase';
 
 @Controller('auth')
 export class AuthController {
@@ -97,34 +102,49 @@ export class AuthController {
   })
   @Post('/registration')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async registration(@Body() userInputDto: CreateUsersInputDto) {
-    return await this.authService.registration(userInputDto);
+  async registration(@Body() userInputDto: CreateUsersInputDto): Promise<void> {
+    await this.commandBus.execute<RegistrationUserCommand>(
+      new RegistrationUserCommand(userInputDto),
+    );
+    return;
+    // return await this.authService.registration(userInputDto);
   }
 
   @Post('/registration-confirmation')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async registrationConfirmEmail(@Body() confirmCodeDto: AuthCodeInputDto) {
-    await this.authService.confirmEmailByCode(confirmCodeDto.code);
+  async registrationConfirmEmail(@Body() codeInputDto: AuthCodeInputDto) {
+    await this.commandBus.execute<RegistrationConfirmationCommand>(
+      new RegistrationConfirmationCommand(codeInputDto.code),
+    );
+    return;
   }
 
   @Post('/registration-email-resending')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async recoverEmailConfirm(@Body() emailDto: EmailInputDto) {
-    await this.authService.recoverEmailConfirm(emailDto.email);
+  async recoverEmailConfirm(@Body() inputModel: EmailInputModelDto) {
+    await this.commandBus.execute<RegistrationEmailResendingCommand>(
+      new RegistrationEmailResendingCommand(inputModel.email),
+    );
+    return;
   }
 
   @Post('/password-recovery')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async recoverPassword(@Body() emailDto: EmailInputDto) {
-    await this.authService.recoverPassword(emailDto.email);
+  async recoverPassword(@Body() inputModel: EmailInputModelDto) {
+    // await this.authService.recoverPassword(inputModel.email);
+    await this.commandBus.execute<AuthPasswordRecoveryCommand>(
+      new AuthPasswordRecoveryCommand(inputModel.email),
+    );
   }
 
   @Post('/new-password')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async updatePassword(
-    @Body() newPassRecoveryDto: NewPasswordRecoveryInputDto,
-  ) {
-    await this.authService.updatePassword(newPassRecoveryDto);
+  async updatePassword(@Body() inputDto: NewPasswordRecoveryInputDto) {
+    await this.commandBus.execute<UpdatePasswordCommand>(
+      new UpdatePasswordCommand(inputDto.recoveryCode, inputDto.newPassword),
+    );
+    return;
+    // await this.authService.updatePassword(newPassRecoveryDto);
   }
 
   @Get('/me')

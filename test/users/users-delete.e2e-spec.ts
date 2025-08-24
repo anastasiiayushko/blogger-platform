@@ -1,24 +1,24 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { initSettings } from '../helpers/init-setting';
-import { UserViewDto } from '../../src/modules/user-accounts/api/view-dto/users.view-dto';
-import { UsersRepository } from '../../src/modules/user-accounts/infrastructure/users.repository';
 import { getAuthHeaderBasicTest } from '../helpers/common-helpers';
-import * as mongoose from 'mongoose';
 import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
+import { UsersSqlRepository } from '../../src/modules/user-accounts/infrastructure/sql/users.sql-repository';
+import { UserSqlViewDto } from '../../src/modules/user-accounts/infrastructure/sql/mapper/users.sql-view-dto';
+import { randomUUID } from 'crypto';
 
 describe('UserController DELETE (e2e) ', () => {
   const basicAuth = getAuthHeaderBasicTest();
 
   let app: INestApplication;
-  let userRepository: UsersRepository;
+  let userRepository: UsersSqlRepository;
   let userTestManger: UsersApiManagerHelper;
-  let createdUser: UserViewDto;
+  let createdUser: UserSqlViewDto;
 
   beforeAll(async () => {
     const init = await initSettings();
     app = init.app;
     userTestManger = init.userTestManger;
-    userRepository = app.get<UsersRepository>(UsersRepository);
+    userRepository = app.get<UsersSqlRepository>(UsersSqlRepository);
     const userRes = await userTestManger.createUser(
       {
         email: 'test@test.com',
@@ -43,10 +43,7 @@ describe('UserController DELETE (e2e) ', () => {
   });
 
   it('Should be return 404 error if user by id not found', async () => {
-    const response = await userTestManger.deleteById(
-      new mongoose.Types.ObjectId().toString(),
-      basicAuth,
-    );
+    const response = await userTestManger.deleteById(randomUUID(), basicAuth);
     expect(response.status).toBe(HttpStatus.NOT_FOUND);
   });
   it('Should be 204 deleted existing user by id', async () => {

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsNumber } from 'class-validator';
 import { ConfigService } from '@nestjs/config';
 import { configValidationUtility } from '../../../setup/config-validation.utility';
 
@@ -7,42 +7,49 @@ import { configValidationUtility } from '../../../setup/config-validation.utilit
 export class UserConfirmationConfig {
   @IsNotEmpty({
     message:
-      'Set Env variable USER_EMAIL_CONFIRMATION_HOURS to be number, example:[0-23]',
+      'Set Env variable USER_EMAIL_CONFIRMATION_EXPIRES_HOURS to be number, example:[0-23]',
   })
+
   public emailExpiresInHours: number;
 
   @IsNotEmpty({
     message:
-      'Set Env variable USER_EMAIL_CONFIRMATION_MIN to be number, example:[0-59]',
+      'Set Env variable USER_EMAIL_CONFIRMATION_EXPIRES_MIN to be number, example:[0-59]',
   })
+  @IsNumber()
   public emailExpiresInMin: number;
 
   @IsNotEmpty({
     message:
-      'Set Env variable USER_RECOVERY_PASSWORD_CONFIRMATION_HOURS to be number, example:[0-23]',
+      'Set Env variable USER_RECOVERY_PASSWORD_CONFIRMATION_EXPIRES_HOURS to be number, example:[0-23]',
   })
+  @IsNumber()
   public recoveryPasswordExpiresInHours: number;
 
   @IsNotEmpty({
     message:
-      'Set Env variable USER_RECOVERY_PASSWORD_CONFIRMATION_MIN to be number, example:[0-59]',
+      'Set Env variable USER_RECOVERY_PASSWORD_CONFIRMATION_EXPIRES_MIN to be number, example:[0-59]',
   })
+  @IsNumber()
   public recoveryPasswordExpiresInMin: number;
 
   constructor(private configService: ConfigService<any, true>) {
     this.emailExpiresInHours = Number(
-      this.configService.get('USER_CONFIRMATION_EXPIRES_IN_HOURS'),
+      this.configService.get('USER_EMAIL_CONFIRMATION_EXPIRES_HOURS'),
     );
     this.emailExpiresInMin = Number(
-      this.configService.get('USER_CONFIRMATION_EXPIRES_IN_MIN'),
+      this.configService.get('USER_EMAIL_CONFIRMATION_EXPIRES_MIN'),
     );
 
     this.recoveryPasswordExpiresInMin = Number(
-      this.configService.get('USER_RECOVERY_PASSWORD_CONFIRMATION_MIN'),
+      this.configService.get('USER_RECOVERY_PASSWORD_CONFIRMATION_EXPIRES_MIN'),
     );
     this.recoveryPasswordExpiresInHours = Number(
-      this.configService.get('USER_RECOVERY_PASSWORD_CONFIRMATION_HOURS'),
+      this.configService.get(
+        'USER_RECOVERY_PASSWORD_CONFIRMATION_EXPIRES_HOURS',
+      ),
     );
+    //::TODO протестить конфиг
     configValidationUtility.validateConfig(this);
   }
 }

@@ -1,4 +1,4 @@
-import { INestApplication } from '@nestjs/common';
+import { HttpStatus, INestApplication } from '@nestjs/common';
 import request from 'supertest';
 
 import { CreateUsersInputDto } from '../../../src/modules/user-accounts/api/input-dto/create-users.input-dto';
@@ -7,9 +7,10 @@ import { UserViewDto } from '../../../src/modules/user-accounts/api/view-dto/use
 import { LoginInputDto } from '../../../src/modules/user-accounts/api/input-dto/login.input-dto';
 import { AccessTokenViewDto } from '../../../src/modules/user-accounts/api/view-dto/access-token.view-dto';
 import { delay } from '../common-helpers';
+import { UserSqlViewDto } from '../../../src/modules/user-accounts/infrastructure/sql/mapper/users.sql-view-dto';
 
 export class UsersApiManagerHelper {
-  private URL_PATH_USERS = '/api/security-devices';
+  private URL_PATH_AUTH = '/api/auth';
   private URL_SA_USERS = '/api/sa/users';
 
   constructor(private app: INestApplication) {}
@@ -38,7 +39,7 @@ export class UsersApiManagerHelper {
     userAgent: string = 'Chrome',
   ): ResponseBodySuperTest<AccessTokenViewDto> {
     return request(this.app.getHttpServer())
-      .post('/api/auth/login')
+      .post(this.URL_PATH_AUTH + '/login')
       .set('User-Agent', userAgent)
       .send(loginInputDTO);
   }
@@ -46,24 +47,30 @@ export class UsersApiManagerHelper {
   async createSeveralUsers(
     userCount: number,
     basicAuth: string,
-  ): Promise<UserViewDto[]> {
+  ): Promise<UserSqlViewDto[]> {
     // const userLength = Array.from({ length: userCount });
-    const result: UserViewDto[] = [];
+    const responses: ResponseBodySuperTest<UserSqlViewDto>[] = [];
 
     for (let i = 0; i < userCount; i++) {
       await delay(60);
-      const res = await this.createUser(
-        {
-          login: `test${i}`,
-          email: `test${i}@email.com`,
-          password: 'test123456',
-        },
-        basicAuth,
-      );
-      result.push(res.body);
+      const body = {
+        login: `test${i}`,
+        email: `test${i}@email.com`,
+        password: 'test123456',
+      };
+      const res = this.createUser(body, basicAuth);
+      responses.push(res);
     }
 
-    return await Promise.all(result);
+    const resolved = await Promise.all(responses);
+
+    const users: UserSqlViewDto[] = resolved.map((response) => {
+      expect(response.status).toBe(HttpStatus.CREATED);
+      return response.body as unknown as UserSqlViewDto;
+    });
+
+    console.log('users', users);
+    return users;
   }
 
   async createAndLoginSeveralUsers(
@@ -85,13 +92,13 @@ export class UsersApiManagerHelper {
     userInput: CreateUsersInputDto,
   ): ResponseBodySuperTest {
     return await request(this.app.getHttpServer())
-      .post('/api/auth/registration')
+      .post(this.URL_PATH_AUTH + '/registration')
       .send(userInput);
   }
 
   async refreshToken(cookies: string[]) {
     return await request(this.app.getHttpServer())
-      .post(URL + '/refresh-token')
+      .post(this.URL_PATH_AUTH + '/refresh-token')
       .set('Cookie', cookies.join('; '));
   }
 }
