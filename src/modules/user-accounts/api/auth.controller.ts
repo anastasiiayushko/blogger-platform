@@ -35,17 +35,17 @@ import {
 import { AuthRefreshTokenCommand } from '../application/auth-usecases/auth-refresh-token.usecase';
 import { AuthLogoutCommand } from '../application/auth-usecases/auth-logout.usecase';
 import { SkipThrottle } from '@nestjs/throttler';
-import { AuthPasswordRecoveryCommand } from '../application/auth-usecases/auth-password-recovery.usecase';
+import { PasswordRecoveryCommand } from '../application/auth-usecases/auth-password-recovery.usecase';
 import { UpdatePasswordCommand } from '../application/auth-usecases/update-password.usecase';
 import { RegistrationConfirmationCommand } from '../application/auth-usecases/registration-confirmation.usecase';
 import { RegistrationUserCommand } from '../application/auth-usecases/registration-user.usecase';
 import { RegistrationEmailResendingCommand } from '../application/auth-usecases/registration-email-resending.usecase';
+import { UsersQuerySqlRepository } from '../infrastructure/sql/query/users.query-sql-repository';
 
 @Controller('auth')
 export class AuthController {
   constructor(
-    protected authService: AuthService,
-    protected userQueryRepository: UserQueryRepository,
+    protected userQueryRepository: UsersQuerySqlRepository,
     protected commandBus: CommandBus,
   ) {}
 
@@ -107,7 +107,6 @@ export class AuthController {
       new RegistrationUserCommand(userInputDto),
     );
     return;
-    // return await this.authService.registration(userInputDto);
   }
 
   @Post('/registration-confirmation')
@@ -132,8 +131,8 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async recoverPassword(@Body() inputModel: EmailInputModelDto) {
     // await this.authService.recoverPassword(inputModel.email);
-    await this.commandBus.execute<AuthPasswordRecoveryCommand>(
-      new AuthPasswordRecoveryCommand(inputModel.email),
+    await this.commandBus.execute<PasswordRecoveryCommand>(
+      new PasswordRecoveryCommand(inputModel.email),
     );
   }
 

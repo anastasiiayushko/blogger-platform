@@ -41,11 +41,13 @@ import { SaCreateUserHandler } from './application/sa-users-usecases/sa-create-u
 import { EmailConfirmationSqlRepository } from './infrastructure/sql/email-confirmation.sql-repository';
 import { SaDeleteUserHandler } from './application/sa-users-usecases/sa-delete-user.usecase';
 import { PasswordRecoverySqlRepository } from './infrastructure/sql/password-recovery.sql-repository';
-import { AuthPasswordRecoveryCommandHandler } from './application/auth-usecases/auth-password-recovery.usecase';
+import { PasswordRecoveryHandler } from './application/auth-usecases/auth-password-recovery.usecase';
 import { UpdatePasswordCommandHandler } from './application/auth-usecases/update-password.usecase';
 import { RegistrationConfirmationCommandHandler } from './application/auth-usecases/registration-confirmation.usecase';
 import { RegistrationUserHandler } from './application/auth-usecases/registration-user.usecase';
 import { RegistrationEmailResendingHandler } from './application/auth-usecases/registration-email-resending.usecase';
+import { SessionDeviceSqlRepository } from './infrastructure/sql/session-device.sql-repository';
+import { SessionDeviceQuerySqlRepository } from './infrastructure/sql/query/session-device.query-sql-repository';
 
 const cmdHandlerSecurityDevice = [
   CreateSecurityDeviceHandler,
@@ -57,7 +59,7 @@ const cmdHandlerAuth = [
   AuthLoginHandler,
   AuthRefreshTokenHandler,
   AuthLogoutHandler,
-  AuthPasswordRecoveryCommandHandler,
+  PasswordRecoveryHandler,
   UpdatePasswordCommandHandler,
   RegistrationConfirmationCommandHandler,
   RegistrationUserHandler,
@@ -72,14 +74,18 @@ const mongooseRepository = [
   UserQueryRepository,
   SecurityDeviceRepository,
   SecurityDeviceQueryRepository,
-  UsersExternalQueryRepository,
+];
+const mongooseExternalQueryRepository = [UsersExternalQueryRepository];
+const sqlExternalQueryRepository = [UsersExternalQuerySqlRepository];
+const sqlQueryRepository = [
+  UsersQuerySqlRepository,
+  SessionDeviceQuerySqlRepository,
 ];
 const sqlRepository = [
   UsersSqlRepository,
-  UsersQuerySqlRepository,
-  UsersExternalQuerySqlRepository,
   EmailConfirmationSqlRepository,
   PasswordRecoverySqlRepository,
+  SessionDeviceSqlRepository,
 ];
 
 @Module({
@@ -106,7 +112,10 @@ const sqlRepository = [
     BearerJwtStrategy,
     RefreshTokenAuthGuard,
     ...mongooseRepository,
+    ...mongooseExternalQueryRepository,
     ...sqlRepository,
+    ...sqlQueryRepository,
+    ...sqlExternalQueryRepository,
     ...configs,
     ...cmdHandlerSecurityDevice,
     ...cmdHandlerAuth,
@@ -136,7 +145,8 @@ const sqlRepository = [
   ],
   exports: [
     BearerJwtStrategy,
-    UsersExternalQueryRepository,
+    ...mongooseExternalQueryRepository,
+    ...sqlExternalQueryRepository,
     /** при использование  guard через @UseGuard(nameGard), можно не экспортирована поставщиков которые инжектируются в через конструктор
      *  Nest автоматически видит зависимости guard’а через импорт модуля
      * */

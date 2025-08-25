@@ -3,16 +3,15 @@ import { initSettings } from '../helpers/init-setting';
 import { getAuthHeaderBasicTest } from '../helpers/common-helpers';
 import request from 'supertest';
 import { UserMeViewDto } from '../../src/modules/user-accounts/api/view-dto/user-me.view-dto';
-import { JwtService } from '@nestjs/jwt';
-import * as process from 'node:process';
 import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
+import { AccessTokenViewDto } from '../../src/modules/user-accounts/api/view-dto/access-token.view-dto';
+import { UserAccountConfig } from '../../src/modules/user-accounts/config/user-account.config';
 
 describe('Auth /me', () => {
-  const ORIGINAL_ENV = process.env;
   const basicAuth = getAuthHeaderBasicTest();
   let app: INestApplication;
   let userTestManger: UsersApiManagerHelper;
-  let jwtService: JwtService;
+  let userAccountConfig: UserAccountConfig;
 
   const userAuthData = {
     email: 'test@test.com',
@@ -24,28 +23,28 @@ describe('Auth /me', () => {
     const init = await initSettings();
     app = init.app;
     userTestManger = init.userTestManger;
-    jwtService = app.get<JwtService>(JwtService);
+    userAccountConfig = app.get<UserAccountConfig>(UserAccountConfig);
     const userRes = await userTestManger.createUser(userAuthData, basicAuth);
     expect(userRes.status).toBe(HttpStatus.CREATED);
   });
   afterAll(async () => {
-    process.env.JWT_AT_EXPIRES = ORIGINAL_ENV.JWT_AT_EXPIRES;
+    // process.env.JWT_AT_EXPIRES = ORIGINAL_ENV.JWT_AT_EXPIRES;
 
     await app.close();
   });
 
   it('Should be return user be bearer token', async () => {
-    const res = await userTestManger.login({
+    const loginResponse = await userTestManger.login({
       loginOrEmail: userAuthData.login,
       password: userAuthData.password,
     });
-    const authToken = res.body.accessToken;
-    expect(res.status).toBe(HttpStatus.OK);
-    expect(authToken).toEqual(expect.any(String));
+    const { accessToken } = loginResponse.body as AccessTokenViewDto;
+    expect(loginResponse.status).toBe(HttpStatus.OK);
+    expect(accessToken).toEqual(expect.any(String));
 
     const meRes = await request(app.getHttpServer())
       .get('/api/auth/me')
-      .set('Authorization', `Bearer ${authToken}`)
+      .set('Authorization', `Bearer ${accessToken}`)
       .expect(HttpStatus.OK);
 
     expect(meRes.body).toEqual<UserMeViewDto>({
@@ -55,16 +54,19 @@ describe('Auth /me', () => {
     });
   });
 
-  it('Should be return 401 if jwt  expired', async () => {
-    process.env.JWT_AT_EXPIRES = '-5s';
+  it('Should be return 401 if access token expiredAt', async () => {
+    userAccountConfig.assessTokenExpiresIn = '-5s';
     const loginRes = await userTestManger.login({
       loginOrEmail: userAuthData.login,
       password: userAuthData.password,
     });
     expect(loginRes.status).toBe(HttpStatus.OK);
+    const { accessToken } = loginRes.body as AccessTokenViewDto;
+
     const meRes = await request(app.getHttpServer())
       .get('/api/auth/me')
-      .set('Authorization', `Bearer ${loginRes.body.accessToken}`);
+      .set('Authorization', `Bearer ${accessToken}`);
+
     expect(meRes.status).toBe(HttpStatus.UNAUTHORIZED);
     expect(meRes.body).toEqual({});
   });

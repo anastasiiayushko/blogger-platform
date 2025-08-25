@@ -1,8 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { SecurityDeviceRepository } from '../../infrastructure/security-device.repository';
 import { DomainException } from '../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
-import { Types } from 'mongoose';
+import { SessionDeviceSqlRepository } from '../../infrastructure/sql/session-device.sql-repository';
 
 export class DeleteDeviceByIdCommand {
   constructor(
@@ -16,11 +15,11 @@ export class DeleteDeviceByIdHandler
   implements ICommandHandler<DeleteDeviceByIdCommand>
 {
   constructor(
-    private readonly securityDeviceRepository: SecurityDeviceRepository,
+    private readonly sessionDeviceRepository: SessionDeviceSqlRepository,
   ) {}
 
   async execute(command: DeleteDeviceByIdCommand): Promise<void> {
-    const foundDevice = await this.securityDeviceRepository.findDeviceById(
+    const foundDevice = await this.sessionDeviceRepository.findByDeviceId(
       command.deviceId,
     );
     if (!foundDevice) {
@@ -28,13 +27,13 @@ export class DeleteDeviceByIdHandler
         code: DomainExceptionCode.NotFound,
       });
     }
-    if (!foundDevice.userId.equals(new Types.ObjectId(command.userId))) {
+    if (foundDevice.userId !== command.userId) {
       throw new DomainException({
         code: DomainExceptionCode.Forbidden,
       });
     }
 
-    await this.securityDeviceRepository.deleteById(
+    await this.sessionDeviceRepository.deleteById(
       command.deviceId,
       command.userId,
     );

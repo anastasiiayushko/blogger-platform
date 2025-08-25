@@ -1,13 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { InjectModel } from '@nestjs/mongoose';
-import {
-  SecurityDevice,
-  SecurityDeviceModelType,
-} from '../../domin/security-device.entity';
-import { SecurityDeviceRepository } from '../../infrastructure/security-device.repository';
 import { DomainException } from '../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
-import { DateUtil } from '../../../../core/utils/DateUtil';
+import { SessionDeviceSqlRepository } from '../../infrastructure/sql/session-device.sql-repository';
 
 type CreateSecurityDeviceCmdType = {
   userId: string;
@@ -41,17 +35,14 @@ export class UpdateSecurityDeviceHandler
   implements ICommandHandler<UpdateSecurityDeviceCommand>
 {
   constructor(
-    @InjectModel(SecurityDevice.name)
-    private readonly securityDeviceModel: SecurityDeviceModelType,
-    private readonly securityDeviceRepository: SecurityDeviceRepository,
+    private readonly sessionDeviceRepository: SessionDeviceSqlRepository,
   ) {}
 
   async execute(command: UpdateSecurityDeviceCommand): Promise<void> {
-    const device = await this.securityDeviceRepository.findDeviceByIdAndUserId(
+    const device = await this.sessionDeviceRepository.findDeviceByIdAndUserId(
       command.deviceId,
       command.userId,
     );
-
 
     if (!device) {
       throw new DomainException({
@@ -66,9 +57,6 @@ export class UpdateSecurityDeviceHandler
       expirationDate: command.expirationDate,
     });
 
-    console.log('1',device);
-
-    await this.securityDeviceRepository.save(device);
-
+    await this.sessionDeviceRepository.save(device);
   }
 }

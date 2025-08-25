@@ -9,7 +9,9 @@ export const configValidationUtility = {
       const sortedMessages = errors
         .map((error) => Object.values(error.constraints || {}).join(', '))
         .join('; ');
-      throw new Error('Validation failed: ' + sortedMessages + " " + process.env.NODE_ENV);
+      throw new Error(
+        'Validation failed: ' + sortedMessages + ' ' + process.env.NODE_ENV,
+      );
     }
   },
   convertToBoolean(value: string) {

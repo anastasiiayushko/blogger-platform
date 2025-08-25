@@ -1,12 +1,10 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { Types } from 'mongoose';
-import { InjectModel } from '@nestjs/mongoose';
-import { SecurityDevice, SecurityDeviceModelType } from '../../domin/security-device.entity';
-import { SecurityDeviceRepository } from '../../infrastructure/security-device.repository';
+import { SessionDeviceSqlRepository } from '../../infrastructure/sql/session-device.sql-repository';
+import { SessionDevice } from '../../domin/sql-entity/session-device.sql-entity';
 
 type CreateSecurityDeviceCmdType = {
   userId: string;
-  deviceId: Types.ObjectId;
+  deviceId: string;
   ip: string;
   agent: string;
   lastActiveDate: Date;
@@ -15,7 +13,7 @@ type CreateSecurityDeviceCmdType = {
 
 export class CreateSecurityDeviceCommand {
   readonly userId: string;
-  readonly deviceId: Types.ObjectId;
+  readonly deviceId: string;
   readonly ip: string;
   readonly agent: string;
   readonly lastActiveDate: Date;
@@ -31,20 +29,18 @@ export class CreateSecurityDeviceHandler
   implements ICommandHandler<CreateSecurityDeviceCommand>
 {
   constructor(
-    @InjectModel(SecurityDevice.name)
-    private readonly securityDeviceModel: SecurityDeviceModelType,
-    private readonly securityDeviceRepository: SecurityDeviceRepository,
+    private readonly securityDeviceRepository: SessionDeviceSqlRepository,
   ) {}
 
   async execute(command: CreateSecurityDeviceCommand): Promise<void> {
-    const device = this.securityDeviceModel.createInstance({
+    const device = SessionDevice.createInstance({
       ip: command.ip,
       title: command.agent,
       userId: command.userId,
       deviceId: command.deviceId,
       lastActiveDate: command.lastActiveDate,
       expirationDate: command.expirationDate,
-    })
+    });
     await this.securityDeviceRepository.save(device);
   }
 }

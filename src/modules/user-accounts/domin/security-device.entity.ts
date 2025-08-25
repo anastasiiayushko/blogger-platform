@@ -26,7 +26,7 @@ export class SecurityDevice {
     dto: CreateSecurityDeviceDomainDto,
   ): SecurityDeviceDocument {
     const securityDevice = new this();
-    securityDevice._id = dto.deviceId;
+    securityDevice._id = dto.deviceId as Types.ObjectId;
     securityDevice.ip = dto.ip;
     securityDevice.title = dto.title;
     securityDevice.userId = new Types.ObjectId(dto.userId);

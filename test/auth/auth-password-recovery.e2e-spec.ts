@@ -4,6 +4,8 @@ import { getAuthHeaderBasicTest } from '../helpers/common-helpers';
 import request from 'supertest';
 import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
 import { PasswordRecoverySqlRepository } from '../../src/modules/user-accounts/infrastructure/sql/password-recovery.sql-repository';
+import { EventBus } from '@nestjs/cqrs';
+import { EmailPasswordRecoveryHandler } from '../../src/modules/notifications/event-usecases/email-password-recovery.event-usecase';
 
 describe('Auth /password-recovery', () => {
   const basicAuth = getAuthHeaderBasicTest();
@@ -12,6 +14,7 @@ describe('Auth /password-recovery', () => {
   let userTestManger: UsersApiManagerHelper;
   let passwordRecoveryRepository: PasswordRecoverySqlRepository;
   let registeredUserId: string;
+  let emailPasswordRecoveryHandler: EmailPasswordRecoveryHandler;
 
   const infoRegisteredUser = {
     email: 'supertest@gmail.com',
@@ -26,6 +29,9 @@ describe('Auth /password-recovery', () => {
     passwordRecoveryRepository = app.get<PasswordRecoverySqlRepository>(
       PasswordRecoverySqlRepository,
     );
+    emailPasswordRecoveryHandler = app.get<EmailPasswordRecoveryHandler>(
+      EmailPasswordRecoveryHandler,
+    );
     const createdUserRes = await userTestManger.createUser(
       infoRegisteredUser,
       basicAuth,
@@ -39,12 +45,15 @@ describe('Auth /password-recovery', () => {
     await app.close();
   });
 
-  it('Should be return 204 user existing to system and recovery password not empty ', async () => {
+  it('Should be return 204 user existing in system and recovery password to send ', async () => {
     const recovery = await request(app.getHttpServer())
       .post(PATH_URL)
       .send({ email: infoRegisteredUser.email });
     expect(recovery.status).toBe(HttpStatus.NO_CONTENT);
     expect(recovery.body).toEqual({});
+    //::TODO провека вызова хендлера
+    // const spyHandle = jest.spyOn(emailPasswordRecoveryHandler, 'handle');
+    // expect(spyHandle).toHaveBeenCalled();
 
     const passwordRecovery =
       await passwordRecoveryRepository.findByUserId(registeredUserId);

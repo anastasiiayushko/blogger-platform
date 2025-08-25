@@ -38,7 +38,6 @@ export class UserAccountConfig {
     this.refreshTokenExpiresIn = String(
       this.configService.get<string>('REFRESH_TOKEN_EXPIRES_IN'),
     );
-    console.log('user-account.config.ts', this.refreshTokenSecret, '');
     configValidationUtility.validateConfig(this);
   }
 }

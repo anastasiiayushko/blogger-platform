@@ -15,6 +15,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { DomainException } from './core/exceptions/domain-exception';
 import { DomainExceptionCode } from './core/exceptions/domain-exception-codes';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ThrottlerConfig } from './core/config/throttler.config';
 
 @Module({
   imports: [
@@ -41,12 +42,18 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     UserAccountsModule,
     BloggersPlatformModule,
     TestingModule,
-    ThrottlerModule.forRoot({
-      throttlers: [{ limit: 5, ttl: 10000 }],
-      errorMessage: () => {
-        throw new DomainException({
-          code: DomainExceptionCode.ManyRequests,
-        });
+    ThrottlerModule.forRootAsync({
+      inject: [ThrottlerConfig],
+      useFactory: (config: ThrottlerConfig) => {
+        const enabled = config.enabled;
+        return {
+          throttlers: enabled ? [{ limit: config.limit, ttl: config.ttl }] : [],
+          errorMessage: () => {
+            throw new DomainException({
+              code: DomainExceptionCode.ManyRequests,
+            });
+          },
+        };
       },
     }),
   ],

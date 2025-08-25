@@ -1,14 +1,16 @@
 import { INestApplication } from '@nestjs/common';
 import { ResponseBodySuperTest } from '../../type/response-super-test';
 import request from 'supertest';
-import { SecurityDeviceViewDto } from '../../../src/modules/user-accounts/api/view-dto/security-device.view-dto';
+import { SessionDeviceViewDTO } from '../../../src/modules/user-accounts/infrastructure/sql/mapper/session-device.sql-view-dto';
 
 export class SecurityDevicesApiManager {
   private URL_PATH = '/api/security/devices';
 
   constructor(public app: INestApplication) {}
 
-  async getAllDeviceSessions(cookies: string[]): ResponseBodySuperTest<SecurityDeviceViewDto> {
+  async getAllDeviceSessions(
+    cookies: string[],
+  ): ResponseBodySuperTest<SessionDeviceViewDTO[]> {
     return await request(this.app.getHttpServer())
       .get(this.URL_PATH)
       .set('Cookie', cookies.join('; '));

@@ -1,7 +1,8 @@
 import { Types } from 'mongoose';
 
 export class CreateSecurityDeviceDomainDto {
-  deviceId: Types.ObjectId;
+  //::TODO убрать Types.ObjectId
+  deviceId: Types.ObjectId | string;
   ip: string;
   title: string;
   userId: string;

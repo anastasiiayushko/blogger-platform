@@ -5,10 +5,16 @@ import { Connection } from 'mongoose';
 import { getConnectionToken } from '@nestjs/mongoose';
 import { INestApplication } from '@nestjs/common';
 import { deleteAllData } from './delete-all-data';
-import { EmailNotificationService } from '../../src/modules/notifications/emal.service';
-import { EmailServiceMock } from '../mock/EmailServiceMock';
 import { UsersApiManagerHelper } from './api-manager/users-api-manager-helper';
 import cookieParser from 'cookie-parser';
+import {
+  EmailConfirmRegistrationEvent,
+  EmailConfirmRegistrationHandler,
+} from '../../src/modules/notifications/event-usecases/email-confirm-registration.event-usecase';
+import {
+  EmailPasswordRecoveryEvent,
+  EmailPasswordRecoveryHandler,
+} from '../../src/modules/notifications/event-usecases/email-password-recovery.event-usecase';
 
 type ReturnInitSetting = {
   app: INestApplication;
@@ -24,8 +30,29 @@ export const initSettings = async (
   const testingModuleBuilder: TestingModuleBuilder = Test.createTestingModule({
     imports: [AppModule],
   })
-    .overrideProvider(EmailNotificationService)
-    .useClass(EmailServiceMock);
+
+    .overrideProvider(EmailConfirmRegistrationHandler)
+    .useValue({
+      handle: jest
+        .fn()
+        .mockImplementation((event: EmailConfirmRegistrationEvent) => {
+          console.log(
+            '✅ MOCKED email confirm registration handler triggered with event:',
+            event,
+          );
+        }),
+    })
+    .overrideProvider(EmailPasswordRecoveryHandler)
+    .useValue({
+      handle: jest
+        .fn()
+        .mockImplementation((event: EmailPasswordRecoveryEvent) => {
+          console.log(
+            '✅ MOCKED email password recovery handler triggered with event:',
+            event,
+          );
+        }),
+    });
 
   if (addSettingsToModuleBuilder) {
     addSettingsToModuleBuilder(testingModuleBuilder);
@@ -37,7 +64,6 @@ export const initSettings = async (
 
   app.use(cookieParser());
   appSetup(app);
-
 
   await app.init();
 

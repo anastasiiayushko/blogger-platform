@@ -5,13 +5,13 @@ import { PasswordRecovery } from '../../domin/sql-entity/password-recovery.sql-e
 import { UserConfirmationConfig } from '../../config/user-confirmation.config';
 import { EmailPasswordRecoveryEvent } from '../../../notifications/event-usecases/email-password-recovery.event-usecase';
 
-export class AuthPasswordRecoveryCommand {
+export class PasswordRecoveryCommand {
   constructor(public email: string) {}
 }
 
-@CommandHandler(AuthPasswordRecoveryCommand)
-export class AuthPasswordRecoveryCommandHandler
-  implements ICommandHandler<AuthPasswordRecoveryCommand>
+@CommandHandler(PasswordRecoveryCommand)
+export class PasswordRecoveryHandler
+  implements ICommandHandler<PasswordRecoveryCommand>
 {
   constructor(
     protected usersRepository: UsersSqlRepository,
@@ -20,7 +20,7 @@ export class AuthPasswordRecoveryCommandHandler
     protected eventBus: EventBus,
   ) {}
 
-  async execute(cmd: AuthPasswordRecoveryCommand): Promise<void> {
+  async execute(cmd: PasswordRecoveryCommand): Promise<void> {
     const user = await this.usersRepository.findByEmailOrLogin(cmd.email);
 
     if (!user) {

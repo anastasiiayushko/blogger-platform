@@ -8,8 +8,8 @@ import { REFRESH_TOKEN_STRATEGY_INJECT_TOKEN } from '../../constants/auth-tokens
 import { JwtService } from '@nestjs/jwt';
 import { DomainException } from '../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
-import { SecurityDeviceRepository } from '../../infrastructure/security-device.repository';
 import { DateUtil } from '../../../../core/utils/DateUtil';
+import { SessionDeviceSqlRepository } from '../../infrastructure/sql/session-device.sql-repository';
 
 type RefreshTokenPayloadTYpe = {
   deviceId: string;
@@ -23,7 +23,7 @@ export class RefreshTokenAuthGuard implements CanActivate {
   constructor(
     @Inject(REFRESH_TOKEN_STRATEGY_INJECT_TOKEN)
     private refreshTokenContext: JwtService,
-    private securityDeviceRepository: SecurityDeviceRepository,
+    private sessionDeviceRepository: SessionDeviceSqlRepository,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -40,9 +40,10 @@ export class RefreshTokenAuthGuard implements CanActivate {
       });
     }
     let refreshPayload: RefreshTokenPayloadTYpe;
+
     try {
       refreshPayload = await this.refreshTokenContext.verify(refreshToken);
-    } catch (e: unknown) {
+    } catch (e: any) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       response.clearCookie('refreshToken');
       throw new DomainException({
@@ -50,16 +51,12 @@ export class RefreshTokenAuthGuard implements CanActivate {
       });
     }
 
-console.log('date,',  DateUtil.convertUnixToUTC(refreshPayload.iat))
-
     const foundDeviceActual =
-      await this.securityDeviceRepository.findActualDevice(
+      await this.sessionDeviceRepository.findActualDevice(
         refreshPayload.deviceId,
         refreshPayload.userId,
         DateUtil.convertUnixToUTC(refreshPayload.iat),
       );
-
-    console.log("foundDeviceActual:", foundDeviceActual);
 
     if (!foundDeviceActual) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

@@ -5,9 +5,9 @@ import {
   REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
 } from '../../constants/auth-tokens.inject-constants';
 import { JwtService } from '@nestjs/jwt';
-import { Types } from 'mongoose';
 import { DateUtil } from '../../../../core/utils/DateUtil';
 import { CreateSecurityDeviceCommand } from '../security-devices-usecases/create-security-device.usecase';
+import { randomUUID } from 'crypto';
 
 export class AuthLoginCommand {
   constructor(
@@ -35,7 +35,7 @@ export class AuthLoginHandler
   ) {}
 
   async execute(command: AuthLoginCommand): Promise<AuthLoginResponse> {
-    const deviceId = new Types.ObjectId();
+    const deviceId = randomUUID();
     const refreshToken = this.refreshTokenContext.sign({
       userId: command.userId,
       deviceId,
