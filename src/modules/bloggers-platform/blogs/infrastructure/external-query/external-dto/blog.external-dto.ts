@@ -1,4 +1,4 @@
-import { BlogDocument } from '../../../domain/blog.entity';
+import { BlogDocument } from '../../../domain/blog.odm-entity';
 
 export class BlogExternalDto {
   id: string;

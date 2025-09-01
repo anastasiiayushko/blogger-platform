@@ -5,13 +5,13 @@ import request from 'supertest';
 import { UserMeViewDto } from '../../src/modules/user-accounts/api/view-dto/user-me.view-dto';
 import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
 import { AccessTokenViewDto } from '../../src/modules/user-accounts/api/view-dto/access-token.view-dto';
-import { UserAccountConfig } from '../../src/modules/user-accounts/config/user-account.config';
+import { JwtService } from '@nestjs/jwt';
 
-describe('Auth /me', () => {
+describe('Auth me ', () => {
   const basicAuth = getAuthHeaderBasicTest();
   let app: INestApplication;
   let userTestManger: UsersApiManagerHelper;
-  let userAccountConfig: UserAccountConfig;
+  let jwtService: JwtService;
 
   const userAuthData = {
     email: 'test@test.com',
@@ -23,7 +23,7 @@ describe('Auth /me', () => {
     const init = await initSettings();
     app = init.app;
     userTestManger = init.userTestManger;
-    userAccountConfig = app.get<UserAccountConfig>(UserAccountConfig);
+    jwtService = app.get<JwtService>(JwtService);
     const userRes = await userTestManger.createUser(userAuthData, basicAuth);
     expect(userRes.status).toBe(HttpStatus.CREATED);
   });
@@ -55,17 +55,21 @@ describe('Auth /me', () => {
   });
 
   it('Should be return 401 if access token expiredAt', async () => {
-    userAccountConfig.assessTokenExpiresIn = '-5s';
     const loginRes = await userTestManger.login({
       loginOrEmail: userAuthData.login,
       password: userAuthData.password,
     });
     expect(loginRes.status).toBe(HttpStatus.OK);
     const { accessToken } = loginRes.body as AccessTokenViewDto;
-
+    const decode = jwtService.decode(accessToken);
+    console.log(decode);
+    const expired = jwtService.sign(
+      { userId: decode!.userId },
+      { secret: process.env.ACCESS_TOKEN_SECRET!, expiresIn: '-30s' },
+    );
     const meRes = await request(app.getHttpServer())
       .get('/api/auth/me')
-      .set('Authorization', `Bearer ${accessToken}`);
+      .set('Authorization', `Bearer ${expired}`);
 
     expect(meRes.status).toBe(HttpStatus.UNAUTHORIZED);
     expect(meRes.body).toEqual({});

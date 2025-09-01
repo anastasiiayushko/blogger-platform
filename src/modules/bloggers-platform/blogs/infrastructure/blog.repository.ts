@@ -1,50 +1,61 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Blog, BlogDocument, BlogModelType } from '../domain/blog.entity';
-import { CreateBlogDomainDto } from '../domain/dto/create-blog.domain.dto';
+import { BlogDocument } from '../domain/blog.odm-entity';
 import { DomainException } from '../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
-import { Types } from 'mongoose';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import { Blog, BlogPersisted } from '../domain/blog.entity';
+
+export type BlogSqlRow = {
+  id: string; // PK
+  name: string; // FK
+  description: string;
+  websiteUrl: string;
+  isMembership: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 @Injectable()
 export class BlogRepository {
-  constructor(@InjectModel(Blog.name) private BlogModel: BlogModelType) {}
+  constructor(@InjectDataSource() protected dataSource: DataSource) {}
 
+  private async _findByIdQuery(id: string): Promise<BlogPersisted | null> {
+    const SELECT_QUERY = `
+        SELECT *
+        FROM public."Blogs"
+        WHERE id = $1
 
-  async findById(id: string): Promise<BlogDocument | null> {
-    const blog = await this.BlogModel.findById(id);
-    if (!blog) {
+    `;
+
+    const blogRow = await this.dataSource.query<BlogSqlRow[]>(SELECT_QUERY, [
+      id,
+    ]);
+    if (!blogRow || blogRow.length === 0) {
       return null;
     }
-    return blog;
+    return Blog.toDomain(blogRow[0]);
+  }
+
+  async findById(id: string): Promise<Blog | null> {
+    return await this._findByIdQuery(id);
   }
 
   /**
    * find new a blog.
    * @param {string} id - The ID of the blog to find.
-   * @returns {BlogDocument | null} - The ID of the find blog.
+   * @returns {Blog} - The ID of the find blog.
    * @throws {DomainException} - If no blog is found with the given ID.
    */
-  async findOrNotFoundFail(id: string): Promise<BlogDocument> {
-    const blog = await this.BlogModel.findById(id);
+  async findOrNotFoundFail(id: string): Promise<BlogPersisted> {
+    const blog = await this._findByIdQuery(id);
     if (!blog) {
-      //TODO: replace with domain exception
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
       });
     }
     return blog;
   }
-
-  // /**
-  //  * Create new a blog.
-  //  * @param {CreateBlogDomainDto}
-  //  * @returns {BlogDocument}
-  //  * @throws {}
-  //  */
-  // create(dto: CreateBlogDomainDto): BlogDocument {
-  //   return this.BlogModel.createInstance(dto);
-  // }
 
   /**
    * Delete a blog by ID.
@@ -53,16 +64,69 @@ export class BlogRepository {
 
    */
   async delete(id: string): Promise<boolean> {
-    const result = await this.BlogModel.deleteOne({
-      _id: new Types.ObjectId(id),
-    });
-    return !!result.deletedCount;
+    const DELETE_QUERY = `
+        DELETE
+        FROM public."Blogs"
+        WHERE id = $1
+    `;
+    const result = await this.dataSource.query<[[], { count: number }]>(
+      DELETE_QUERY,
+      [id],
+    );
+
+    return !!result?.[1].count;
   }
 
   /**
    * Save smart object.
    */
-  async save(blog: BlogDocument) {
-    await blog.save();
+  private async update(blog: Blog): Promise<BlogSqlRow> {
+    const UPDATE_QUERY = `
+        UPDATE public."Blogs"
+        SET name=$1,
+            description=$2,
+            "websiteUrl"=$3,
+            "updatedAt"=$4
+        WHERE public."Blogs".id = $5 RETURNING *;
+    `;
+    const updateRow = await this.dataSource.query<BlogSqlRow[]>(UPDATE_QUERY, [
+      blog.name,
+      blog.description,
+      blog.websiteUrl,
+      new Date(),
+      blog.id,
+    ]);
+
+    return updateRow[0];
+  }
+
+  private async insert(blog: Blog): Promise<BlogSqlRow> {
+    const INSERT_QUERY = `
+        INSERT INTO public."Blogs"
+            (name, description, "websiteUrl", "isMembership")
+        VALUES ($1, $2, $3, $4) RETURNING *;
+    `;
+    const insertRow = await this.dataSource.query<BlogSqlRow[]>(INSERT_QUERY, [
+      blog.name,
+      blog.description,
+      blog.websiteUrl,
+      blog.isMembership,
+    ]);
+
+    return insertRow[0];
+  }
+
+  async save(blog: Blog): Promise<BlogPersisted> {
+    let blogRow: BlogSqlRow;
+    if (blog.id) {
+      blogRow = await this.update(blog);
+    } else {
+      blogRow = await this.insert(blog);
+    }
+    if (!blogRow) {
+      throw new Error('Insert blog failed');
+    }
+
+    return Blog.toDomain(blogRow);
   }
 }

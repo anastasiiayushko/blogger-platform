@@ -1,5 +1,5 @@
-import { PostDocument } from '../../domain/post.entity';
 import { LikeStatusEnum } from '../../../likes/domain/like-status.enum';
+import { PostPersistedType } from '../../domain/post.entity';
 
 type NewestLikeView = {
   addedAt: string;
@@ -28,9 +28,12 @@ export class PostViewDTO {
     newestLikes: PostNewestLikeViewDto[];
   };
 
-  static mapToView(item: PostDocument, setStatus: LikeStatusEnum): PostViewDTO {
+  static mapToView(
+    item: PostPersistedType & { blogName: string },
+    setStatus: LikeStatusEnum,
+  ): PostViewDTO {
     const post = new PostViewDTO();
-    post.id = item._id.toString();
+    post.id = item.id;
     post.title = item.title;
     post.shortDescription = item.shortDescription;
     post.content = item.content;
@@ -38,14 +41,10 @@ export class PostViewDTO {
     post.blogName = item.blogName;
     post.createdAt = item.createdAt.toISOString();
     post.extendedLikesInfo = {
-      likesCount: item.extendedLikesInfo.likesCount,
-      dislikesCount: item.extendedLikesInfo.dislikesCount,
+      likesCount: 0,
+      dislikesCount: 0,
       myStatus: setStatus,
-      newestLikes: item.extendedLikesInfo.newestLikes.map((like) => ({
-        addedAt: like.addedAt.toISOString(),
-        userId: like.userId,
-        login: like.login,
-      })),
+      newestLikes: [],
     };
     return post;
   }

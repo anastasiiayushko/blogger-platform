@@ -7,7 +7,10 @@ import {
   getCookieValueByName,
 } from '../helpers/common-helpers';
 import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
-import { validateJwtTokenRegex } from '../util/token-util';
+import {
+  findAndValidateTokenCookie,
+  validateJwtTokenRegex,
+} from '../util/token-util';
 
 describe('Auth /login', () => {
   const basicAuth = getAuthHeaderBasicTest();
@@ -42,17 +45,7 @@ describe('Auth /login', () => {
 
     const cookies = excludeCookiesFromHeaders(res.headers);
 
-    const cookieRefreshToken = findCookieByName(
-      cookies,
-      'refreshToken',
-    ) as string;
-    validateJwtTokenRegex(cookieRefreshToken);
-
-    const refreshTokenValue: string = getCookieValueByName(
-      cookies,
-      'refreshToken',
-    ) as string;
-    validateJwtTokenRegex(refreshTokenValue);
+    findAndValidateTokenCookie(cookies, 'refreshToken');
   });
 
   it('Should be return status 401 if such login dont existing in system', async () => {

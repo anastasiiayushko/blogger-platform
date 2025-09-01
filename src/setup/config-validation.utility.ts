@@ -23,8 +23,19 @@ export const configValidationUtility = {
     if (trimmedValue === '0') return false;
     if (trimmedValue === 'disabled') return false;
 
-    return null;
+    throw new Error(`Config convertToBoolean failed: ${value}`);
   },
+
+  convertToNumber: (value: any) => {
+    const numberValue = +value;
+    if (typeof numberValue !== 'number' && isNaN(numberValue)) {
+      throw new Error(
+        `Config convertToNumber failed: input:${value} = ${numberValue}`,
+      );
+    }
+    return numberValue;
+  },
+
   getEnumValues<T extends Record<string, string>>(enumObj: T): string[] {
     return Object.values(enumObj);
   },

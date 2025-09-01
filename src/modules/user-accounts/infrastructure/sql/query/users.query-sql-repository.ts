@@ -90,7 +90,7 @@ export class UsersQuerySqlRepository {
     if (conditions.length) {
       WHERE_FILTER = `WHERE ` + conditions.join(' or ');
     }
-
+    //::TODO  COLLATE
     const SQL_PAGING = `
         SELECT u.*
         FROM public."Users" as u
@@ -103,9 +103,6 @@ export class UsersQuerySqlRepository {
         SELECT count(*)
         FROM public."Users" ${WHERE_FILTER};
     `;
-
-    // console.log(SQL_PAGING);
-    // console.log(SQL_COUNT);
 
     const totalCount = await this.datasource.query<{ count: number }[]>(
       SQL_COUNT,

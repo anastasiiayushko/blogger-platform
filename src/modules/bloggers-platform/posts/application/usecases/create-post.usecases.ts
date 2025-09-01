@@ -1,8 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PostRepository } from '../../infrastructure/post.repository';
-import { InjectModel } from '@nestjs/mongoose';
-import { Post, PostModelType } from '../../domain/post.entity';
 import { BlogQueryRepository } from '../../../blogs/infrastructure/query/blog.query-repository';
+import { Post } from '../../domain/post.entity';
 
 export class CreatePostCommand {
   constructor(
@@ -18,14 +17,13 @@ export class CreatePostHandler
   implements ICommandHandler<CreatePostCommand, string>
 {
   constructor(
-    @InjectModel(Post.name) protected PostModel: PostModelType,
-    protected postRepo: PostRepository,
-    protected blogQRepo: BlogQueryRepository,
+    protected postRepository: PostRepository,
+    protected blogQwRepository: BlogQueryRepository,
   ) {}
 
   async execute(command: CreatePostCommand): Promise<string> {
-    const blog = await this.blogQRepo.findOrNotFoundFail(command.blogId);
-    const post = this.PostModel.createInstance({
+    const blog = await this.blogQwRepository.findOrNotFoundFail(command.blogId);
+    const post = Post.createInstance({
       title: command.title,
       content: command.content,
       shortDescription: command.shortDescription,
@@ -33,7 +31,7 @@ export class CreatePostHandler
       blogId: blog.id,
     });
 
-    await this.postRepo.save(post);
-    return post._id.toString();
+    const savedPost = await this.postRepository.save(post);
+    return savedPost.id;
   }
 }

@@ -2,6 +2,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { EmailConfirmationSqlRepository } from '../../infrastructure/sql/email-confirmation.sql-repository';
 import { UsersSqlRepository } from '../../infrastructure/sql/users.sql-repository';
 import { PasswordRecoverySqlRepository } from '../../infrastructure/sql/password-recovery.sql-repository';
+import { SessionDeviceSqlRepository } from '../../infrastructure/sql/session-device.sql-repository';
 
 export class SaDeleteUserCommand {
   constructor(public userId: string) {}
@@ -15,12 +16,15 @@ export class SaDeleteUserHandler
     protected userSqlRepository: UsersSqlRepository,
     protected emailConfirmationRepository: EmailConfirmationSqlRepository,
     protected passwordRecoverySqlRepository: PasswordRecoverySqlRepository,
+    protected sessionDeviceRepository: SessionDeviceSqlRepository,
   ) {}
 
   async execute({ userId }: SaDeleteUserCommand): Promise<void> {
     //::TODO добавить удаление строки recovery code
+    await this.sessionDeviceRepository.deleteAllSessionByUserId(userId);
     await this.emailConfirmationRepository.deleteByUserId(userId);
     await this.passwordRecoverySqlRepository.deleteByUserId(userId);
-    this.userSqlRepository.delete(userId);
+    await this.userSqlRepository.delete(userId);
+    return
   }
 }

@@ -50,6 +50,6 @@ export const excludeCookiesFromHeaders = (headers: {
     : [headers['set-cookie']];
 };
 
-export const findCookieByName = (cookies: string[], cookieName: string)=>{
-  return cookies.find(cookie => cookie.startsWith(`${cookieName}=`));
-}
+export const findCookieByName = (cookies: string[], cookieName: string) => {
+  return cookies.find((cookie) => cookie.startsWith(`${cookieName}=`));
+};

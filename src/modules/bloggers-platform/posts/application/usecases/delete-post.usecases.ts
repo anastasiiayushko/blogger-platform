@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PostRepository } from '../../infrastructure/post.repository';
 import { InjectModel } from '@nestjs/mongoose';
-import { Post, PostModelType } from '../../domain/post.entity';
+import { Post, PostModelType } from '../../domain/post.odm-entity';
 
 export class DeletePostCommand {
   constructor(public id: string) {}

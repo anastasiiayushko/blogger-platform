@@ -23,13 +23,12 @@ export class RegistrationEmailResendingHandler
 
   async execute(cmd: RegistrationEmailResendingCommand): Promise<void> {
     const user = await this.userRepository.findByEmailOrLogin(cmd.email);
-    if (!user) {
-      return;
-    }
-    const emailConfirmation =
-      await this.emailConfirmationRepository.findByUserId(user?.id as string);
 
-    if (!emailConfirmation || emailConfirmation.isConfirmed) {
+    const emailConfirmation = user
+      ? await this.emailConfirmationRepository.findByUserId(user?.id as string)
+      : null;
+
+    if (!user || !emailConfirmation || emailConfirmation.isConfirmed) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,
         extensions: [

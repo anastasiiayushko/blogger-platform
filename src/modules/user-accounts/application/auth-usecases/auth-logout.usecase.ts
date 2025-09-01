@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { SecurityDeviceRepository } from '../../infrastructure/security-device.repository';
 import { DomainException } from '../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
+import { SessionDeviceSqlRepository } from '../../infrastructure/sql/session-device.sql-repository';
 
 export class AuthLogoutCommand {
   constructor(
@@ -13,7 +13,7 @@ export class AuthLogoutCommand {
 @CommandHandler(AuthLogoutCommand)
 export class AuthLogoutHandler implements ICommandHandler<AuthLogoutCommand> {
   constructor(
-    private readonly securityDeviceRepository: SecurityDeviceRepository,
+    private readonly securityDeviceRepository: SessionDeviceSqlRepository,
   ) {}
 
   async execute({ deviceId, userId }: AuthLogoutCommand): Promise<void> {

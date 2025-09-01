@@ -10,7 +10,7 @@ import {
   blogDescriptionConstraints,
   blogNameConstraints,
   blogWebsitUrlConstraints,
-} from '../../domain/blog.entity';
+} from '../../domain/blog-constraints';
 
 export class BlogInputDto {
   @Trim()

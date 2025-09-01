@@ -8,7 +8,9 @@ export const configModule = ConfigModule.forRoot({
     // join(__dirname, 'env', `.env.${process.env.NODE_ENV}.local`),
     // join(__dirname, 'env', `.env.${process.env.NODE_ENV}`),
     // join(__dirname, 'env', '.env.production'),
-    '.env.development'
+    `.env.${process.env.NODE_ENV}.local`,
+    `.env.${process.env.NODE_ENV}`,
+    '.env.development',
   ],
   isGlobal: true, // делает доступным во всех модулях без повторного импорта
 });

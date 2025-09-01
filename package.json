@@ -17,8 +17,8 @@
     "test-unit:watch": "cross-env NODE_ENV=testing jest --watch",
     "test:watch": "cross-env NODE_ENV=testing jest --watch",
     "test:cov": "cross-env NODE_ENV=testing jest --coverage",
-    "test:debug": "NODE_ENV=testing node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "cross-env NODE_ENV=testing jest --config ./test/jest-e2e.json"
+    "test:debug": "cross-env NODE_ENV=testing node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:e2e": "cross-env NODE_ENV=testing jest --config ./test/jest-e2e.json --runInBand"
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^2.0.2",

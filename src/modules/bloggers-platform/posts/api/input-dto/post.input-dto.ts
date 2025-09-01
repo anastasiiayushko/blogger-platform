@@ -1,16 +1,10 @@
 import { Trim } from '../../../../../core/decorators/transform/trim';
-import {
-  IsMongoId,
-  IsNotEmpty,
-  IsString,
-  Length,
-  MaxLength,
-} from 'class-validator';
+import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
 import {
   postContentConstraints,
   postShortDescConstraints,
   postTitleConstraints,
-} from '../../domain/post.entity';
+} from '../../domain/post.constraints';
 
 export class PostInputDTO {
   @Trim()
@@ -31,6 +25,8 @@ export class PostInputDTO {
   @MaxLength(postContentConstraints.maxLength)
   content: string;
 
-  @IsMongoId()
+  @Trim()
+  @IsString()
+  @IsNotEmpty()
   blogId: string;
 }

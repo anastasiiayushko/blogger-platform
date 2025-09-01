@@ -1,101 +1,43 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { CreateBlogDomainDto } from './dto/create-blog.domain.dto';
-import { HydratedDocument, Model } from 'mongoose';
 
-export const blogNameConstraints = {
-  maxLength: 15,
-};
+// Уточнённые типы Blog
+export type BlogNew = Blog & { id: null; createdAt: null };
+export type BlogPersisted = Blog & { id: string; createdAt: Date };
 
-export const blogDescriptionConstraints = {
-  maxLength: 500,
-};
-
-export const blogWebsitUrlConstraints = {
-  match: /^https:\/\/([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$/,
-  maxLength: 100,
-};
-
-@Schema({
-  timestamps: true,
-  optimisticConcurrency: true, //  Optimistic Concurrency Control (OCC) — через versionKey
-})
-export class Blog {
-  /**
-   * Name of the blog
-   * @type{string}
-   * @required
-   * @maxlength - 15
-   * @trim
-   */
-  @Prop({
-    type: String,
-    required: true,
-    trim: true,
-    maxlength: blogNameConstraints.maxLength,
-  })
+type PrimitiveType<ID> = {
+  id: ID;
   name: string;
-
-  /**
-   * Description of the blog
-   * @type{string}
-   * @required
-   * @maxlength - 500
-   * @trim
-   */
-  @Prop({
-    type: String,
-    required: true,
-    trim: true,
-    maxlength: blogDescriptionConstraints.maxLength,
-  })
   description: string;
-
-  /**
-   * Link to Website url or social network of the blog author
-   * @type{string}
-   * @required
-   * @maxlength - 100
-   * @trim
-   * @match
-   */
-  @Prop({
-    type: String,
-    required: true,
-    trim: true,
-    maxlength: blogWebsitUrlConstraints.maxLength,
-    match: [blogWebsitUrlConstraints.match, 'Invalid URL format'],
-  })
   websiteUrl: string;
-
-  /**
-   * isMembership of the blog
-   * @type{boolean}
-   * @required
-   */
-  @Prop({ type: Boolean, required: true })
+  createdAt: Date | null;
   isMembership: boolean;
+};
 
-  /**
-   * Creation timestamp
-   * Explicitly defined despite timestamps: true
-   * properties without @Prop for typescript so that they are in the class instance (or in instance methods)
-   * @type {Date}
-   */
-  createdAt: Date;
-  updatedAt: Date;
+export class Blog {
+  private constructor(
+    /** null указывает на то что это ново созданная запись
+     * значение атрибута устанавливается при создании строки
+     * */
+    public id: string | null,
+    public name: string,
+    public description: string,
+    public websiteUrl: string,
+    /** null указывает на то что это ново созданная запись,
+     * значение атрибута устанавливается при создании строки
+     * */
+    public createdAt: Date | null,
+    public isMembership: boolean,
+  ) {}
 
-  /**
-   * Factory method for create entity blog
-   * @param{CreateBlogDomainDto}
-   * @return{BlogDocument}
-   * */
-  static createInstance(dto: CreateBlogDomainDto) {
-    const blog = new this();
-    blog.name = dto.name;
-    blog.description = dto.description;
-    blog.websiteUrl = dto.websiteUrl;
-    blog.isMembership = false;
-    return blog as BlogDocument;
+  static createInstance(dto: CreateBlogDomainDto): BlogNew {
+    return new Blog(
+      null,
+      dto.name,
+      dto.description,
+      dto.websiteUrl,
+      null,
+      false,
+    ) as BlogNew;
   }
 
   updateBlog(dto: CreateBlogDomainDto) {
@@ -103,14 +45,51 @@ export class Blog {
     this.description = dto.description;
     this.websiteUrl = dto.websiteUrl;
   }
+
+  /** Для маппера */
+
+  static toDomain(row: {
+    id: string;
+    name: string;
+    description: string;
+    websiteUrl: string;
+    createdAt: Date;
+    isMembership: boolean;
+  }): BlogPersisted {
+    return new Blog(
+      row.id,
+      row.name,
+      row.description,
+      row.websiteUrl,
+      row.createdAt,
+      row.isMembership,
+    ) as BlogPersisted;
+  }
+
+  // 3) Перегрузки toPrimitive: тип результата выбирается по типу аргумента
+  static toPrimitive(blog: BlogNew): PrimitiveType<null>;
+  static toPrimitive(blog: BlogPersisted): PrimitiveType<string>;
+
+  static toPrimitive(blog: Blog) {
+    if (typeof blog.id === 'string') {
+      // persisted
+      return {
+        id: blog.id,
+        name: blog.name,
+        description: blog.description,
+        websiteUrl: blog.websiteUrl,
+        createdAt: blog.createdAt,
+        isMembership: blog.isMembership,
+      } as PrimitiveType<string>;
+    }
+    // new
+    return {
+      id: null,
+      name: blog.name,
+      description: blog.description,
+      websiteUrl: blog.websiteUrl,
+      createdAt: null,
+      isMembership: blog.isMembership,
+    } as PrimitiveType<null>;
+  }
 }
-
-export const BlogSchema = SchemaFactory.createForClass(Blog);
-//Register methods entity in schema
-BlogSchema.loadClass(Blog);
-
-// Typing document
-export type BlogDocument = HydratedDocument<Blog>;
-
-//Typing model + static methods
-export type BlogModelType = Model<BlogDocument> & typeof Blog;

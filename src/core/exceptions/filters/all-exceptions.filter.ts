@@ -8,6 +8,7 @@ import { Request, Response } from 'express';
 import { ErrorResponseBody } from './error-response-body.type';
 import { DomainExceptionCode } from '../domain-exception-codes';
 import { ConfigService } from '@nestjs/config';
+import * as process from 'node:process';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -20,9 +21,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
     let message = 'Unknown exception occurred.';
     if (exception instanceof Error) {
       message = exception.message + exception.stack;
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(message);
+      }
     }
-
-    console.log(exception)
 
     const status = HttpStatus.INTERNAL_SERVER_ERROR;
     const responseBody = this.buildResponseBody(request.url, message);

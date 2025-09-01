@@ -13,12 +13,9 @@ describe('AppController (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    console.log('app', app);
     await app.init();
   });
-  beforeAll(async () => {
-    console.log(app);
-  });
+  beforeAll(async () => {});
 
   it('/ (GET)', () => {
     expect(2).toBe(2);

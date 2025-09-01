@@ -160,4 +160,17 @@ export class SessionDeviceSqlRepository {
     await this.dataSource.query(DELETE_SQL, [currentDeviceId, userId]);
     return;
   }
+
+  /**
+   *
+   * */
+  async deleteAllSessionByUserId(userId: string): Promise<void> {
+    const DELETE_SQL = `
+        DELETE
+        FROM public."SessionDevieces" as device
+        WHERE device."userId" = $1;
+    `;
+    await this.dataSource.query(DELETE_SQL, [userId]);
+    return;
+  }
 }

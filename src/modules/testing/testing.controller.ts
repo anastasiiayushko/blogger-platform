@@ -23,6 +23,7 @@ export class TestingController {
     await Promise.all(promises);
 
     await this.dataSource.query(`TRUNCATE TABLE public."Users" CASCADE;`);
+    await this.dataSource.query(`TRUNCATE TABLE public."Blogs" CASCADE;`);
     return {
       status: true,
     };

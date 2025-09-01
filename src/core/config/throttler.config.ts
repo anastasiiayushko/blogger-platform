@@ -21,11 +21,17 @@ export class ThrottlerConfig {
   ttl: number;
 
   constructor(private configService: ConfigService) {
-    this.enabled =
-      String(this.configService.get<string>('THROTTLE_ENABLED')) === 'true';
-    this.limit = Number(this.configService.get<number>('THROTTLE_LIMIT'));
+    this.enabled = configValidationUtility.convertToBoolean(
+      String(this.configService.get<string>('THROTTLE_ENABLED')),
+    );
 
-    this.ttl = Number(this.configService.get<number>('THROTTLE_TTL'));
+    this.limit = configValidationUtility.convertToNumber(
+      this.configService.get<number>('THROTTLE_LIMIT'),
+    );
+
+    this.ttl = configValidationUtility.convertToNumber(
+      this.configService.get<number>('THROTTLE_TTL'),
+    );
 
     configValidationUtility.validateConfig(this);
   }

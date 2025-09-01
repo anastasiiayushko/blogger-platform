@@ -105,6 +105,14 @@ describe('Auth /registration-email-resending', () => {
     expect(resendingRes.body).toEqual({});
   });
 
+  it('should return error if user email doesnt exist; status 400;', async () => {
+    const resendingRes = await request(app.getHttpServer())
+      .post('/api/auth/registration-email-resending')
+      .send({ email: 'noesiting@gmail.co' });
+
+    console.log(resendingRes.body);
+  });
+
   it('Should be return 429 if than 5 attempts from one IP-address during 10 seconds ', async () => {
     for (let i = 0; i < 5; i++) {
       await request(app.getHttpServer())

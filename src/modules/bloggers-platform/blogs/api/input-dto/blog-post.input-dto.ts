@@ -1,13 +1,12 @@
+import { Trim } from '../../../../../core/decorators/transform/trim';
 import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
-import { Trim } from '../../../../../../core/decorators/transform/trim';
 import {
   postContentConstraints,
   postShortDescConstraints,
   postTitleConstraints,
-} from '../../../domain/post.constraints';
+} from '../../../posts/domain/post.constraints';
 
-//::TODO удалить этот дто
-export class PostExternalInputDto {
+export class BlogPostInputDto {
   @Trim()
   @IsString()
   @IsNotEmpty()

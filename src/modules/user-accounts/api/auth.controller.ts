@@ -9,12 +9,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { AuthService } from '../application/auth.service';
 import { LocalAuthGuard } from '../guards/local/local-auth.guard';
 import { ApiResponse } from '@nestjs/swagger';
 import { CurrentUserFormRequest } from '../decorators/param/current-user-form-request.decorator';
 import { UserContextDto } from '../decorators/param/user-context.dto';
-import { UserQueryRepository } from '../infrastructure/query/users.query-repository';
 import { AuthCodeInputDto } from './input-dto/auth-code.input-dto';
 import { EmailInputModelDto } from './input-dto/email-input-model.dto';
 import { NewPasswordRecoveryInputDto } from './input-dto/new-password-recovery.input-dto';

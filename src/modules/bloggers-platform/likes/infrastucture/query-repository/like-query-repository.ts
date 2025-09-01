@@ -38,7 +38,6 @@ export class LikeQueryRepository {
         { parentId: 1, status: 1, authorId: 1 },
       )
       .lean();
-    console.log(parentIds, authorId);
     return likes && likes?.length ? likes : null;
   }
 }

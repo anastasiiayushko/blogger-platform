@@ -8,8 +8,6 @@ export class ThrottlerBehindGuard extends ThrottlerGuard {
   }
 
   async handleRequest(requestProps: ThrottlerRequest): Promise<boolean> {
-    console.log(requestProps);
-
     return true;
   }
 }

@@ -1,23 +1,91 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Post, PostDocument, PostModelType } from '../domain/post.entity';
 import { DomainException } from '../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
-import { Types } from 'mongoose';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { Post, PostPersistedType } from '../domain/post.entity';
+import { DataSource } from 'typeorm';
+
+export type PostSqlRow = {
+  id: string;
+  blogId: string;
+  title: string;
+  content: string;
+  shortDescription: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 @Injectable()
 export class PostRepository {
-  constructor(@InjectModel(Post.name) protected PostModel: PostModelType) {}
+  constructor(@InjectDataSource() protected dataSource: DataSource) {}
 
-  async save(post: PostDocument): Promise<PostDocument> {
-    return await post.save();
+  private async insert(post: Post): Promise<PostSqlRow> {
+    const INSERT_QUERY = `
+        INSERT INTO public."Posts"("blogId", title, "shortDescription", content)
+        VALUES ($1, $2, $3, $4) RETURNING *;
+
+    `;
+
+    const postRow = await this.dataSource.query<PostSqlRow[]>(INSERT_QUERY, [
+      post.blogId,
+      post.title,
+      post.shortDescription,
+      post.content,
+    ]);
+    return postRow[0];
   }
 
-  async findById(id: string): Promise<PostDocument | null> {
-    return this.PostModel.findById(id);
+  private async update(post: Post): Promise<PostSqlRow> {
+    const UPDATE_QUERY = `
+        UPDATE public."Posts"
+        SET "blogId"           = $1,
+            title              = $2,
+            "shortDescription" = $3,
+            content            = $4,
+            updatedAt          = ${Date.now()}
+        WHERE public."Posts".id = $5 RETURNING *;
+    `;
+    const postRow = await this.dataSource.query<PostSqlRow[]>(UPDATE_QUERY, [
+      post.blogId,
+      post.title,
+      post.shortDescription,
+      post.content,
+      post.id,
+    ]);
+    return postRow[0];
   }
-  async getByIdOrNotFoundFail(id: string ): Promise<PostDocument> {
-    const post = await this.PostModel.findById(id);
+
+  async save(post: Post): Promise<PostPersistedType> {
+    let result: PostSqlRow;
+    if (post.id) {
+      result = await this.update(post);
+    } else {
+      result = await this.insert(post);
+    }
+    if (!result) {
+      throw new Error('result set after dml (insert or update) not existing');
+    }
+
+    return Post.toDomain(result);
+  }
+
+  private async _findById(id: string): Promise<PostPersistedType | null> {
+    const postRow = await this.dataSource.query<PostSqlRow[]>(
+      `SELECT p.id, p."blogId", p.title, p.shortDescription, p.content, p.createdAt
+       FROM public."Posts" as p
+       where public."Posts".id = $1;
+      `,
+      [id],
+    );
+    return postRow?.length ? Post.toDomain(postRow[0]) : null;
+  }
+
+  async findById(id: string): Promise<PostPersistedType | null> {
+    return this._findById(id);
+  }
+
+  async getByIdOrNotFoundFail(id: string): Promise<PostPersistedType> {
+    const post = await this._findById(id);
     if (!post) {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
@@ -28,9 +96,15 @@ export class PostRepository {
   }
 
   async deleteById(id: string): Promise<boolean> {
-    const result = await this.PostModel.deleteOne({
-      _id: new Types.ObjectId(id),
-    });
-    return !!result.deletedCount;
+    const DELETE_QUERY = `
+        DELETE
+        FROM public."Posts" as p
+        WHERE public."Posts".id = $1;
+    `;
+    const result = await this.dataSource.query<[[], { count: number }]>(
+      DELETE_QUERY,
+      [id],
+    );
+    return !!result?.[1]?.count;
   }
 }

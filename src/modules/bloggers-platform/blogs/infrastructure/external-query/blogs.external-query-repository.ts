@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Blog, BlogModelType } from '../../domain/blog.entity';
+import { Blog, BlogModelType } from '../../domain/blog.odm-entity';
 import { BlogExternalDto } from './external-dto/blog.external-dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { DomainException } from '../../../../../core/exceptions/domain-exception';

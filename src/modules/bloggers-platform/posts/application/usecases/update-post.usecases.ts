@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PostRepository } from '../../infrastructure/post.repository';
 import { InjectModel } from '@nestjs/mongoose';
-import { Post, PostModelType } from '../../domain/post.entity';
+import { Post, PostModelType } from '../../domain/post.odm-entity';
 import { BlogQueryRepository } from '../../../blogs/infrastructure/query/blog.query-repository';
 import { ResourceWithIdCommand } from '../../../../../core/command/resource-with-id.command';
 
@@ -25,17 +25,17 @@ export class UpdatePostHandler implements ICommandHandler<UpdatePostCommand> {
   ) {}
 
   async execute({ id, inputModel }: UpdatePostCommand): Promise<void> {
-    const blog = await this.blogQRepo.findOrNotFoundFail(inputModel.blogId);
-    const post = await this.postRepo.getByIdOrNotFoundFail(id);
-
-    post.updatePost({
-      title: inputModel.title,
-      content: inputModel.content,
-      shortDescription: inputModel.shortDescription,
-      blogId: blog.id,
-      blogName: blog.name,
-    });
-
-    await this.postRepo.save(post);
+    // const blog = await this.blogQRepo.findOrNotFoundFail(inputModel.blogId);
+    // const post = await this.postRepo.getByIdOrNotFoundFail(id);
+    //
+    // post.updatePost({
+    //   title: inputModel.title,
+    //   content: inputModel.content,
+    //   shortDescription: inputModel.shortDescription,
+    //   blogId: blog.id,
+    //   blogName: blog.name,
+    // });
+    //
+    // await this.postRepo.save(post);
   }
 }

@@ -2,7 +2,7 @@ import { BaseQueryParams } from '../../../../../core/dto/base.query-params.input
 import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
-enum BlogSortByEnum {
+export enum BlogSortByEnum {
   createAt = 'createdAt',
   description = 'description',
   websiteUrl = 'websiteUrl',

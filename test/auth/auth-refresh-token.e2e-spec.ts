@@ -35,11 +35,7 @@ describe('Auth /refresh-token', () => {
   };
 
   beforeEach(async () => {
-    const init = await initSettings(
-      (moduleBuilder)=>{
-
-      }
-    );
+    const init = await initSettings();
     app = init.app;
     userApiManager = init.userTestManger;
     securityDevicesApiManger = new SecurityDevicesApiManager(app);
@@ -99,7 +95,6 @@ describe('Auth /refresh-token', () => {
     );
 
     const resRefresh = await authApiManager.refreshToken(cookiesLogin);
-
     expect(resRefresh.status).toBe(HttpStatus.OK);
     validateJwtTokenRegex(resRefresh.body.accessToken);
 
@@ -147,8 +142,6 @@ describe('Auth /refresh-token', () => {
     await delay(1000);
 
     const cookiesLogin = excludeCookiesFromHeaders(resLogin.headers);
-    // const devicesLogin = await securityDevicesApiManger.getAllDeviceSessions(cookiesLogin)
-    // console.log('devices after logign', devicesLogin.body);
 
     await authApiManager.refreshToken(cookiesLogin);
 
@@ -157,14 +150,9 @@ describe('Auth /refresh-token', () => {
     const resRefreshExpireToken =
       await authApiManager.refreshToken(cookiesLogin);
 
-
-    // const devicesRefresh2 =
-    //   await securityDevicesApiManger.getAllDeviceSessions(cookiesLogin);
-
     const cookiesExpiresIn = excludeCookiesFromHeaders(
       resRefreshExpireToken.headers,
     );
-    // expect(cookiesExpiresIn.length).toEqual(0);
 
     expect(resRefreshExpireToken.status).toBe(HttpStatus.UNAUTHORIZED);
   });

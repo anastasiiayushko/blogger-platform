@@ -38,7 +38,6 @@ export class CommentController {
     @Param('id', ObjectIdValidationPipe) id: string,
     @OptionalCurrentUserFormRequest() user: UserContextDto | null,
   ) {
-    console.log(user);
     return this.queryBus.execute<GetCommentByIdQuery>(
       new GetCommentByIdQuery(id, user?.id),
     );

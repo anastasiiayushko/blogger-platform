@@ -4,7 +4,6 @@ import { getAuthHeaderBasicTest } from '../helpers/common-helpers';
 import request from 'supertest';
 import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
 import { PasswordRecoverySqlRepository } from '../../src/modules/user-accounts/infrastructure/sql/password-recovery.sql-repository';
-import { EventBus } from '@nestjs/cqrs';
 import { EmailPasswordRecoveryHandler } from '../../src/modules/notifications/event-usecases/email-password-recovery.event-usecase';
 
 describe('Auth /password-recovery', () => {

@@ -46,6 +46,7 @@ import { ThrottlerConfig } from './core/config/throttler.config';
       inject: [ThrottlerConfig],
       useFactory: (config: ThrottlerConfig) => {
         const enabled = config.enabled;
+        console.log('throttler config enabled', enabled);
         return {
           throttlers: enabled ? [{ limit: config.limit, ttl: config.ttl }] : [],
           errorMessage: () => {

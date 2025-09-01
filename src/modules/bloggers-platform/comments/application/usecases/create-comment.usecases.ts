@@ -37,15 +37,9 @@ export class CreateCommentHandler
       userId: userId,
       userLogin: user.login,
     });
-    console.log({
-      content: content.trim(),
-      postId: postId,
-      userId: userId,
-      userLogin: user.login,
-    });
+
     await this.commentRepo.save(comment);
 
     return comment._id.toString();
-
   }
 }
