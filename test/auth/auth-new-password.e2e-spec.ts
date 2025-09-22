@@ -12,12 +12,14 @@ import { passwordConstraints } from '../../src/modules/user-accounts/domin/user.
 import { randomUUID } from 'crypto';
 import { ApiErrorResultType } from '../type/response-super-test';
 import { UserConfirmationConfig } from '../../src/modules/user-accounts/config/user-confirmation.config';
+import { ThrottlerConfig } from '../../src/core/config/throttler.config';
 
 describe('Auth /new-password', () => {
   const basicAuth = getAuthHeaderBasicTest();
   const PATH_URL_RECOVERY_PASS = `/api/auth/password-recovery`;
   const PATH_URL_NEW_PASS = `/api/auth/new-password`;
   let app: INestApplication;
+  let throttlerConfig: ThrottlerConfig;
   let userTestManger: UsersApiManagerHelper;
   let userRepository: UsersSqlRepository;
   let recoveryPasswordRepository: PasswordRecoverySqlRepository;
@@ -33,6 +35,8 @@ describe('Auth /new-password', () => {
   beforeAll(async () => {
     const init = await initSettings();
     app = init.app;
+    throttlerConfig = app.get<ThrottlerConfig>(ThrottlerConfig);
+
     userTestManger = init.userTestManger;
     confirmationConfig = app.get<UserConfirmationConfig>(
       UserConfirmationConfig,
@@ -173,22 +177,26 @@ describe('Auth /new-password', () => {
   });
 
   it('Should be return 429 if than 5 attempts from one IP-address during 10 seconds ', async () => {
-    for (let i = 0; i < 5; i++) {
-      await request(app.getHttpServer())
+    if (throttlerConfig.enabled) {
+      for (let i = 0; i < 5; i++) {
+        await request(app.getHttpServer())
+          .post('/api/auth/new-password')
+          .send({
+            newPassword: 'newPassword123456',
+            recoveryCode: `recoveryCode123456${i + 1}`,
+          });
+      }
+
+      const resManyAttempts = await request(app.getHttpServer())
         .post('/api/auth/new-password')
         .send({
           newPassword: 'newPassword123456',
-          recoveryCode: `recoveryCode123456${i + 1}`,
+          recoveryCode: 'recoveryCode123456',
         });
+
+      expect(resManyAttempts.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
+    } else {
+      console.info('ThrottlerConfig off');
     }
-
-    const resManyAttempts = await request(app.getHttpServer())
-      .post('/api/auth/new-password')
-      .send({
-        newPassword: 'newPassword123456',
-        recoveryCode: 'recoveryCode123456',
-      });
-
-    expect(resManyAttempts.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
   });
 });

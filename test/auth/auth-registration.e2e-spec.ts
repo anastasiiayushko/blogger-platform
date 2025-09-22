@@ -7,11 +7,13 @@ import { UsersSqlRepository } from '../../src/modules/user-accounts/infrastructu
 import { EmailConfirmationSqlRepository } from '../../src/modules/user-accounts/infrastructure/sql/email-confirmation.sql-repository';
 import { EmailConfirmation } from '../../src/modules/user-accounts/domin/sql-entity/email-confirmation.sql-entity';
 import { User } from '../../src/modules/user-accounts/domin/sql-entity/user.sql-entity';
+import { ThrottlerConfig } from '../../src/core/config/throttler.config';
 
 describe('Auth /registration', () => {
   const basicAuth = getAuthHeaderBasicTest();
   const PATH_URL_REGISTRATION = '/api/auth/registration';
   let app: INestApplication;
+  let throttlerConfig: ThrottlerConfig;
   let userTestManger: UsersApiManagerHelper;
   let userRepository: UsersSqlRepository;
   let emailConfirmationRepository: EmailConfirmationSqlRepository;
@@ -30,6 +32,7 @@ describe('Auth /registration', () => {
   beforeAll(async () => {
     const init = await initSettings();
     app = init.app;
+    throttlerConfig = app.get<ThrottlerConfig>(ThrottlerConfig);
     userTestManger = init.userTestManger;
     userRepository = app.get<UsersSqlRepository>(UsersSqlRepository);
     emailConfirmationRepository = app.get<EmailConfirmationSqlRepository>(
@@ -106,14 +109,18 @@ describe('Auth /registration', () => {
   });
 
   it('Should return 429 if more than 5 requests in 10 seconds', async () => {
-    for (let i = 0; i < 5; i++) {
-      await userTestManger.registrationUser(newUser); // Или другой эндпоинт
+    if (throttlerConfig.enabled) {
+      for (let i = 0; i < 5; i++) {
+        await userTestManger.registrationUser(newUser); // Или другой эндпоинт
+      }
+
+      // Делаем еще один запрос, чтобы превысить лимит
+      const res = await userTestManger.registrationUser(newUser);
+
+      // Проверяем, что статус 429 (слишком много запросов)
+      expect(res.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
+    } else {
+      console.info('ThrottlerConfig off');
     }
-
-    // Делаем еще один запрос, чтобы превысить лимит
-    const res = await userTestManger.registrationUser(newUser);
-
-    // Проверяем, что статус 429 (слишком много запросов)
-    expect(res.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
   });
 });

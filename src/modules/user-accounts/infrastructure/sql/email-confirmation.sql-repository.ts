@@ -73,15 +73,14 @@ export class EmailConfirmationSqlRepository {
         SET code=$1,
             "expirationAt" = $2,
             "isConfirmed" = $3,
-            "updatedAt" = $4
-        WHERE public."EmailConfirmations"."userId" = $5 RETURNING *;
+            "updatedAt" = NOW()
+        WHERE public."EmailConfirmations"."userId" = $4 RETURNING *;
     `;
     const confirmationRow: EmailConfirmationSqlRow[] =
       await this.dataSource.query(UPDATE_SQL, [
         userDto.code,
         userDto.expirationAt,
         userDto.isConfirmed,
-        new Date(),
         userDto.userId,
       ]);
     if (!confirmationRow || !confirmationRow.length) {

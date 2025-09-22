@@ -1,27 +1,7 @@
-import { Trim } from '../../../../../core/decorators/transform/trim';
-import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
-import {
-  postContentConstraints,
-  postShortDescConstraints,
-  postTitleConstraints,
-} from '../../../posts/domain/post.constraints';
+import { UpdatePostCommand } from '../../../posts/application/usecases/update-post.usecases';
+import { OmitType } from '@nestjs/swagger';
 
-export class BlogPostInputDto {
-  @Trim()
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(postTitleConstraints.maxLength)
-  title: string;
-
-  @Trim()
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(postShortDescConstraints.maxLength)
-  shortDescription: string;
-
-  @Trim()
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(postContentConstraints.maxLength)
-  content: string;
-}
+export class BlogPostInputDto extends OmitType(UpdatePostCommand, [
+  'blogId',
+  'postId',
+]) {}

@@ -18,12 +18,11 @@ export class GetPostByIdQueryHandler
   ) {}
 
   async execute({ postId, userId }: GetPostByIdQuery) {
-    const post = await this.postQwRepository.getByIdOrNotFoundFail(postId);
+    return await this.postQwRepository.getByIdOrNotFoundFail(postId);
     // const likeMap = await this.likeMapQueryService.getStatusLikesMapByParams(
     //   [postId],
     //   userId,
     // );
     // const status: LikeStatusEnum = likeMap.get(postId) || LikeStatusEnum.None;
-    return post;
   }
 }

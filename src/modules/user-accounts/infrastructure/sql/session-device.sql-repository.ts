@@ -106,8 +106,8 @@ export class SessionDeviceSqlRepository {
             "expirationAt" = $2,
             "ip"           = $3,
             "title"        = $4,
-            "updatedAt"    = $5
-        WHERE public."SessionDevieces"."deviceId" = $6 RETURNING *;
+            "updatedAt"    = NOW()
+        WHERE public."SessionDevieces"."deviceId" = $5 RETURNING *;
     `;
     const deviceRows = await this.dataSource.query<SessionDeviceSqlRow[]>(
       UPDATE_SQL,
@@ -116,7 +116,6 @@ export class SessionDeviceSqlRepository {
         inputDto.expirationAt,
         inputDto.ip,
         inputDto.title,
-        new Date(),
         inputDto.deviceId,
       ],
     );

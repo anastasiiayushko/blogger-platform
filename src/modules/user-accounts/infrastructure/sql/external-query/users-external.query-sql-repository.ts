@@ -10,7 +10,7 @@ import { UserSqlRow } from '../rows/user.sql-row';
 export class UsersExternalQuerySqlRepository {
   constructor(@InjectDataSource() protected datasource: DataSource) {}
 
-  private async findById(id: string): Promise<UserSqlRow | null> {
+  async findById(id: string): Promise<UserSqlViewDto | null> {
     const SELECT_QUERY = `
         SELECT *
         FROM public."Users"
@@ -27,7 +27,7 @@ export class UsersExternalQuerySqlRepository {
         extensions: [],
       });
     }
-    return userRow[0];
+    return UserSqlViewDto.mapToView(userRow[0]);
   }
 
   /**
@@ -45,6 +45,6 @@ export class UsersExternalQuerySqlRepository {
         extensions: [],
       });
     }
-    return UserSqlViewDto.mapToView(user);
+    return user;
   }
 }

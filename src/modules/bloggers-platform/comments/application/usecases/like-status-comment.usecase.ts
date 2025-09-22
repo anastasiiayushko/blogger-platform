@@ -1,5 +1,5 @@
 import { LikeStatusEnum } from '../../../likes/domain/like-status.enum';
-import { CommentRepository } from '../../infrastructure/comment.repository';
+import { CommentOdmRepository } from '../../infrastructure/comment.odm-repository';
 
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersExternalQueryRepository } from '../../../../user-accounts/infrastructure/external-query/users-external.query-repository';
@@ -19,7 +19,7 @@ export class LikeStatusCommentHandler
   implements ICommandHandler<LikeStatusCommentCommand>
 {
   constructor(
-    protected commentRepository: CommentRepository,
+    protected commentRepository: CommentOdmRepository,
     protected userExternalQueryRepository: UsersExternalQueryRepository,
     protected likeUpsertService: LikeUpsertService,
     protected likeRepository: LikeRepository,

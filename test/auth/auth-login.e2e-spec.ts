@@ -2,20 +2,20 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import { initSettings } from '../helpers/init-setting';
 import {
   excludeCookiesFromHeaders,
-  findCookieByName,
   getAuthHeaderBasicTest,
-  getCookieValueByName,
 } from '../helpers/common-helpers';
 import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
 import {
   findAndValidateTokenCookie,
   validateJwtTokenRegex,
 } from '../util/token-util';
+import { ThrottlerConfig } from '../../src/core/config/throttler.config';
 
 describe('Auth /login', () => {
   const basicAuth = getAuthHeaderBasicTest();
   let app: INestApplication;
   let userTestManger: UsersApiManagerHelper;
+  let throttlerConfig: ThrottlerConfig;
 
   const userCredentials = {
     email: 'test@test.com',
@@ -27,6 +27,7 @@ describe('Auth /login', () => {
     const init = await initSettings();
     app = init.app;
     userTestManger = init.userTestManger;
+    throttlerConfig = app.get<ThrottlerConfig>(ThrottlerConfig);
     const userRes = await userTestManger.createUser(userCredentials, basicAuth);
     expect(userRes.status).toBe(HttpStatus.CREATED);
   });
@@ -87,18 +88,22 @@ describe('Auth /login', () => {
   });
 
   it('Should be return 429 if than 5 attempts from one IP-address during 10 seconds ', async () => {
-    for (let i = 0; i < 5; i++) {
-      await userTestManger.login({
+    if (throttlerConfig.enabled) {
+      for (let i = 0; i < 5; i++) {
+        await userTestManger.login({
+          loginOrEmail: userCredentials.email,
+          password: userCredentials.password,
+        });
+      }
+
+      const resManyAttempts = await userTestManger.login({
         loginOrEmail: userCredentials.email,
         password: userCredentials.password,
       });
+
+      expect(resManyAttempts.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
+    } else {
+      console.info('ThrottlerConfig off');
     }
-
-    const resManyAttempts = await userTestManger.login({
-      loginOrEmail: userCredentials.email,
-      password: userCredentials.password,
-    });
-
-    expect(resManyAttempts.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
   });
 });

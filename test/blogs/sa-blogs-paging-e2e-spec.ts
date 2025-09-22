@@ -27,7 +27,7 @@ describe('SaBlogController PAGING (e2e) ', () => {
   });
 
   it('Unauthorized', async () => {
-    const blogsRes = await blogApiManger.saGetAll(
+    const blogsRes = await blogApiManger.saGetAllBlogs(
       {},
       getAuthHeaderBasicTest('test:1245'),
     );
@@ -35,7 +35,7 @@ describe('SaBlogController PAGING (e2e) ', () => {
   });
 
   it('Should be returns blog paging is default query params', async () => {
-    const blogsRes = await blogApiManger.saGetAll();
+    const blogsRes = await blogApiManger.saGetAllBlogs();
     expect(blogsRes.status).toBe(HttpStatus.OK);
 
     const pagingBlogs = blogsRes.body as PaginatedViewDto<BlogViewDto[]>;
@@ -47,7 +47,7 @@ describe('SaBlogController PAGING (e2e) ', () => {
   });
 
   it('Should be returns pageSize=5 and sorted createdAt asc', async () => {
-    const blogsRes = await blogApiManger.saGetAll({
+    const blogsRes = await blogApiManger.saGetAllBlogs({
       pageSize: 5,
       sortBy: BlogSortByEnum.createAt,
       sortDirection: SortDirection.Asc,
@@ -68,7 +68,7 @@ describe('SaBlogController PAGING (e2e) ', () => {
   });
 
   it('Should be returns current item by searchNameTerm ', async () => {
-    const blogsRes = await blogApiManger.saGetAll({
+    const blogsRes = await blogApiManger.saGetAllBlogs({
       pageSize: 5,
       searchNameTerm: severalBlogs[0].name,
     });

@@ -3,7 +3,6 @@ import request from 'supertest';
 
 import { CreateUsersInputDto } from '../../../src/modules/user-accounts/api/input-dto/create-users.input-dto';
 import { ResponseBodySuperTest } from '../../type/response-super-test';
-import { UserViewDto } from '../../../src/modules/user-accounts/api/view-dto/users.view-dto';
 import { LoginInputDto } from '../../../src/modules/user-accounts/api/input-dto/login.input-dto';
 import { AccessTokenViewDto } from '../../../src/modules/user-accounts/api/view-dto/access-token.view-dto';
 import { delay } from '../common-helpers';
@@ -18,7 +17,7 @@ export class UsersApiManagerHelper {
   async createUser(
     userInputDTO: CreateUsersInputDto,
     basicAuth: string,
-  ): ResponseBodySuperTest<UserViewDto> {
+  ): ResponseBodySuperTest<UserSqlViewDto> {
     return await request(this.app.getHttpServer())
       .post(this.URL_SA_USERS)
       .set('Authorization', basicAuth)
@@ -69,7 +68,6 @@ export class UsersApiManagerHelper {
       return response.body as unknown as UserSqlViewDto;
     });
 
-    console.log('users', users);
     return users;
   }
 

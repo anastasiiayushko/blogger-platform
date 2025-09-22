@@ -25,35 +25,35 @@ export class SetLikeStatusPostHandler
   ) {}
 
   async execute({ postId, userId, status }: SetLikeStatusPostCommand) {
-    const post = await this.postRepo.getByIdOrNotFoundFail(postId);
-    const user = await this.userQRepo.findOrNotFoundFail(userId);
-
-    await this.likeUpsertService.upsert({
-      parentId: postId,
-      status: status,
-      authorName: user.login,
-      authorId: userId,
-    });
-
-    const likesCount = await this.likeRepo.getCountersByParentIdAndStatus(
-      postId,
-      LikeStatusEnum.Like,
-    );
-    const dislikesCount = await this.likeRepo.getCountersByParentIdAndStatus(
-      postId,
-      LikeStatusEnum.Dislike,
-    );
-
-    const newestLikes = await this.likeRepo.getNewestLikesByParentId(postId);
-    post.updateExtendedLikesInfo({
-      likesCount,
-      dislikesCount,
-      newestLikes: newestLikes.map((i) => ({
-        userId: i.authorId.toString(),
-        login: i.authorName,
-        addedAt: i.createdAt,
-      })),
-    });
-    await this.postRepo.save(post);
+    // const post = await this.postRepo.getByIdOrNotFoundFail(postId);
+    // const user = await this.userQRepo.findOrNotFoundFail(userId);
+    //
+    // await this.likeUpsertService.upsert({
+    //   parentId: postId,
+    //   status: status,
+    //   authorName: user.login,
+    //   authorId: userId,
+    // });
+    //
+    // const likesCount = await this.likeRepo.getCountersByParentIdAndStatus(
+    //   postId,
+    //   LikeStatusEnum.Like,
+    // );
+    // const dislikesCount = await this.likeRepo.getCountersByParentIdAndStatus(
+    //   postId,
+    //   LikeStatusEnum.Dislike,
+    // );
+    //
+    // const newestLikes = await this.likeRepo.getNewestLikesByParentId(postId);
+    // post.updateExtendedLikesInfo({
+    //   likesCount,
+    //   dislikesCount,
+    //   newestLikes: newestLikes.map((i) => ({
+    //     userId: i.authorId.toString(),
+    //     login: i.authorName,
+    //     addedAt: i.createdAt,
+    //   })),
+    // });
+    // await this.postRepo.save(post);
   }
 }

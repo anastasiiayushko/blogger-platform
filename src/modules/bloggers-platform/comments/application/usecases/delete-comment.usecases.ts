@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { CommentRepository } from '../../infrastructure/comment.repository';
+import { CommentOdmRepository } from '../../infrastructure/comment.odm-repository';
 import { Types } from 'mongoose';
 import { DomainException } from '../../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
@@ -15,7 +15,7 @@ export class DeleteCommentCommand {
 export class DeleteCommentHandler
   implements ICommandHandler<DeleteCommentCommand>
 {
-  constructor(protected commentRepo: CommentRepository) {}
+  constructor(protected commentRepo: CommentOdmRepository) {}
 
   async execute({ commentId, userId }: DeleteCommentCommand): Promise<void> {
     const editUser = new Types.ObjectId(userId);

@@ -64,12 +64,5 @@ describe('UserController PAGINATION (e2e) ', () => {
       .set('Authorization', basicAuth)
       .query(query);
     const data: PaginatedViewDto<UserSqlViewDto[]> = response.body;
-    console.log(data);
-
-    // expect(data.pageSize).toBe(3);
-    // expect(data.page).toBe(2);
-    // expect(data.totalCount).toBe(10);
-    // expect(data.pagesCount).toBe(4);
-    // expect(data.items[0].email).toBe(createdUsers[3].email);
   });
 });

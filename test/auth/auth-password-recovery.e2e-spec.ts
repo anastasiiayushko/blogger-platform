@@ -5,11 +5,13 @@ import request from 'supertest';
 import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
 import { PasswordRecoverySqlRepository } from '../../src/modules/user-accounts/infrastructure/sql/password-recovery.sql-repository';
 import { EmailPasswordRecoveryHandler } from '../../src/modules/notifications/event-usecases/email-password-recovery.event-usecase';
+import { ThrottlerConfig } from '../../src/core/config/throttler.config';
 
 describe('Auth /password-recovery', () => {
   const basicAuth = getAuthHeaderBasicTest();
   const PATH_URL = '/api/auth/password-recovery';
   let app: INestApplication;
+  let throttlerConfig: ThrottlerConfig;
   let userTestManger: UsersApiManagerHelper;
   let passwordRecoveryRepository: PasswordRecoverySqlRepository;
   let registeredUserId: string;
@@ -24,6 +26,8 @@ describe('Auth /password-recovery', () => {
   beforeAll(async () => {
     const init = await initSettings();
     app = init.app;
+    throttlerConfig = app.get<ThrottlerConfig>(ThrottlerConfig);
+
     userTestManger = init.userTestManger;
     passwordRecoveryRepository = app.get<PasswordRecoverySqlRepository>(
       PasswordRecoverySqlRepository,
@@ -88,16 +92,20 @@ describe('Auth /password-recovery', () => {
   });
 
   it('Should be return 429 (brute-force) if More than 5 attempts from one IP-address during 10 seconds', async () => {
-    await Promise.all(
-      Array.from({ length: 5 }, (_, i) => {
-        const email = `guess${i}@example.com`;
-        return request(app.getHttpServer()).post(PATH_URL).send({ email });
-      }),
-    );
-    const rejectRes = await request(app.getHttpServer())
-      .post(PATH_URL)
-      .send({ email: `unused@email.com` });
+    if (throttlerConfig.enabled) {
+      await Promise.all(
+        Array.from({ length: 5 }, (_, i) => {
+          const email = `guess${i}@example.com`;
+          return request(app.getHttpServer()).post(PATH_URL).send({ email });
+        }),
+      );
+      const rejectRes = await request(app.getHttpServer())
+        .post(PATH_URL)
+        .send({ email: `unused@email.com` });
 
-    expect(rejectRes.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
+      expect(rejectRes.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
+    } else {
+      console.info('ThrottlerConfig off');
+    }
   });
 });

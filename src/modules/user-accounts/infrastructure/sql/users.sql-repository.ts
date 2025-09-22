@@ -42,14 +42,13 @@ export class UsersSqlRepository {
         SET email=$1,
             login=$2,
             password=$3,
-            "updatedAt" = $4
-        WHERE public."Users".id = $5 RETURNING *;
+            "updatedAt" = NOW()
+        WHERE public."Users".id = $4 RETURNING *;
     `;
     const updated = await this.dataSource.query<UserSqlRow[]>(UPDATE_SQL, [
       user.email,
       user.login,
       user.password,
-      new Date(),
       user.id,
     ]);
     return updated?.[0];

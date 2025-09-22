@@ -1,13 +1,9 @@
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserModelType } from '../../domin/user.entity';
 import { Injectable } from '@nestjs/common';
-import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { UserViewDto } from '../../api/view-dto/users.view-dto';
-import { GetUsersQueryParams } from '../../api/input-dto/get-users-query-params.input-dto';
-import { FilterQuery } from 'mongoose';
 import { DomainException } from '../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
-import { UserMeViewDto } from '../../api/view-dto/user-me.view-dto';
 
 @Injectable()
 export class UsersExternalQueryRepository {
@@ -34,8 +30,4 @@ export class UsersExternalQueryRepository {
     }
     return UserViewDto.mapToView(user);
   }
-
-
-
-
 }

@@ -1,11 +1,7 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { BlogInputDto } from '../../../src/modules/bloggers-platform/blogs/api/input-dto/blog.input-dto';
 import request from 'supertest';
-import {
-  delay,
-  generateRandomStringForTest,
-  getAuthHeaderBasicTest,
-} from '../common-helpers';
+import { delay, getAuthHeaderBasicTest } from '../common-helpers';
 import { BlogViewDto } from '../../../src/modules/bloggers-platform/blogs/api/view-dto/blog.view-dto';
 import { ResponseBodySuperTest } from '../../type/response-super-test';
 import { GetBlogsQueryParamsInputDto } from '../../../src/modules/bloggers-platform/blogs/api/input-dto/get-blogs-query-params.input-dto';
@@ -18,6 +14,8 @@ import {
 } from '../../../src/modules/bloggers-platform/posts/domain/post.constraints';
 import { PostViewDTO } from '../../../src/modules/bloggers-platform/posts/api/view-dto/post.view-dto';
 import { BlogPostInputDto } from '../../../src/modules/bloggers-platform/blogs/api/input-dto/blog-post.input-dto';
+import { LikeStatusEnum } from '../../../src/modules/bloggers-platform/likes/domain/like-status.enum';
+import { GetPostQueryParams } from '../../../src/modules/bloggers-platform/posts/api/input-dto/get-post-query-params.input-dto';
 
 export class BlogApiManager {
   private urlPath = '/api/blogs';
@@ -66,12 +64,12 @@ export class BlogApiManager {
       );
       await delay(60);
       const body: Omit<PostInputDTO, 'blogId'> = {
-        title: generateRandomStringForTest(titleLen),
-        shortDescription: generateRandomStringForTest(descLen),
-        content: generateRandomStringForTest(contentLen),
+        title: `post num${i}`,
+        shortDescription: `description ${i}`,
+        content: `content: ${i}`,
       };
       const res = request(this.app.getHttpServer())
-        .post(`${this.urlPath}/${blogId}/posts`)
+        .post(`${this.saUrlPath}/${blogId}/posts`)
         .set('Authorization', this.basicAuth)
         .send(body);
       responses.push(res);
@@ -81,6 +79,21 @@ export class BlogApiManager {
 
     const posts: PostViewDTO[] = resolved.map((response) => {
       expect(response.status).toBe(HttpStatus.CREATED);
+      expect(response.body).toMatchObject<PostViewDTO>({
+        id: expect.any(String),
+        title: expect.any(String),
+        shortDescription: expect.any(String),
+        content: expect.any(String),
+        createdAt: expect.any(String),
+        blogId: expect.any(String),
+        blogName: expect.any(String),
+        extendedLikesInfo: {
+          likesCount: 0,
+          dislikesCount: 0,
+          myStatus: LikeStatusEnum.None,
+          newestLikes: [],
+        },
+      });
       return response.body as unknown as PostViewDTO;
     });
 
@@ -114,13 +127,13 @@ export class BlogApiManager {
     return blogs;
   }
 
-  async getAll(
+  async getAllBlogs(
     query: Partial<GetBlogsQueryParamsInputDto> = {},
   ): ResponseBodySuperTest<PaginatedViewDto<BlogViewDto[]>> {
     return request(this.app.getHttpServer()).get(this.urlPath).query(query);
   }
 
-  async saGetAll(
+  async saGetAllBlogs(
     query: Partial<GetBlogsQueryParamsInputDto> = {},
     basicAuth: string = this.basicAuth,
   ): ResponseBodySuperTest<PaginatedViewDto<BlogViewDto[]>> {
@@ -151,6 +164,49 @@ export class BlogApiManager {
     return request(this.app.getHttpServer())
       .post(this.saUrlPath + '/' + blogId + '/posts')
       .send(inputModel)
+      .set('Authorization', basicAuth);
+  }
+
+  async updatePostForBlog(
+    parameters: { blogId: string; postId: string },
+    inputModel: BlogPostInputDto,
+    basicAuth: string = this.basicAuth,
+  ): ResponseBodySuperTest<PostViewDTO> {
+    return request(this.app.getHttpServer())
+      .put(
+        this.saUrlPath +
+          '/' +
+          parameters.blogId +
+          '/posts/' +
+          parameters.postId,
+      )
+      .send(inputModel)
+      .set('Authorization', basicAuth);
+  }
+
+  async getPostsWithPagingByParamBlogId(
+    blogId: string,
+    query: Partial<GetPostQueryParams> = {},
+    basicAuth: string = this.basicAuth,
+  ): ResponseBodySuperTest<PaginatedViewDto<PostViewDTO[]>> {
+    return request(this.app.getHttpServer())
+      .get(this.saUrlPath + '/' + blogId + '/posts')
+      .query(query)
+      .set('Authorization', basicAuth);
+  }
+
+  async deletePostIdForBlog(
+    parameters: { blogId: string; postId: string },
+    basicAuth: string = this.basicAuth,
+  ): ResponseBodySuperTest<PostViewDTO> {
+    return request(this.app.getHttpServer())
+      .delete(
+        this.saUrlPath +
+          '/' +
+          parameters.blogId +
+          '/posts/' +
+          parameters.postId,
+      )
       .set('Authorization', basicAuth);
   }
 }

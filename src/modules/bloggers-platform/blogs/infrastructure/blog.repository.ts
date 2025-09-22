@@ -86,14 +86,13 @@ export class BlogRepository {
         SET name=$1,
             description=$2,
             "websiteUrl"=$3,
-            "updatedAt"=$4
-        WHERE public."Blogs".id = $5 RETURNING *;
+            "updatedAt"=NOW()
+        WHERE public."Blogs".id = $4 RETURNING *;
     `;
     const updateRow = await this.dataSource.query<BlogSqlRow[]>(UPDATE_QUERY, [
       blog.name,
       blog.description,
       blog.websiteUrl,
-      new Date(),
       blog.id,
     ]);
 

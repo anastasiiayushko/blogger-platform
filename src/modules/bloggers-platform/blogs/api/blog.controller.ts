@@ -6,6 +6,10 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { GetBlogByIdQuery } from '../application/query-usecases/get-blog-by-id.query-usecase';
 import { GetBlogsWithPagingQuery } from '../application/query-usecases/get-blogs-with-paging.query-usecase';
 import { SkipThrottle } from '@nestjs/throttler';
+import { UuidValidationPipe } from '../../../../core/pipes/uuid-validation-transform-pipe';
+import { GetPostQueryParams } from '../../posts/api/input-dto/get-post-query-params.input-dto';
+import { PostViewDTO } from '../../posts/api/view-dto/post.view-dto';
+import { GetPostsWithPagingQuery } from '../../posts/application/query-usecases/get-posts-with-paging.query-handler';
 
 @Controller('blogs')
 @SkipThrottle()
@@ -41,24 +45,24 @@ export class BlogController {
     );
   }
 
-  // /**
-  //  * Get all posts for a specific blog by its ID with pagination and filtering.
-  //  *
-  //  * @param {string} blogId - The unique identifier of the blog.
-  //  * @param {GetPostQueryParams} query - The query parameters to filter and paginate the posts.
-  //  * @returns {PaginatedViewDto<PostViewDTO[]>} - A paginated list of post view DTOs.
-  //  */
-  // @Get(':blogId/posts')
+  /**
+   * Get all posts for a specific blog by its ID with pagination and filtering.
+   *
+   * @param {string} blogId - The unique identifier of the blog.
+   * @param {GetPostQueryParams} query - The query parameters to filter and paginate the posts.
+   * @returns {PaginatedViewDto<PostViewDTO[]>} - A paginated list of post view DTOs.
+   */
+  @Get(':blogId/posts')
   // @UseGuards(BearerOptionalJwtAuthGuard)
-  // async getAllPosts(
-  //   @Param('blogId', UuidValidationPipe) blogId: string,
-  //   @Query() query: GetPostQueryParams,
-  //   @OptionalCurrentUserFormRequest() user: UserContextDto | null,
-  // ): Promise<PaginatedViewDto<PostViewDTO[]>> {
-  //   await this.queryBus.execute<GetBlogByIdQuery>(new GetBlogByIdQuery(blogId));
-  //
-  //   return this.queryBus.execute<GetPostsWithPagingQuery>(
-  //     new GetPostsWithPagingQuery(user?.id ?? null, query, { blogId: blogId }),
-  //   );
-  // }
+  async getAllPosts(
+    @Param('blogId', UuidValidationPipe) blogId: string,
+    @Query() query: GetPostQueryParams,
+    // @OptionalCurrentUserFormRequest() user: UserContextDto | null,
+  ): Promise<PaginatedViewDto<PostViewDTO[]>> {
+    await this.queryBus.execute<GetBlogByIdQuery>(new GetBlogByIdQuery(blogId));
+
+    return this.queryBus.execute<GetPostsWithPagingQuery>(
+      new GetPostsWithPagingQuery(null, query, { blogId: blogId }),
+    );
+  }
 }

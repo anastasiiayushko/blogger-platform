@@ -66,23 +66,25 @@ export class PostQueryRepository {
           FROM public."Posts" AS p
                    LEFT JOIN public."Blogs" as b ON p."blogId" = b.id
               ${WHERE}
-          ORDER BY ${query.sortBy} ${query.sortDirection}
+          ORDER BY "${query.sortBy}" ${query.sortDirection}
           OFFSET ${query.calculateSkip()} LIMIT ${query.pageSize};
       `,
+      params,
     );
 
-    const totalCount = await this.dataSource.query<[[], { count: string }]>(
+    const itemsMap =  postsRows.map((item) => PostViewDTO.mapToView(item, LikeStatusEnum.None),)
+    const totalCount = await this.dataSource.query<[ { count: string }]>(
       `
-          SELECT count(*) as
+          SELECT count(*) as count
           FROM public."Posts" AS p ${WHERE}
       `,
+      params,
     );
+
     return PaginatedViewDto.mapToView({
-      items: postsRows.map((item) =>
-        PostViewDTO.mapToView(item, LikeStatusEnum.None),
-      ),
+      items: itemsMap,
       page: query.pageNumber,
-      totalCount: +totalCount?.[1]?.count,
+      totalCount: +totalCount?.[0]?.count,
       size: query.pageSize,
     });
   }

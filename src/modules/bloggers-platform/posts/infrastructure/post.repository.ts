@@ -23,7 +23,6 @@ export class PostRepository {
     const INSERT_QUERY = `
         INSERT INTO public."Posts"("blogId", title, "shortDescription", content)
         VALUES ($1, $2, $3, $4) RETURNING *;
-
     `;
 
     const postRow = await this.dataSource.query<PostSqlRow[]>(INSERT_QUERY, [
@@ -42,7 +41,7 @@ export class PostRepository {
             title              = $2,
             "shortDescription" = $3,
             content            = $4,
-            updatedAt          = ${Date.now()}
+            "updatedAt"        = NOW()
         WHERE public."Posts".id = $5 RETURNING *;
     `;
     const postRow = await this.dataSource.query<PostSqlRow[]>(UPDATE_QUERY, [
@@ -71,9 +70,9 @@ export class PostRepository {
 
   private async _findById(id: string): Promise<PostPersistedType | null> {
     const postRow = await this.dataSource.query<PostSqlRow[]>(
-      `SELECT p.id, p."blogId", p.title, p.shortDescription, p.content, p.createdAt
-       FROM public."Posts" as p
-       where public."Posts".id = $1;
+      `   SELECT p.id, p."blogId", p.title, p."shortDescription", p.content, p."createdAt"
+          FROM public."Posts" as p
+          WHERE p.id = $1;
       `,
       [id],
     );
@@ -95,11 +94,12 @@ export class PostRepository {
     return post;
   }
 
+
   async deleteById(id: string): Promise<boolean> {
     const DELETE_QUERY = `
         DELETE
         FROM public."Posts" as p
-        WHERE public."Posts".id = $1;
+        WHERE p.id = $1;
     `;
     const result = await this.dataSource.query<[[], { count: number }]>(
       DELETE_QUERY,

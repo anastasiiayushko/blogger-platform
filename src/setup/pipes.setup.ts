@@ -32,7 +32,7 @@ export function pipesSetup(app: INestApplication) {
       //Выдавать первую ошибку для каждого поля
       stopAtFirstError: true,
       //Очищать все свойства, которых нет в DTO
-      whitelist: true,
+      // whitelist: true,
       //не просто очищает лишние поля, а ещё выкидывает ошибку, если кто-то пытается прислать что-то лишнее приведёт к ошибке 400
       //forbidNonWhitelisted: true
       exceptionFactory: (errors) => {

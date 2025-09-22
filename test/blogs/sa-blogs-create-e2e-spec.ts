@@ -38,7 +38,7 @@ describe('SaBlogController CREATED (e2e) ', () => {
     );
     expect(createdBlogRes.status).toBe(HttpStatus.UNAUTHORIZED);
 
-    const getAllBlogsRes = await blogApiManger.getAll();
+    const getAllBlogsRes = await blogApiManger.getAllBlogs();
 
     expect(getAllBlogsRes.status).toBe(HttpStatus.OK);
     expect(getAllBlogsRes.body.items).toEqual([]);
@@ -69,7 +69,7 @@ describe('SaBlogController CREATED (e2e) ', () => {
     });
     expect(createBlogResponse.status).toBe(HttpStatus.BAD_REQUEST);
 
-    const blogsResponse = await blogApiManger.getAll();
+    const blogsResponse = await blogApiManger.getAllBlogs();
 
     expect(blogsResponse.status).toBe(HttpStatus.OK);
     expect(blogsResponse.body.items).toEqual([]);
@@ -84,7 +84,7 @@ describe('SaBlogController CREATED (e2e) ', () => {
       errorsMessages: [{ message: expect.any(String), field: 'name' }],
     });
     expect(createBlogResponse.status).toBe(HttpStatus.BAD_REQUEST);
-    const blogsResponse = await blogApiManger.getAll();
+    const blogsResponse = await blogApiManger.getAllBlogs();
 
     expect(blogsResponse.status).toBe(HttpStatus.OK);
     expect(blogsResponse.body.items).toEqual([]);
@@ -102,7 +102,7 @@ describe('SaBlogController CREATED (e2e) ', () => {
       errorsMessages: [{ message: expect.any(String), field: 'name' }],
     });
     expect(createBlogResponse.status).toBe(HttpStatus.BAD_REQUEST);
-    const blogsResponse = await blogApiManger.getAll();
+    const blogsResponse = await blogApiManger.getAllBlogs();
 
     expect(blogsResponse.status).toBe(HttpStatus.OK);
     expect(blogsResponse.body.items.length).toBe(0);
@@ -120,7 +120,7 @@ describe('SaBlogController CREATED (e2e) ', () => {
       errorsMessages: [{ message: expect.any(String), field: 'description' }],
     });
     expect(createdResponse.status).toBe(HttpStatus.BAD_REQUEST);
-    const blogsResponse = await blogApiManger.getAll();
+    const blogsResponse = await blogApiManger.getAllBlogs();
 
     expect(blogsResponse.status).toBe(HttpStatus.OK);
     expect(blogsResponse.body.items.length).toBe(0);
@@ -135,7 +135,7 @@ describe('SaBlogController CREATED (e2e) ', () => {
       errorsMessages: [{ message: expect.any(String), field: 'description' }],
     });
     expect(createBlogResponse.status).toBe(HttpStatus.BAD_REQUEST);
-    const blogsResponse = await blogApiManger.getAll();
+    const blogsResponse = await blogApiManger.getAllBlogs();
 
     expect(blogsResponse.status).toBe(HttpStatus.OK);
     expect(blogsResponse.body.items.length).toBe(0);
@@ -150,7 +150,7 @@ describe('SaBlogController CREATED (e2e) ', () => {
       errorsMessages: [{ message: expect.any(String), field: 'websiteUrl' }],
     });
     expect(createBlogResponse.status).toBe(HttpStatus.BAD_REQUEST);
-    const blogsResponse = await blogApiManger.getAll();
+    const blogsResponse = await blogApiManger.getAllBlogs();
 
     expect(blogsResponse.status).toBe(HttpStatus.OK);
     expect(blogsResponse.body.items.length).toBe(0);

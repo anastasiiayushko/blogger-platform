@@ -2,17 +2,19 @@ import { BaseQueryParams } from '../../../../../core/dto/base.query-params.input
 import { IsEnum, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 
-enum SortByEnum {
+export enum PostQuerySortByEnum {
   createAt = 'createdAt',
-  blogId = 'blogId',
   blogName = 'blogName',
   content = 'content',
   shortDescription = 'shortDescription',
+  title = 'title',
+
+
 }
 
 export class GetPostQueryParams extends BaseQueryParams {
-  @IsEnum(SortByEnum)
+  @IsEnum(PostQuerySortByEnum)
   @IsOptional()
   @Type(() => String)
-  sortBy: SortByEnum = SortByEnum.createAt;
+  sortBy: PostQuerySortByEnum = PostQuerySortByEnum.createAt;
 }

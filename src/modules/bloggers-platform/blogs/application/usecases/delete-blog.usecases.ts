@@ -12,6 +12,7 @@ export class DeleteBlogHandler
   constructor(private blogRepo: BlogRepository) {}
 
   async execute(command: DeleteBlogCommand): Promise<boolean> {
+
     await this.blogRepo.findOrNotFoundFail(command.id);
     return await this.blogRepo.delete(command.id);
   }

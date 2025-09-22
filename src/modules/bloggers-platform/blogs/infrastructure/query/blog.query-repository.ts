@@ -68,18 +68,18 @@ export class BlogQueryRepository {
         ? SortDirection.Asc
         : SortDirection.Desc;
 
-    let FILTER_QUERY = ``;
+    let WHERE = ``;
     const queryParams: any[] = [];
 
     if (query.searchNameTerm) {
       queryParams.push(`%${query.searchNameTerm}%`);
-      FILTER_QUERY += `WHERE b.name ILIKE $${queryParams.length}`;
+      WHERE += `WHERE b.name ILIKE $${queryParams.length}`;
     }
 
     const SELECT_QUERY = `
         SELECT b.id, b.name, b.description, b."websiteUrl", b."createdAt", b."isMembership"
         FROM public."Blogs" AS b
-            ${FILTER_QUERY}
+            ${WHERE}
         ORDER BY "${sortBy}" ${sortDirection}
         OFFSET ${query.calculateSkip()} limit ${query.pageSize};
     `;
@@ -91,7 +91,7 @@ export class BlogQueryRepository {
     const totalResult = await this.dataSource.query<[{ total: number }]>(
       `SELECT count(b.id) as total
        FROM public."Blogs" AS b
-           ${FILTER_QUERY};
+           ${WHERE};
       `,
       queryParams,
     );

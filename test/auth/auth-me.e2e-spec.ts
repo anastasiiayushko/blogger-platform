@@ -62,7 +62,6 @@ describe('Auth me ', () => {
     expect(loginRes.status).toBe(HttpStatus.OK);
     const { accessToken } = loginRes.body as AccessTokenViewDto;
     const decode = jwtService.decode(accessToken);
-    console.log(decode);
     const expired = jwtService.sign(
       { userId: decode!.userId },
       { secret: process.env.ACCESS_TOKEN_SECRET!, expiresIn: '-30s' },

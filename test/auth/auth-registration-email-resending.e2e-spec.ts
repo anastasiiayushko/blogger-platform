@@ -5,9 +5,11 @@ import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-
 import { UsersSqlRepository } from '../../src/modules/user-accounts/infrastructure/sql/users.sql-repository';
 import { EmailConfirmationSqlRepository } from '../../src/modules/user-accounts/infrastructure/sql/email-confirmation.sql-repository';
 import { ApiErrorResultType } from '../type/response-super-test';
+import { ThrottlerConfig } from '../../src/core/config/throttler.config';
 
 describe('Auth /registration-email-resending', () => {
   let app: INestApplication;
+  let throttlerConfig: ThrottlerConfig;
   let userRepository: UsersSqlRepository;
   let userTestManager: UsersApiManagerHelper;
   let emailConfirmationRepository: EmailConfirmationSqlRepository;
@@ -22,6 +24,7 @@ describe('Auth /registration-email-resending', () => {
     const init = await initSettings();
     app = init.app;
     userTestManager = init.userTestManger;
+    throttlerConfig = app.get<ThrottlerConfig>(ThrottlerConfig);
     userRepository = app.get<UsersSqlRepository>(UsersSqlRepository);
     emailConfirmationRepository = app.get<EmailConfirmationSqlRepository>(
       EmailConfirmationSqlRepository,
@@ -96,34 +99,36 @@ describe('Auth /registration-email-resending', () => {
     });
   });
 
-  it('Should be return 204 if email not existing (protected brute force attack)', async () => {
+  it('Should be return 400 if email not existing (protected brute force attack - not use)', async () => {
     const resendingRes = await request(app.getHttpServer())
       .post('/api/auth/registration-email-resending')
       .send({ email: 'noesiting@gmail.com' });
 
-    expect(resendingRes.status).toBe(HttpStatus.NO_CONTENT);
-    expect(resendingRes.body).toEqual({});
+    expect(resendingRes.status).toBe(HttpStatus.BAD_REQUEST);
+    expect(resendingRes.body).toEqual<ApiErrorResultType>({
+      errorsMessages: [
+        { field: expect.any(String), message: expect.any(String) },
+      ],
+    });
   });
 
-  it('should return error if user email doesnt exist; status 400;', async () => {
-    const resendingRes = await request(app.getHttpServer())
-      .post('/api/auth/registration-email-resending')
-      .send({ email: 'noesiting@gmail.co' });
 
-    console.log(resendingRes.body);
-  });
 
   it('Should be return 429 if than 5 attempts from one IP-address during 10 seconds ', async () => {
-    for (let i = 0; i < 5; i++) {
-      await request(app.getHttpServer())
+    if (throttlerConfig.enabled) {
+      for (let i = 0; i < 5; i++) {
+        await request(app.getHttpServer())
+          .post('/api/auth/registration-email-resending')
+          .send({ email: `noesiting${i}@gmail.com` });
+      }
+
+      const resManyAttempts = await request(app.getHttpServer())
         .post('/api/auth/registration-email-resending')
-        .send({ email: `noesiting${i}@gmail.com` });
+        .send({ email: `noesiting@gmail.com` });
+
+      expect(resManyAttempts.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
+    } else {
+      console.info('ThrottlerConfig off');
     }
-
-    const resManyAttempts = await request(app.getHttpServer())
-      .post('/api/auth/registration-email-resending')
-      .send({ email: `noesiting@gmail.com` });
-
-    expect(resManyAttempts.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
   });
 });

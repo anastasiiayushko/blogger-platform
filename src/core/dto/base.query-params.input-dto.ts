@@ -10,7 +10,7 @@ export enum SortDirection {
 //значения по-умолчанию применятся автоматически при настройке глобального ValidationPipe в main.ts
 export class BaseQueryParams {
   //для трансформации в number
-  // @IsInt()
+  @IsInt()
   @Min(1)
   @IsOptional()
   @Type(() => Number)
@@ -24,7 +24,7 @@ export class BaseQueryParams {
 
   @IsEnum(SortDirection)
   @IsOptional()
-  @Type(() => String) // если используешь class-transformer
+  // @Type(() => String) // если используешь class-transformer
   sortDirection: SortDirection = SortDirection.Desc;
 
   calculateSkip() {

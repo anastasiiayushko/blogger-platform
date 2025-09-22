@@ -1,15 +1,25 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { PostViewDTO } from './view-dto/post.view-dto';
 import { GetPostQueryParams } from './input-dto/get-post-query-params.input-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
-import { ObjectIdValidationPipe } from '../../../../core/pipes/object-id-validation-transform-pipe';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { UserContextDto } from '../../../user-accounts/decorators/param/user-context.dto';
-import { BearerOptionalJwtAuthGuard } from '../../../user-accounts/guards/bearer/bearer-optional-jwt-auth.guard';
-import { OptionalCurrentUserFormRequest } from '../../../user-accounts/decorators/param/options-current-user-from-request.decorator';
 import { GetPostByIdQuery } from '../application/query-usecases/get-post-by-id.query-handler';
 import { GetPostsWithPagingQuery } from '../application/query-usecases/get-posts-with-paging.query-handler';
 import { SkipThrottle } from '@nestjs/throttler';
+import { UuidValidationPipe } from '../../../../core/pipes/uuid-validation-transform-pipe';
+import { BearerJwtAuthGuard } from '../../../user-accounts/guards/bearer/bearer-jwt-auth.guard';
+import { CommentInputDto } from '../../comments/api/input-dto/comment.input-dto';
+import { UserContextDto } from '../../../user-accounts/decorators/param/user-context.dto';
+import { CurrentUserFormRequest } from '../../../user-accounts/decorators/param/current-user-form-request.decorator';
+import { CreateCommentCommand } from '../../comments/application/usecases/create-comment.usecases';
 
 @Controller('posts')
 @SkipThrottle()
@@ -20,23 +30,23 @@ export class PostController {
   ) {}
 
   @Get()
-  @UseGuards(BearerOptionalJwtAuthGuard)
+  // @UseGuards(BearerOptionalJwtAuthGuard)
   async getAll(
     @Query() query: GetPostQueryParams,
-    @OptionalCurrentUserFormRequest() user: UserContextDto | null,
+    // @OptionalCurrentUserFormRequest() user: UserContextDto | null,
   ): Promise<PaginatedViewDto<PostViewDTO[]>> {
     return this.queryBus.execute<GetPostsWithPagingQuery>(
-      new GetPostsWithPagingQuery(user?.id ?? null, query, null),
+      new GetPostsWithPagingQuery(null, query, null),
     );
   }
 
   @Get(':id')
-  @UseGuards(BearerOptionalJwtAuthGuard)
+  // @UseGuards(BearerOptionalJwtAuthGuard)
   async getById(
-    @Param('id', ObjectIdValidationPipe) id: string,
-    @OptionalCurrentUserFormRequest() user: UserContextDto | null,
+    @Param('id', UuidValidationPipe) id: string,
+    // @OptionalCurrentUserFormRequest() user: UserContextDto | null,
   ): Promise<PostViewDTO> {
-    return this.queryBus.execute(new GetPostByIdQuery(id, user?.id ?? null));
+    return this.queryBus.execute(new GetPostByIdQuery(id, null));
   }
 
   // @Put(':postId/like-status')
@@ -96,19 +106,20 @@ export class PostController {
   //   );
   // }
   //
-  // @Post(':postId/comments')
-  // @UseGuards(BearerJwtAuthGuard)
-  // async createComment(
-  //   @Param('postId', ObjectIdValidationPipe) postId: string,
-  //   @Body() inputDto: CommentInputDto,
-  //   @CurrentUserFormRequest() user: UserContextDto,
-  // ) {
-  //   const commentId = await this.commandBus.execute<CreateCommentCommand>(
-  //     new CreateCommentCommand(postId, user.id, inputDto.content),
-  //   );
-  //
-  //   return this.queryBus.execute<GetCommentByIdQuery>(
-  //     new GetCommentByIdQuery(commentId, null),
-  //   );
-  // }
+  @Post(':postId/comments')
+  @UseGuards(BearerJwtAuthGuard)
+  async createComment(
+    @Param('postId', UuidValidationPipe) postId: string,
+    @Body() inputDto: CommentInputDto,
+    @CurrentUserFormRequest() user: UserContextDto,
+  ): Promise<string> {
+    const commentId = await this.commandBus.execute<CreateCommentCommand>(
+      new CreateCommentCommand(postId, user.id, inputDto.content),
+    );
+    return commentId;
+
+    // return this.queryBus.execute<GetCommentByIdQuery>(
+    //   new GetCommentByIdQuery(commentId, null),
+    // );
+  }
 }

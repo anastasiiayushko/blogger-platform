@@ -4,7 +4,7 @@ import {
   Comment,
   CommentDocument,
   CommentModelType,
-} from '../../domain/comment.entity';
+} from '../../domain/comment.odm-entity';
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated.view-dto';
 import { GetCommentsQueryParams } from '../../api/input-dto/get-comments-query-params.input-dto';
 import { FilterQuery, Types } from 'mongoose';

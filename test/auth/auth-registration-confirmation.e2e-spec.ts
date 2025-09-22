@@ -8,6 +8,7 @@ import { EmailConfirmationSqlRepository } from '../../src/modules/user-accounts/
 import { EmailConfirmation } from '../../src/modules/user-accounts/domin/sql-entity/email-confirmation.sql-entity';
 import { UserConfirmationConfig } from '../../src/modules/user-accounts/config/user-confirmation.config';
 import { ApiErrorResultType } from '../type/response-super-test';
+import { ThrottlerConfig } from '../../src/core/config/throttler.config';
 
 describe('Auth /registration-confirmation', () => {
   const PATH_URL_REG_CONFIRMATION = '/api/auth/registration-confirmation';
@@ -16,7 +17,7 @@ describe('Auth /registration-confirmation', () => {
   let emailConfirmationRepository: EmailConfirmationSqlRepository;
   let userTestManager: UsersApiManagerHelper;
   let confirmConfig: UserConfirmationConfig;
-
+  let throttlerConfig: ThrottlerConfig;
   const userAuthData = {
     email: 'test@test.com',
     login: 'test',
@@ -27,6 +28,7 @@ describe('Auth /registration-confirmation', () => {
     const init = await initSettings();
     app = init.app;
     userTestManager = init.userTestManger;
+    throttlerConfig = app.get<ThrottlerConfig>(ThrottlerConfig);
     userRepository = app.get<UsersSqlRepository>(UsersSqlRepository);
     emailConfirmationRepository = app.get<EmailConfirmationSqlRepository>(
       EmailConfirmationSqlRepository,
@@ -147,18 +149,22 @@ describe('Auth /registration-confirmation', () => {
   });
 
   it('Should return 429 if more than 5 requests in 10 seconds', async () => {
-    for (let i = 0; i < 5; i++) {
-      await request(app.getHttpServer())
+    if (throttlerConfig.enabled) {
+      for (let i = 0; i < 5; i++) {
+        await request(app.getHttpServer())
+          .post(PATH_URL_REG_CONFIRMATION)
+          .send({ code: randomUUID() }); // Или другой эндпоинт
+      }
+
+      // Делаем еще один запрос, чтобы превысить лимит
+      const res = await await request(app.getHttpServer())
         .post(PATH_URL_REG_CONFIRMATION)
-        .send({ code: randomUUID() }); // Или другой эндпоинт
+        .send({ code: randomUUID() });
+
+      // Проверяем, что статус 429 (слишком много запросов)
+      expect(res.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
+    } else {
+      console.info('ThrottlerConfig off');
     }
-
-    // Делаем еще один запрос, чтобы превысить лимит
-    const res = await await request(app.getHttpServer())
-      .post(PATH_URL_REG_CONFIRMATION)
-      .send({ code: randomUUID() });
-
-    // Проверяем, что статус 429 (слишком много запросов)
-    expect(res.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
   });
 });

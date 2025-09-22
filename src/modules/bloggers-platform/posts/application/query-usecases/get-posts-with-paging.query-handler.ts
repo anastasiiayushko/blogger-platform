@@ -16,18 +16,16 @@ export class GetPostWithPagingQueryHandler
   implements IQueryHandler<GetPostsWithPagingQuery>
 {
   constructor(
-    protected postQRepo: PostQueryRepository,
+    protected postQwRepository: PostQueryRepository,
     // protected likeMapQueryService: LikeMapQueryService,
   ) {}
 
   async execute({ query, filterContext, userId }: GetPostsWithPagingQuery) {
-    const result = await this.postQRepo.getAll(query, filterContext);
+    return await this.postQwRepository.getAll(query, filterContext);
     // const parentIds = result.items.map((post) => post.id.toString());
     // const likeMap = await this.likeMapQueryService.getStatusLikesMapByParams(
     //   parentIds,
     //   userId,
     // );
-
-    return result;
   }
 }

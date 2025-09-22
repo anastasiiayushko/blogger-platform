@@ -1,8 +1,13 @@
 import { CreatePostDomainDto } from './dto/create-post.domain.dto';
-import { PostSqlRow } from '../infrastructure/post.repository';
 
 export type PostNewType = Post & { id: null; createdAt: null };
 export type PostPersistedType = Post & { id: string; createdAt: Date };
+
+class UpdatePostInputDto {
+  public title: string;
+  public shortDescription: string;
+  public content: string;
+}
 
 export class Post {
   constructor(
@@ -23,6 +28,12 @@ export class Post {
       dto.content,
       null,
     ) as PostNewType;
+  }
+
+  updatePost(inputDto: UpdatePostInputDto): void {
+    this.title = inputDto.title;
+    this.shortDescription = inputDto.shortDescription;
+    this.content = inputDto.content;
   }
 
   static toDomain(row: {

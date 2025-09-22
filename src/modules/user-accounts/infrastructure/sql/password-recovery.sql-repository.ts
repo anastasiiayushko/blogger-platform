@@ -81,8 +81,8 @@ export class PasswordRecoverySqlRepository {
         SET code=$1,
             "expirationAt" =$2,
             "isConfirmed"=$3,
-            "updatedAt" = $4
-        WHERE public."PasswordRecovery"."userId" = $5 RETURNING *;
+            "updatedAt" = NOW()
+        WHERE public."PasswordRecovery"."userId" = $4 RETURNING *;
     `;
     const resultRow: EmailConfirmationSqlRow[] = await this.dataSource.query(
       UPDATE_SQL,
@@ -90,7 +90,6 @@ export class PasswordRecoverySqlRepository {
         recovery.code,
         recovery.expirationAt,
         recovery.isConfirmed,
-        new Date(),
         recovery.userId,
       ],
     );

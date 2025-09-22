@@ -1,6 +1,6 @@
-import { CommentDocument } from '../../domain/comment.entity';
+import { CommentDocument } from '../../domain/comment.odm-entity';
 
-class CommentatorInfoDTO {
+class CommentatorInfoDTO  {
   userId: string;
   userLogin: string;
 }

@@ -1,8 +1,8 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersExternalQueryRepository } from '../../../../user-accounts/infrastructure/external-query/users-external.query-repository';
-import { Comment, CommentModelType } from '../../domain/comment.entity';
+import { Comment, CommentModelType } from '../../domain/comment.odm-entity';
 import { InjectModel } from '@nestjs/mongoose';
-import { CommentRepository } from '../../infrastructure/comment.repository';
+import { CommentOdmRepository } from '../../infrastructure/comment.odm-repository';
 import { Types } from 'mongoose';
 import { DomainException } from '../../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
@@ -22,7 +22,7 @@ export class UpdateCommentHandler
   constructor(
     @InjectModel(Comment.name) protected commentModel: CommentModelType,
     protected userExternalQRepo: UsersExternalQueryRepository,
-    protected commentRepo: CommentRepository,
+    protected commentRepo: CommentOdmRepository,
   ) {}
 
   async execute({

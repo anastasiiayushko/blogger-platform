@@ -1,9 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UsersExternalQueryRepository } from '../../../../user-accounts/infrastructure/external-query/users-external.query-repository';
 import { PostQueryRepository } from '../../../posts/infrastructure/query-repository/post.query-repository';
-import { Comment, CommentModelType } from '../../domain/comment.entity';
-import { InjectModel } from '@nestjs/mongoose';
 import { CommentRepository } from '../../infrastructure/comment.repository';
+import { Comment } from '../../domain/comment.entity';
 
 export class CreateCommentCommand {
   constructor(
@@ -18,10 +16,9 @@ export class CreateCommentHandler
   implements ICommandHandler<CreateCommentCommand>
 {
   constructor(
-    @InjectModel(Comment.name) protected commentModel: CommentModelType,
     protected postQRepo: PostQueryRepository,
-    protected userExternalQRepo: UsersExternalQueryRepository,
-    protected commentRepo: CommentRepository,
+    // protected userExternalQRepo: UsersExternalQuerySqlRepository,
+    protected commentRepository: CommentRepository,
   ) {}
 
   async execute({
@@ -29,17 +26,16 @@ export class CreateCommentHandler
     userId,
     content,
   }: CreateCommentCommand): Promise<string> {
+    //::TODO нужно ли проверять на юзера
     await this.postQRepo.getByIdOrNotFoundFail(postId);
-    const user = await this.userExternalQRepo.findOrNotFoundFail(userId);
-    const comment = this.commentModel.createInstance({
+    // const user = await this.userExternalQRepo.findById(userId);
+    const comment = Comment.createInstance({
       content: content.trim(),
       postId: postId,
       userId: userId,
-      userLogin: user.login,
     });
 
-    await this.commentRepo.save(comment);
-
-    return comment._id.toString();
+    const commentSaved = await this.commentRepository.save(comment);
+    return commentSaved.id as string;
   }
 }

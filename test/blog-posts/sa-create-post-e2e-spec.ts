@@ -48,7 +48,7 @@ describe('Create new post for specific blog /blogs/:blogId/posts', () => {
     await app.close();
   });
 
-  it('Should be status 200 and Returns the newly created post', async () => {
+  it('Should be status 201 and Returns the newly created post', async () => {
     const postResponse = await blogApiManger.createPostForBlog(
       mainBlog.id,
       postFakeData,
@@ -92,6 +92,31 @@ describe('Create new post for specific blog /blogs/:blogId/posts', () => {
   });
 
   it('Should be status 400  If the inputModel has incorrect values', async () => {
+    const fields = {
+      title: '  ',
+      content: ' ',
+      shortDescription: '',
+    };
+    for (const field in fields) {
+      const value: string = fields[field];
+      const postTitleResponse = await blogApiManger.createPostForBlog(
+        mainBlog.id,
+        {
+          ...postFakeData,
+          [field]: value,
+        },
+        basicAuth,
+      );
+
+      expect(postTitleResponse.status).toBe(HttpStatus.BAD_REQUEST);
+
+      expect(postTitleResponse.body).toMatchObject<ApiErrorResultType>({
+        errorsMessages: expect.arrayContaining([
+          { field: field, message: expect.any(String) },
+        ]),
+      });
+    }
+
     const postResponse = await blogApiManger.createPostForBlog(
       mainBlog.id,
       {} as BlogPostInputDto,

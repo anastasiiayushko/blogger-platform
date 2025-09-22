@@ -66,6 +66,8 @@ export class DomainExceptionsFilter implements ExceptionFilter {
         return HttpStatus.INTERNAL_SERVER_ERROR;
       case DomainExceptionCode.ManyRequests:
         return HttpStatus.TOO_MANY_REQUESTS;
+      case DomainExceptionCode.BadUUID:
+        return 431;
       default:
         return HttpStatus.I_AM_A_TEAPOT;
     }

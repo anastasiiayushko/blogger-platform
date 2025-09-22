@@ -5,7 +5,6 @@ import { CreateUsersInputDto } from '../api/input-dto/create-users.input-dto';
 import { UsersSqlRepository } from '../infrastructure/sql/users.sql-repository';
 import { User } from '../domin/sql-entity/user.sql-entity';
 import { Injectable } from '@nestjs/common';
-import { UserDocument } from '../domin/user.entity';
 
 @Injectable()
 export class CreateUserService {
@@ -63,27 +62,5 @@ export class CreateUserService {
     const userId = await this.createUserEntity(userDto);
 
     return userId;
-  }
-
-  //::TODO унести создание в usecase
-  /** для клиента (регистрация без автоматического подтверждения)
-   * @return {
-   *   id - user._id
-   *   emailConfirmationCode: code for verification email
-   * } - идентификатор созданого пользователя
-   * */
-  async registerUser(userDto: CreateUsersInputDto): Promise<{
-    id: string;
-    emailConfirmationCode: string;
-    email: string;
-  }> {
-    const user = (await this.createUserEntity(
-      userDto,
-    )) as unknown as UserDocument;
-    return {
-      id: user._id.toString(),
-      emailConfirmationCode: user.emailConfirmation.confirmationCode,
-      email: user.email,
-    };
   }
 }
