@@ -1,10 +1,10 @@
-import { CommentNewType, CommentPersistedType } from '../../domain/comment.entity';
+import {
+  CommentNewType,
+  CommentPersistedType,
+} from '../../domain/comment.entity';
 import { CommentWithReactionSqlRow } from '../query/comments.query-repository';
 
-
-
-
-class CommentatorInfoDTO  {
+class CommentatorInfoDTO {
   userId: string;
   userLogin: string;
 }
@@ -22,7 +22,7 @@ export class CommentViewDTO {
   likesInfo: LikesInfoDTO;
   createdAt: string;
 
-//::TODO setStatus adding enum type
+  //::TODO setStatus adding enum type
   static mapToView(item: CommentWithReactionSqlRow): CommentViewDTO {
     const comment = new CommentViewDTO();
     comment.id = item.id;
@@ -32,10 +32,9 @@ export class CommentViewDTO {
       userLogin: item.authorLogin,
     };
     comment.likesInfo = {
-      likesCount: item.likesCount,
-      dislikesCount: item.dislikesCount,
-      myStatus: item?.myStatus ?? 'None',
-      // myStatus: item.myStatus,
+      likesCount: +item.likesCount,
+      dislikesCount: +item.dislikesCount,
+      myStatus: item.myStatus,
     };
     comment.createdAt = item.createdAt.toISOString();
 

@@ -20,7 +20,8 @@ import { CommentInputDto } from '../../comments/api/input-dto/comment.input-dto'
 import { UserContextDto } from '../../../user-accounts/decorators/param/user-context.dto';
 import { CurrentUserFormRequest } from '../../../user-accounts/decorators/param/current-user-form-request.decorator';
 import { CreateCommentCommand } from '../../comments/application/usecases/create-comment.usecases';
-import { GetCommentByIdQuery } from '../../comments/application/queries-usecases/get-comment-by-id.query';
+import { CommentsQueryRepository } from '../../comments/infrastructure/query/comments.query-repository';
+import { CommentViewDTO } from '../../comments/infrastructure/mapper/comment.view-dto';
 
 @Controller('posts')
 @SkipThrottle()
@@ -28,6 +29,7 @@ export class PostController {
   constructor(
     protected commandBus: CommandBus,
     protected queryBus: QueryBus,
+    protected commentsQueryRepository: CommentsQueryRepository,
   ) {}
 
   @Get()
@@ -113,13 +115,13 @@ export class PostController {
     @Param('postId', UuidValidationPipe) postId: string,
     @Body() inputDto: CommentInputDto,
     @CurrentUserFormRequest() user: UserContextDto,
-  ): Promise<string> {
+  ): Promise<CommentViewDTO> {
     const commentId = await this.commandBus.execute<CreateCommentCommand>(
       new CreateCommentCommand(postId, user.id, inputDto.content),
     );
-
-    return this.queryBus.execute<GetCommentByIdQuery>(
-      new GetCommentByIdQuery(commentId, null),
+    return this.commentsQueryRepository.getByIdOrNotFoundFail(
+      commentId,
+      user.id,
     );
   }
 }

@@ -25,6 +25,8 @@ export class CommentsQueryRepository {
     commentId: string,
     userId: string | null = null,
   ): Promise<CommentViewDTO> {
+
+
     const SQL_QUERY = `
 
         SELECT c.id,
@@ -34,21 +36,19 @@ export class CommentsQueryRepository {
                u."login"                      AS "authorLogin",
                COALESCE(r."likesCount", 0)    as "likesCount",
                COALESCE(r."dislikesCount", 0) as "dislikesCount",
-               --COALESCE(my.type, 'None')      as "myStatus"
+               COALESCE(my.type, 'None')      as "myStatus"
 
         FROM "Comments" AS c
                  INNER JOIN "Users" AS u
                             ON u.id = c."userId"
                  LEFT JOIN (SELECT "commentId",
-                                   COUNT(*) FILTER (WHERE type = '${LikeStatusEnum.Like}') AS "likesCount",
-                                    COUNT(*) FILTER (WHERE type = '${LikeStatusEnum.Dislike}') AS "dislikesCount"
+                                   COUNT(*) FILTER (WHERE type = '${LikeStatusEnum.Like}') AS "likesCount", COUNT(*) FILTER (WHERE type = '${LikeStatusEnum.Dislike}') AS "dislikesCount"
                             FROM "CommentReactions"
                             GROUP BY "commentId") AS r ON r."commentId" = c."id"
---                  LEFT JOIN (SELECT type,
---                             FROM "CommentReactions"
---                             WHERE "commentId" = $1
---                               AND "userId" = $2) AS my ON $2 IS NOT NULL
-        WHERE "commentId" = $1;
+                 LEFT JOIN (SELECT type
+                            FROM "CommentReactions"
+                            WHERE "commentId" = $1 AND "userId" = $2) AS my ON TRUE
+        WHERE c.id = $1;
     `;
     const result = await this.dataSource.query<CommentWithReactionSqlRow[]>(
       SQL_QUERY,
