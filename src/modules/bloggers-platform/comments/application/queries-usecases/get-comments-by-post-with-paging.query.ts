@@ -1,6 +1,6 @@
 import { GetCommentsQueryParams } from '../../api/input-dto/get-comments-query-params.input-dto';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { CommentsQueryRepository } from '../../infrastructure/query/comments.query-repository';
+import { CommentsOdmQueryRepository } from '../../infrastructure/query/comments.odm-query-repository';
 import { PostQueryRepository } from '../../../posts/infrastructure/query-repository/post.query-repository';
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated.view-dto';
 import { CommentViewDTO } from '../../api/view-dto/comment.view-dto';
@@ -24,7 +24,7 @@ export class GetCommentsByPostWithPagingQueryHandler
     >
 {
   constructor(
-    protected commentsQRepo: CommentsQueryRepository,
+    protected commentsQRepo: CommentsOdmQueryRepository,
     protected postQRepo: PostQueryRepository,
     protected likeMapQueryService: LikeMapQueryService,
   ) {}

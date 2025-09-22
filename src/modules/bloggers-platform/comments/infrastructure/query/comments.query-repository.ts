@@ -1,57 +1,66 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import {
-  Comment,
-  CommentDocument,
-  CommentModelType,
-} from '../../domain/comment.odm-entity';
-import { PaginatedViewDto } from '../../../../../core/dto/base.paginated.view-dto';
-import { GetCommentsQueryParams } from '../../api/input-dto/get-comments-query-params.input-dto';
-import { FilterQuery, Types } from 'mongoose';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import { LikeStatusEnum } from '../../../likes/domain/like-status.enum';
+import { CommentViewDTO } from '../mapper/comment.view-dto';
 import { DomainException } from '../../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
 
+export type CommentWithReactionSqlRow = {
+  id: string;
+  content: string;
+  authorId: string;
+  authorLogin: string;
+  likesCount: number;
+  dislikesCount: number;
+  myStatus: LikeStatusEnum;
+  createdAt: Date;
+};
+
 @Injectable()
 export class CommentsQueryRepository {
-  constructor(
-    @InjectModel(Comment.name) private readonly CommentModel: CommentModelType,
-  ) {}
+  constructor(@InjectDataSource() protected dataSource: DataSource) {}
 
-  async getByIdOrNotFoundFail(id: string): Promise<CommentDocument> {
-    const comment = await this.CommentModel.findOne({
-      _id: id,
-    });
+  async getByIdOrNotFoundFail(
+    commentId: string,
+    userId: string | null = null,
+  ): Promise<CommentViewDTO> {
+    const SQL_QUERY = `
 
-    if (!comment) {
+        SELECT c.id,
+               c.content,
+               c."createdAt",
+               c."userId"                     as "authorId",
+               u."login"                      AS "authorLogin",
+               COALESCE(r."likesCount", 0)    as "likesCount",
+               COALESCE(r."dislikesCount", 0) as "dislikesCount",
+               --COALESCE(my.type, 'None')      as "myStatus"
+
+        FROM "Comments" AS c
+                 INNER JOIN "Users" AS u
+                            ON u.id = c."userId"
+                 LEFT JOIN (SELECT "commentId",
+                                   COUNT(*) FILTER (WHERE type = '${LikeStatusEnum.Like}') AS "likesCount",
+                                    COUNT(*) FILTER (WHERE type = '${LikeStatusEnum.Dislike}') AS "dislikesCount"
+                            FROM "CommentReactions"
+                            GROUP BY "commentId") AS r ON r."commentId" = c."id"
+--                  LEFT JOIN (SELECT type,
+--                             FROM "CommentReactions"
+--                             WHERE "commentId" = $1
+--                               AND "userId" = $2) AS my ON $2 IS NOT NULL
+        WHERE "commentId" = $1;
+    `;
+    const result = await this.dataSource.query<CommentWithReactionSqlRow[]>(
+      SQL_QUERY,
+      [commentId, userId],
+    );
+    if (!Array.isArray(result) || result.length === 0) {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
         message: 'Comment not found',
       });
     }
 
-    return comment;
-  }
-
-  async getAll(
-    query: GetCommentsQueryParams,
-    filterContext: { postId: string },
-  ): Promise<PaginatedViewDto<CommentDocument[]>> {
-    const filter: FilterQuery<Comment> = {
-      postId: new Types.ObjectId(filterContext.postId),
-    };
-
-    const comments = await this.CommentModel.find(filter)
-      .sort({ [query.sortBy]: query.sortDirection })
-      .skip(query.calculateSkip())
-      .limit(query.pageSize);
-
-    const totalCount = await this.CommentModel.countDocuments(filter);
-
-    return PaginatedViewDto.mapToView({
-      size: query.pageSize,
-      totalCount: totalCount,
-      page: query.pageNumber,
-      items: comments,
-    });
+    return CommentViewDTO.mapToView(result[0]);
   }
 }

@@ -20,6 +20,7 @@ import { CommentInputDto } from '../../comments/api/input-dto/comment.input-dto'
 import { UserContextDto } from '../../../user-accounts/decorators/param/user-context.dto';
 import { CurrentUserFormRequest } from '../../../user-accounts/decorators/param/current-user-form-request.decorator';
 import { CreateCommentCommand } from '../../comments/application/usecases/create-comment.usecases';
+import { GetCommentByIdQuery } from '../../comments/application/queries-usecases/get-comment-by-id.query';
 
 @Controller('posts')
 @SkipThrottle()
@@ -116,10 +117,9 @@ export class PostController {
     const commentId = await this.commandBus.execute<CreateCommentCommand>(
       new CreateCommentCommand(postId, user.id, inputDto.content),
     );
-    return commentId;
 
-    // return this.queryBus.execute<GetCommentByIdQuery>(
-    //   new GetCommentByIdQuery(commentId, null),
-    // );
+    return this.queryBus.execute<GetCommentByIdQuery>(
+      new GetCommentByIdQuery(commentId, null),
+    );
   }
 }

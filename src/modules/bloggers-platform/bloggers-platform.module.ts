@@ -24,6 +24,8 @@ import { DeletePostHandler } from './posts/application/usecases/delete-post.usec
 import { PostController } from './posts/api/post.controller';
 import { CreateCommentHandler } from './comments/application/usecases/create-comment.usecases';
 import { CommentRepository } from './comments/infrastructure/comment.repository';
+import { CommentsQueryRepository } from './comments/infrastructure/query/comments.query-repository';
+import { GetCommentByIdQueryHandler } from './comments/application/queries-usecases/get-comment-by-id.query';
 
 const cmdBlogHandler = [
   CreateBlogHandler,
@@ -43,8 +45,8 @@ const cmdPostHandler = [
 ];
 const cmdCommentHandler = [
   CreateCommentHandler,
+  GetCommentByIdQueryHandler,
   // GetCommentsByPostWithPagingQueryHandler,
-  // GetCommentByIdQueryHandler,
   // UpdateCommentHandler,
   // DeleteCommentHandler,
   // LikeStatusCommentHandler,
@@ -73,10 +75,11 @@ const cmdCommentHandler = [
     PostRepository,
     PostQueryRepository,
     CommentRepository,
+    CommentsQueryRepository,
     ...cmdBlogHandler,
     ...cmdPostHandler,
     ...cmdCommentHandler,
-    // CommentsQueryRepository,
+    // CommentsOdmQueryRepository,
     // CommentOdmRepository,
     // LikeRepository,
     // LikeQueryRepository,

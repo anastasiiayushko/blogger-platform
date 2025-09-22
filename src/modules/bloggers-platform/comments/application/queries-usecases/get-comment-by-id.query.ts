@@ -1,8 +1,7 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { CommentsQueryRepository } from '../../infrastructure/query/comments.query-repository';
-import { CommentViewDTO } from '../../api/view-dto/comment.view-dto';
 import { LikeStatusEnum } from '../../../likes/domain/like-status.enum';
-import { LikeMapQueryService } from '../../../likes/application/services/like-map.query-service';
+import { CommentsQueryRepository } from '../../infrastructure/query/comments.query-repository';
+import { CommentViewDTO } from '../../infrastructure/mapper/comment.view-dto';
 
 export class GetCommentByIdQuery {
   constructor(
@@ -17,7 +16,7 @@ export class GetCommentByIdQueryHandler
 {
   constructor(
     private readonly commentQRepo: CommentsQueryRepository,
-    private readonly likeMapQueryService: LikeMapQueryService,
+    // private readonly likeMapQueryService: LikeMapQueryService,
   ) {}
 
   async execute({
@@ -25,16 +24,7 @@ export class GetCommentByIdQueryHandler
     userId,
   }: GetCommentByIdQuery): Promise<CommentViewDTO> {
     const comment = await this.commentQRepo.getByIdOrNotFoundFail(commentId);
-    let status: LikeStatusEnum = LikeStatusEnum.None;
 
-    if (userId) {
-      const likeMap = await this.likeMapQueryService.getStatusLikesMapByParams(
-        [commentId],
-        userId,
-      );
-      status = likeMap.get(commentId) || LikeStatusEnum.None;
-    }
-
-    return CommentViewDTO.mapToView(comment, status);
+    return comment;
   }
 }
