@@ -101,10 +101,10 @@ export class PostRepository {
         FROM public."Posts" as p
         WHERE p.id = $1;
     `;
-    const result = await this.dataSource.query<[[], { count: number }]>(
+    const result = await this.dataSource.query(
       DELETE_QUERY,
       [id],
     );
-    return !!result?.[1]?.count;
+    return !!result?.[1];
   }
 }

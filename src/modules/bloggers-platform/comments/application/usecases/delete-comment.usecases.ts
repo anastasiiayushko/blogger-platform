@@ -3,6 +3,7 @@ import { CommentOdmRepository } from '../../infrastructure/comment.odm-repositor
 import { Types } from 'mongoose';
 import { DomainException } from '../../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
+import { CommentRepository } from '../../infrastructure/comment.repository';
 
 export class DeleteCommentCommand {
   constructor(
@@ -15,17 +16,17 @@ export class DeleteCommentCommand {
 export class DeleteCommentHandler
   implements ICommandHandler<DeleteCommentCommand>
 {
-  constructor(protected commentRepo: CommentOdmRepository) {}
+  constructor(protected commentRepository: CommentRepository) {}
 
   async execute({ commentId, userId }: DeleteCommentCommand): Promise<void> {
-    const editUser = new Types.ObjectId(userId);
-    const comment = await this.commentRepo.findOrNotFoundFail(commentId);
-    const author = comment.commentatorInfo.userId;
-    if (!author.equals(editUser)) {
+    //::TODO ДОБАВИТЬ УДАЛЕНИЕ РЕАКЦИЙ
+    const comment = await this.commentRepository.findOrNotFoundFail(commentId);
+    const authorId = comment.userId;
+    if (authorId !== userId) {
       throw new DomainException({
         code: DomainExceptionCode.Forbidden,
       });
     }
-    await this.commentRepo.deleteById(commentId);
+    await this.commentRepository.deleteById(commentId);
   }
 }

@@ -22,6 +22,10 @@ import { CurrentUserFormRequest } from '../../../user-accounts/decorators/param/
 import { CreateCommentCommand } from '../../comments/application/usecases/create-comment.usecases';
 import { CommentsQueryRepository } from '../../comments/infrastructure/query/comments.query-repository';
 import { CommentViewDTO } from '../../comments/infrastructure/mapper/comment.view-dto';
+import { BearerOptionalJwtAuthGuard } from '../../../user-accounts/guards/bearer/bearer-optional-jwt-auth.guard';
+import { GetCommentsQueryParams } from '../../comments/api/input-dto/get-comments-query-params.input-dto';
+import { OptionalCurrentUserFormRequest } from '../../../user-accounts/decorators/param/options-current-user-from-request.decorator';
+import { GetCommentsByPostWithPagingQuery } from '../../comments/application/queries-usecases/get-comments-by-post-with-paging.query';
 
 @Controller('posts')
 @SkipThrottle()
@@ -97,18 +101,18 @@ export class PostController {
   //   await this.commandBus.execute<DeletePostCommand>(new DeletePostCommand(id));
   // }
   //
-  // @Get(':postId/comments')
-  // @UseGuards(BearerOptionalJwtAuthGuard)
-  // async getAllComment(
-  //   @Param('postId') postId: string,
-  //   @Query() query: GetCommentsQueryParams,
-  //   @OptionalCurrentUserFormRequest() user: UserContextDto | null,
-  // ): Promise<PaginatedViewDto<CommentViewDTO[]>> {
-  //   return await this.queryBus.execute<GetCommentsByPostWithPagingQuery>(
-  //     new GetCommentsByPostWithPagingQuery(postId, query, user?.id),
-  //   );
-  // }
-  //
+  @Get(':postId/comments')
+  @UseGuards(BearerOptionalJwtAuthGuard)
+  async getAllComment(
+    @Param('postId') postId: string,
+    @Query() query: GetCommentsQueryParams,
+    @OptionalCurrentUserFormRequest() user: UserContextDto | null,
+  ): Promise<PaginatedViewDto<CommentViewDTO[]>> {
+    return await this.queryBus.execute<GetCommentsByPostWithPagingQuery>(
+      new GetCommentsByPostWithPagingQuery(postId, query, user?.id),
+    );
+  }
+
   @Post(':postId/comments')
   @UseGuards(BearerJwtAuthGuard)
   async createComment(

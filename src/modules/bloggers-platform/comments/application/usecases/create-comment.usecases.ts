@@ -16,7 +16,7 @@ export class CreateCommentHandler
   implements ICommandHandler<CreateCommentCommand>
 {
   constructor(
-    protected postQRepo: PostQueryRepository,
+    protected postQueryRepository: PostQueryRepository,
     // protected userExternalQRepo: UsersExternalQuerySqlRepository,
     protected commentRepository: CommentRepository,
   ) {}
@@ -27,7 +27,7 @@ export class CreateCommentHandler
     content,
   }: CreateCommentCommand): Promise<string> {
     //::TODO нужно ли проверять на юзера
-    await this.postQRepo.getByIdOrNotFoundFail(postId);
+    await this.postQueryRepository.getByIdOrNotFoundFail(postId);
     // const user = await this.userExternalQRepo.findById(userId);
     const comment = Comment.createInstance({
       content: content.trim(),

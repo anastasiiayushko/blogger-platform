@@ -2,7 +2,7 @@ import { BaseQueryParams } from '../../../../../core/dto/base.query-params.input
 import { IsEnum, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 
-enum SortByComment {
+export enum SortByComment {
   content = 'content',
   createdAt = 'createdAt',
 }

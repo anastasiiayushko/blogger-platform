@@ -9,7 +9,6 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
-import { ObjectIdValidationPipe } from '../../../../core/pipes/object-id-validation-transform-pipe';
 import { BearerJwtAuthGuard } from '../../../user-accounts/guards/bearer/bearer-jwt-auth.guard';
 import { CommentInputDto } from './input-dto/comment.input-dto';
 import { CurrentUserFormRequest } from '../../../user-accounts/decorators/param/current-user-form-request.decorator';
@@ -21,8 +20,10 @@ import { BearerOptionalJwtAuthGuard } from '../../../user-accounts/guards/bearer
 import { LikeStatusCommentCommand } from '../application/usecases/like-status-comment.usecase';
 import { LikeStatusInputDto } from '../../likes/api/input-dto/like-status.input-dto';
 import { OptionalCurrentUserFormRequest } from '../../../user-accounts/decorators/param/options-current-user-from-request.decorator';
-import { GetCommentByIdQuery } from '../application/queries-usecases/get-comment-by-id.query';
 import { SkipThrottle } from '@nestjs/throttler';
+import { CommentsQueryRepository } from '../infrastructure/query/comments.query-repository';
+import { CommentViewDTO } from '../infrastructure/mapper/comment.view-dto';
+import { UuidValidationPipe } from '../../../../core/pipes/uuid-validation-transform-pipe';
 
 @Controller('comments')
 @SkipThrottle()
@@ -30,16 +31,18 @@ export class CommentController {
   constructor(
     protected commandBus: CommandBus,
     protected queryBus: QueryBus,
+    protected commentsQueryRepository: CommentsQueryRepository,
   ) {}
 
   @Get(':id')
   @UseGuards(BearerOptionalJwtAuthGuard)
   async getById(
-    @Param('id', ObjectIdValidationPipe) id: string,
+    @Param('id', UuidValidationPipe) id: string,
     @OptionalCurrentUserFormRequest() user: UserContextDto | null,
-  ) {
-    return this.queryBus.execute<GetCommentByIdQuery>(
-      new GetCommentByIdQuery(id, user?.id),
+  ): Promise<CommentViewDTO> {
+    return this.commentsQueryRepository.getByIdOrNotFoundFail(
+      id,
+      user?.id ?? null,
     );
   }
 
@@ -47,11 +50,11 @@ export class CommentController {
   @UseGuards(BearerJwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async likeStatus(
-    @Param('commentId', ObjectIdValidationPipe) commentId: string,
+    @Param('commentId', UuidValidationPipe) commentId: string,
     @Body() inputDto: LikeStatusInputDto,
     @CurrentUserFormRequest() user: UserContextDto,
   ) {
-    return await this.commandBus.execute<LikeStatusCommentCommand>(
+    return  this.commandBus.execute<LikeStatusCommentCommand>(
       new LikeStatusCommentCommand(commentId, user.id, inputDto.likeStatus),
     );
   }
@@ -60,11 +63,11 @@ export class CommentController {
   @UseGuards(BearerJwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async updateComment(
-    @Param('commentId', ObjectIdValidationPipe) commentId: string,
+    @Param('commentId', UuidValidationPipe) commentId: string,
     @Body() inputDto: CommentInputDto,
     @CurrentUserFormRequest() user: UserContextDto,
   ) {
-    return await this.commandBus.execute<UpdateCommentCommand>(
+    return  this.commandBus.execute<UpdateCommentCommand>(
       new UpdateCommentCommand(commentId, user.id, inputDto.content),
     );
   }
@@ -73,10 +76,10 @@ export class CommentController {
   @UseGuards(BearerJwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteComment(
-    @Param('commentId', ObjectIdValidationPipe) commentId: string,
+    @Param('commentId', UuidValidationPipe) commentId: string,
     @CurrentUserFormRequest() user: UserContextDto,
   ) {
-    return await this.commandBus.execute<DeleteCommentCommand>(
+    return  this.commandBus.execute<DeleteCommentCommand>(
       new DeleteCommentCommand(commentId, user.id),
     );
   }

@@ -20,7 +20,8 @@ export class CommentSqlRow {
 
 @Injectable()
 export class CommentRepository {
-  constructor(@InjectDataSource() protected dataSource: DataSource) {}
+  constructor(@InjectDataSource() protected dataSource: DataSource) {
+  }
 
   private async insert(dto: {
     postId: string;
@@ -98,8 +99,13 @@ export class CommentRepository {
   }
 
   async deleteById(id: string): Promise<boolean> {
-    // const result = await
-    return false;
+    const result = await this.dataSource.query(`
+        DELETE
+        FROM public."Comments"
+        WHERE id = $1;
+    `, [id]);
+    return !!result?.[1];
+
   }
 
   async findOrNotFoundFail(id: string): Promise<CommentPersistedType> {

@@ -26,6 +26,12 @@ import { CreateCommentHandler } from './comments/application/usecases/create-com
 import { CommentRepository } from './comments/infrastructure/comment.repository';
 import { CommentsQueryRepository } from './comments/infrastructure/query/comments.query-repository';
 import { GetCommentByIdQueryHandler } from './comments/application/queries-usecases/get-comment-by-id.query';
+import {
+  GetCommentsByPostWithPagingQueryHandler
+} from './comments/application/queries-usecases/get-comments-by-post-with-paging.query';
+import { CommentController } from './comments/api/comment.controller';
+import { UpdateCommentHandler } from './comments/application/usecases/update-comment.usecases';
+import { DeleteCommentHandler } from './comments/application/usecases/delete-comment.usecases';
 
 const cmdBlogHandler = [
   CreateBlogHandler,
@@ -46,9 +52,9 @@ const cmdPostHandler = [
 const cmdCommentHandler = [
   CreateCommentHandler,
   GetCommentByIdQueryHandler,
-  // GetCommentsByPostWithPagingQueryHandler,
-  // UpdateCommentHandler,
-  // DeleteCommentHandler,
+  GetCommentsByPostWithPagingQueryHandler,
+  UpdateCommentHandler,
+  DeleteCommentHandler,
   // LikeStatusCommentHandler,
 ];
 
@@ -67,7 +73,7 @@ const cmdCommentHandler = [
     BlogController,
     SaBlogController,
     PostController,
-    // CommentController
+    CommentController
   ],
   providers: [
     BlogRepository,

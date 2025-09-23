@@ -1,4 +1,4 @@
-import { INestApplication } from '@nestjs/common';
+import { HttpStatus, INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { getAuthHeaderBasicTest } from '../common-helpers';
 import { BlogViewDto } from '../../../src/modules/bloggers-platform/blogs/api/view-dto/blog.view-dto';
@@ -9,6 +9,7 @@ import { GetPostQueryParams } from '../../../src/modules/bloggers-platform/posts
 import { PostViewDTO } from '../../../src/modules/bloggers-platform/posts/api/view-dto/post.view-dto';
 import { CommentInputDto } from '../../../src/modules/bloggers-platform/comments/api/input-dto/comment.input-dto';
 import { CommentViewDTO } from '../../../src/modules/bloggers-platform/comments/api/view-dto/comment.view-dto';
+import { GetCommentsQueryParams } from '../../../src/modules/bloggers-platform/comments/api/input-dto/get-comments-query-params.input-dto';
 
 export class PostApiManager {
   private urlPath = '/api/posts';
@@ -66,5 +67,34 @@ export class PostApiManager {
       .post(`${this.urlPath}/${postId}/comments`)
       .set('Authorization', `Bearer ${accessToken}`)
       .send(commentInputDto);
+  }
+
+  async createSeveralCommentsForPost(
+    postId: string,
+    count: number,
+    accessToken: string,
+  ): Promise<CommentViewDTO[]> {
+    const commentsRes = await Promise.all(
+      new Array(count).fill(1).map((item) => {
+        return request(this.app.getHttpServer())
+          .post(`${this.urlPath}/${postId}/comments`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            content: `comments created with post ${postId} content 1`,
+          })
+          .expect(HttpStatus.CREATED);
+      }),
+    );
+
+    return commentsRes.map((res) => res.body) as CommentViewDTO[];
+  }
+
+  async getAllCommentsByPostAndQuery(
+    postId: string,
+    query: Partial<GetCommentsQueryParams> = {},
+  ): ResponseBodySuperTest<PaginatedViewDto<CommentViewDTO[]>> {
+    return request(this.app.getHttpServer())
+      .get(`${this.urlPath}/${postId}/comments`)
+      .query(query);
   }
 }

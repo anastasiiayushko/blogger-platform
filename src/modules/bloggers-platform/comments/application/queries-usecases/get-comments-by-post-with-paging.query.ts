@@ -1,11 +1,9 @@
 import { GetCommentsQueryParams } from '../../api/input-dto/get-comments-query-params.input-dto';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { CommentsOdmQueryRepository } from '../../infrastructure/query/comments.odm-query-repository';
 import { PostQueryRepository } from '../../../posts/infrastructure/query-repository/post.query-repository';
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated.view-dto';
 import { CommentViewDTO } from '../../api/view-dto/comment.view-dto';
-import { LikeStatusEnum } from '../../../likes/domain/like-status.enum';
-import { LikeMapQueryService } from '../../../likes/application/services/like-map.query-service';
+import { CommentsQueryRepository } from '../../infrastructure/query/comments.query-repository';
 
 export class GetCommentsByPostWithPagingQuery {
   constructor(
@@ -24,9 +22,8 @@ export class GetCommentsByPostWithPagingQueryHandler
     >
 {
   constructor(
-    protected commentsQRepo: CommentsOdmQueryRepository,
-    protected postQRepo: PostQueryRepository,
-    protected likeMapQueryService: LikeMapQueryService,
+    protected commentsQueryRepository: CommentsQueryRepository,
+    protected postQueryRepository: PostQueryRepository,
   ) {}
 
   async execute({
@@ -36,25 +33,8 @@ export class GetCommentsByPostWithPagingQueryHandler
   }: GetCommentsByPostWithPagingQuery): Promise<
     PaginatedViewDto<CommentViewDTO[]>
   > {
-    await this.postQRepo.getByIdOrNotFoundFail(postId);
+    await this.postQueryRepository.getByIdOrNotFoundFail(postId);
 
-    const result = await this.commentsQRepo.getAll(query, { postId });
-    const parentIds = result.items.map((comment) => comment._id.toString());
-
-    const statusLikesMap =
-      await this.likeMapQueryService.getStatusLikesMapByParams(
-        parentIds,
-        userId,
-      );
-
-    return {
-      ...result,
-      items: result.items.map((comment) =>
-        CommentViewDTO.mapToView(
-          comment,
-          statusLikesMap.get(comment._id.toString()) || LikeStatusEnum.None,
-        ),
-      ),
-    };
+    return await this.commentsQueryRepository.getAll(query, { postId }, userId);
   }
 }

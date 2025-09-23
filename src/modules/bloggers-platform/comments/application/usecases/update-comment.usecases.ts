@@ -1,11 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UsersExternalQueryRepository } from '../../../../user-accounts/infrastructure/external-query/users-external.query-repository';
-import { Comment, CommentModelType } from '../../domain/comment.odm-entity';
-import { InjectModel } from '@nestjs/mongoose';
-import { CommentOdmRepository } from '../../infrastructure/comment.odm-repository';
-import { Types } from 'mongoose';
 import { DomainException } from '../../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
+import { CommentRepository } from '../../infrastructure/comment.repository';
 
 export class UpdateCommentCommand {
   constructor(
@@ -19,26 +15,23 @@ export class UpdateCommentCommand {
 export class UpdateCommentHandler
   implements ICommandHandler<UpdateCommentCommand>
 {
-  constructor(
-    @InjectModel(Comment.name) protected commentModel: CommentModelType,
-    protected userExternalQRepo: UsersExternalQueryRepository,
-    protected commentRepo: CommentOdmRepository,
-  ) {}
+  constructor(protected commentRepository: CommentRepository) {}
 
   async execute({
     commentId,
     userId,
     content,
   }: UpdateCommentCommand): Promise<void> {
-    const editUser = new Types.ObjectId(userId);
-    const comment = await this.commentRepo.findOrNotFoundFail(commentId);
-    const author = comment.commentatorInfo.userId;
-    if (!author.equals(editUser)) {
+    const comment = await this.commentRepository.findOrNotFoundFail(commentId);
+    const authorId = comment.userId;
+
+    if (userId !== authorId) {
       throw new DomainException({
         code: DomainExceptionCode.Forbidden,
       });
     }
-    comment.updateContent(content);
-    await this.commentRepo.save(comment);
+
+    comment.updateContent({ content: content });
+    await this.commentRepository.save(comment);
   }
 }

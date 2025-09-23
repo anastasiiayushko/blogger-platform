@@ -1,7 +1,3 @@
-import {
-  CommentNewType,
-  CommentPersistedType,
-} from '../../domain/comment.entity';
 import { CommentWithReactionSqlRow } from '../query/comments.query-repository';
 
 class CommentatorInfoDTO {
@@ -28,8 +24,8 @@ export class CommentViewDTO {
     comment.id = item.id;
     comment.content = item.content;
     comment.commentatorInfo = {
-      userId: item.authorId,
-      userLogin: item.authorLogin,
+      userId: item.commentatorId,
+      userLogin: item.commentatorLogin,
     };
     comment.likesInfo = {
       likesCount: +item.likesCount,
