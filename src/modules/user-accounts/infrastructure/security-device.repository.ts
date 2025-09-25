@@ -7,7 +7,7 @@ import {
 } from '../domin/security-device.entity';
 import { Types } from 'mongoose';
 
-@Injectable()
+
 export class SecurityDeviceRepository {
   constructor(
     @InjectModel(SecurityDevice.name)

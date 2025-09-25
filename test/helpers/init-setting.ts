@@ -1,8 +1,6 @@
 import { AppModule } from '../../src/app.module';
 import { Test, TestingModuleBuilder } from '@nestjs/testing';
 import { appSetup } from '../../src/setup/app.setup';
-import { Connection } from 'mongoose';
-import { getConnectionToken } from '@nestjs/mongoose';
 import { INestApplication } from '@nestjs/common';
 import { deleteAllData } from './delete-all-data';
 import { UsersApiManagerHelper } from './api-manager/users-api-manager-helper';
@@ -18,7 +16,7 @@ import {
 
 type ReturnInitSetting = {
   app: INestApplication;
-  databaseConnection: Connection;
+  // databaseConnection: Connection;
   userTestManger: UsersApiManagerHelper;
   // httpServer: any
 };
@@ -30,7 +28,6 @@ export const initSettings = async (
   const testingModuleBuilder: TestingModuleBuilder = Test.createTestingModule({
     imports: [AppModule],
   })
-
     .overrideProvider(EmailConfirmRegistrationHandler)
     .useValue({
       handle: jest
@@ -67,7 +64,7 @@ export const initSettings = async (
 
   await app.init();
 
-  const databaseConnection = app.get<Connection>(getConnectionToken());
+  // const databaseConnection = app.get<Connection>(getConnectionToken());
   const httpServer = app.getHttpServer();
   const userTestManger = new UsersApiManagerHelper(app);
 
@@ -75,7 +72,7 @@ export const initSettings = async (
 
   return {
     app,
-    databaseConnection,
+    // databaseConnection,
     userTestManger,
   };
 };

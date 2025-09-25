@@ -2,8 +2,11 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -26,6 +29,9 @@ import { BearerOptionalJwtAuthGuard } from '../../../user-accounts/guards/bearer
 import { GetCommentsQueryParams } from '../../comments/api/input-dto/get-comments-query-params.input-dto';
 import { OptionalCurrentUserFormRequest } from '../../../user-accounts/decorators/param/options-current-user-from-request.decorator';
 import { GetCommentsByPostWithPagingQuery } from '../../comments/application/queries-usecases/get-comments-by-post-with-paging.query';
+import { LikeStatusInputDto } from '../../likes/api/input-dto/like-status.input-dto';
+import { LikeStatusCommentCommand } from '../../comments/application/usecases/like-status-comment.usecase';
+import { LikeStatusPostCommand } from '../application/usecases/like-status-post.usecase';
 
 @Controller('posts')
 @SkipThrottle()
@@ -37,10 +43,10 @@ export class PostController {
   ) {}
 
   @Get()
-  // @UseGuards(BearerOptionalJwtAuthGuard)
+  @UseGuards(BearerOptionalJwtAuthGuard)
   async getAll(
     @Query() query: GetPostQueryParams,
-    // @OptionalCurrentUserFormRequest() user: UserContextDto | null,
+    @OptionalCurrentUserFormRequest() user: UserContextDto | null,
   ): Promise<PaginatedViewDto<PostViewDTO[]>> {
     return this.queryBus.execute<GetPostsWithPagingQuery>(
       new GetPostsWithPagingQuery(null, query, null),
@@ -56,18 +62,19 @@ export class PostController {
     return this.queryBus.execute(new GetPostByIdQuery(id, null));
   }
 
-  // @Put(':postId/like-status')
-  // @UseGuards(BearerJwtAuthGuard)
-  // @HttpCode(HttpStatus.NO_CONTENT)
-  // async likeStatus(
-  //   @Param('postId', ObjectIdValidationPipe) postId: string,
-  //   @Body() inputDto: LikeStatusInputDto,
-  //   @CurrentUserFormRequest() user: UserContextDto,
-  // ) {
-  //   return this.commandBus.execute<SetLikeStatusPostCommand>(
-  //     new SetLikeStatusPostCommand(postId, user.id, inputDto.likeStatus),
-  //   );
-  // }
+  @Put(':postId/like-status')
+  @UseGuards(BearerJwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async likeStatus(
+    @Param('postId', UuidValidationPipe) postId: string,
+    @Body() inputDto: LikeStatusInputDto,
+    @CurrentUserFormRequest() user: UserContextDto,
+  ) {
+    return this.commandBus.execute<LikeStatusPostCommand>(
+      new LikeStatusPostCommand(postId, user.id, inputDto.likeStatus),
+    );
+  }
+
   //
   // @Post()
   // @UseGuards(BasicAuthGuard)

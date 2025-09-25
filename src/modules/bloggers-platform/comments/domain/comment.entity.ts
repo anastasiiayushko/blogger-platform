@@ -1,17 +1,9 @@
 import { UpdateCommentDomainDto } from './dto/update-comment.domain.dto';
 import { CreateCommentDomainDto } from './dto/create-comment.domain.dto';
-
-type NewState = {
-  id: null;
-  createdAt: null;
-  updatedAt: null;
-};
-
-type PersistedState = {
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
-};
+import {
+  BaseEntityNewType,
+  BaseEntityPersistedType,
+} from '../../../../core/types/base-entity.type';
 
 type BaseComment = {
   postId: string;
@@ -19,10 +11,11 @@ type BaseComment = {
   content: string;
 };
 
-export type CommentNewType = Comment<NewState>;
-export type CommentPersistedType = Comment<PersistedState>;
+export type CommentNewType = Comment<BaseEntityNewType>;
+export type CommentPersistedType = Comment<BaseEntityPersistedType>;
+export type CommentUnionType = CommentNewType | CommentPersistedType;
 
-export class Comment<S extends NewState | PersistedState> {
+export class Comment<S extends BaseEntityNewType | BaseEntityPersistedType> {
   private _id: null | string; //PK
   private _postId: string; //FK
   private _userId: string; //FK
@@ -39,12 +32,12 @@ export class Comment<S extends NewState | PersistedState> {
     this._updatedAt = state.updatedAt;
   }
 
-  static isNew(c: Comment<NewState | PersistedState>): c is Comment<NewState> {
-    return c.id === null;
+  isNew(): this is CommentNewType {
+    return this._id === null;
   }
 
   static createInstance(dto: CreateCommentDomainDto): CommentNewType {
-    return new Comment<NewState>({
+    return new Comment<BaseEntityNewType>({
       id: null,
       postId: dto.postId,
       userId: dto.userId,
@@ -70,12 +63,12 @@ export class Comment<S extends NewState | PersistedState> {
   }
 
   // 🔑 Единственная дженерик-перегрузка, видимая снаружи
-  static toPrimitive<C extends NewState | PersistedState>(
+  static toPrimitive<C extends BaseEntityPersistedType | BaseEntityNewType>(
     c: Comment<C>,
   ): BaseComment & C;
 
   // ==== Простой метод без перегрузок: вернёт BaseComment & S ====
-  static toPrimitive(comment: Comment<NewState | PersistedState>) {
+  static toPrimitive(comment: CommentUnionType) {
     return {
       id: comment._id,
       postId: comment._postId,
@@ -87,7 +80,6 @@ export class Comment<S extends NewState | PersistedState> {
   }
 
   get id() {
-
     return this._id;
   }
 

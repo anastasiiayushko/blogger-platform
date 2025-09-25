@@ -1,5 +1,4 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { LikeStatusEnum } from '../../../likes/domain/like-status.enum';
 import { CommentsQueryRepository } from '../../infrastructure/query/comments.query-repository';
 import { CommentViewDTO } from '../../infrastructure/mapper/comment.view-dto';
 

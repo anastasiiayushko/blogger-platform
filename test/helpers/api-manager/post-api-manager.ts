@@ -1,7 +1,6 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { getAuthHeaderBasicTest } from '../common-helpers';
-import { BlogViewDto } from '../../../src/modules/bloggers-platform/blogs/api/view-dto/blog.view-dto';
 import { ResponseBodySuperTest } from '../../type/response-super-test';
 import { PaginatedViewDto } from '../../../src/core/dto/base.paginated.view-dto';
 import { PostInputDTO } from '../../../src/modules/bloggers-platform/posts/api/input-dto/post.input-dto';
@@ -10,6 +9,7 @@ import { PostViewDTO } from '../../../src/modules/bloggers-platform/posts/api/vi
 import { CommentInputDto } from '../../../src/modules/bloggers-platform/comments/api/input-dto/comment.input-dto';
 import { CommentViewDTO } from '../../../src/modules/bloggers-platform/comments/api/view-dto/comment.view-dto';
 import { GetCommentsQueryParams } from '../../../src/modules/bloggers-platform/comments/api/input-dto/get-comments-query-params.input-dto';
+import { LikeStatusEnum } from '../../../src/core/types/like-status.enum';
 
 export class PostApiManager {
   private urlPath = '/api/posts';
@@ -21,11 +21,15 @@ export class PostApiManager {
   async create(
     inputDto: PostInputDTO,
     basicAuth: string = this.basicAuth,
-  ): ResponseBodySuperTest<BlogViewDto> {
+  ): ResponseBodySuperTest<PostViewDTO> {
     return request(this.app.getHttpServer())
-      .post(this.saUrlPath)
+      .post(`/api/sa/blogs/${inputDto.blogId}/posts`)
       .set('Authorization', basicAuth)
-      .send(inputDto);
+      .send({
+        title: inputDto.title,
+        shortDescription: inputDto.shortDescription,
+        content: inputDto.content,
+      });
   }
 
   async update(
@@ -39,14 +43,23 @@ export class PostApiManager {
       .send(inputDto);
   }
 
-  async findById(postId: string) {
-    return request(this.app.getHttpServer()).get(`${this.urlPath}/${postId}`);
+  async findById(
+    postId: string,
+    assessToken: string = '',
+  ): ResponseBodySuperTest<PostViewDTO> {
+    return request(this.app.getHttpServer())
+      .get(`${this.urlPath}/${postId}`)
+      .set('Authorization', `Bearer ${assessToken}`);
   }
 
   async getAll(
     query: Partial<GetPostQueryParams> = {},
+    assessToken: string = '',
   ): ResponseBodySuperTest<PaginatedViewDto<PostViewDTO[]>> {
-    return request(this.app.getHttpServer()).get(this.urlPath).query(query);
+    return request(this.app.getHttpServer())
+      .get(this.urlPath)
+      .query(query)
+      .set('Authorization', `Bearer ${assessToken}`);
   }
 
   async deleteById(
@@ -96,5 +109,16 @@ export class PostApiManager {
     return request(this.app.getHttpServer())
       .get(`${this.urlPath}/${postId}/comments`)
       .query(query);
+  }
+
+  async setLikeStatus(
+    postId: string,
+    likeStatus: LikeStatusEnum,
+    accessToken: string,
+  ): Promise<ResponseBodySuperTest<void>> {
+    return request(this.app.getHttpServer())
+      .put(`${this.urlPath}/${postId}/like-status`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ likeStatus: likeStatus });
   }
 }

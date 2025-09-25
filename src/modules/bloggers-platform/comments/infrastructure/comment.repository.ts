@@ -8,6 +8,10 @@ import {
   CommentNewType,
   CommentPersistedType,
 } from '../domain/comment.entity';
+import {
+  BaseEntityNewType,
+  BaseEntityPersistedType,
+} from '../../../../core/types/base-entity.type';
 
 export class CommentSqlRow {
   id: string;
@@ -20,8 +24,7 @@ export class CommentSqlRow {
 
 @Injectable()
 export class CommentRepository {
-  constructor(@InjectDataSource() protected dataSource: DataSource) {
-  }
+  constructor(@InjectDataSource() protected dataSource: DataSource) {}
 
   private async insert(dto: {
     postId: string;
@@ -77,15 +80,15 @@ export class CommentRepository {
   ): Promise<CommentPersistedType> {
     let result: CommentSqlRow;
 
-    if (Comment.isNew(comment)) {
-      const dto = Comment.toPrimitive(comment);
+    if (comment.isNew()) {
+      const dto = Comment.toPrimitive<BaseEntityNewType>(comment);
       result = await this.insert({
         postId: dto.postId,
         content: dto.content,
         userId: dto.userId,
       });
     } else {
-      const dto = Comment.toPrimitive(comment);
+      const dto = Comment.toPrimitive<BaseEntityPersistedType>(comment);
       result = await this.update({
         id: dto.id,
         content: dto.content,
@@ -99,13 +102,15 @@ export class CommentRepository {
   }
 
   async deleteById(id: string): Promise<boolean> {
-    const result = await this.dataSource.query(`
+    const result = await this.dataSource.query(
+      ` 
         DELETE
         FROM public."Comments"
         WHERE id = $1;
-    `, [id]);
+    `,
+      [id],
+    );
     return !!result?.[1];
-
   }
 
   async findOrNotFoundFail(id: string): Promise<CommentPersistedType> {

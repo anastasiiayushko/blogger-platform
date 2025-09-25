@@ -1,11 +1,9 @@
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserModelType } from '../../domin/user.entity';
-import { Injectable } from '@nestjs/common';
 import { UserViewDto } from '../../api/view-dto/users.view-dto';
 import { DomainException } from '../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 
-@Injectable()
 export class UsersExternalQueryRepository {
   constructor(
     @InjectModel(User.name)

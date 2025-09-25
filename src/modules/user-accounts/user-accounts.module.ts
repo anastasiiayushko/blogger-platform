@@ -1,8 +1,4 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from './domin/user.entity';
-import { UsersRepository } from './infrastructure/users.repository';
-import { UserQueryRepository } from './infrastructure/query/users.query-repository';
 import { AuthController } from './api/auth.controller';
 import { AuthService } from './application/auth.service';
 import { LocalStrategy } from './guards/local/local.strategy';
@@ -11,17 +7,11 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { CreateUserService } from './application/create-user-service';
 import { BearerJwtStrategy } from './guards/bearer/bearer-jwt.strategy';
-import { UsersExternalQueryRepository } from './infrastructure/external-query/users-external.query-repository';
 import { UserAccountConfig } from './config/user-account.config';
 import {
   ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
   REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
 } from './constants/auth-tokens.inject-constants';
-import {
-  SecurityDevice,
-  SecurityDeviceSchema,
-} from './domin/security-device.entity';
-import { SecurityDeviceRepository } from './infrastructure/security-device.repository';
 import { AuthLoginHandler } from './application/auth-usecases/auth-login.usecase';
 import { RefreshTokenAuthGuard } from './guards/refresh-token/refresh-token-auth.guard';
 import { AuthRefreshTokenHandler } from './application/auth-usecases/auth-refresh-token.usecase';
@@ -31,7 +21,6 @@ import { CreateSecurityDeviceHandler } from './application/security-devices-usec
 import { UpdateSecurityDeviceHandler } from './application/security-devices-usecases/update-security-device.usecase';
 import { DeleteDeviceByIdHandler } from './application/security-devices-usecases/delete-device-by-id.usecase';
 import { TerminateAllOtherDevicesHandler } from './application/security-devices-usecases/terminate-current-device.usecase';
-import { SecurityDeviceQueryRepository } from './infrastructure/query/security-device.query-repository';
 import { UserConfirmationConfig } from './config/user-confirmation.config';
 import { SaUsersController } from './api/sa-users.controller';
 import { UsersSqlRepository } from './infrastructure/sql/users.sql-repository';
@@ -69,13 +58,6 @@ const cmdHandlerAuth = [
 const cmdSaHandlerUser = [SaCreateUserHandler, SaDeleteUserHandler];
 const configs = [UserAccountConfig, UserConfirmationConfig];
 
-const mongooseRepository = [
-  UsersRepository,
-  UserQueryRepository,
-  SecurityDeviceRepository,
-  SecurityDeviceQueryRepository,
-];
-const mongooseExternalQueryRepository = [UsersExternalQueryRepository];
 const sqlExternalQueryRepository = [UsersExternalQuerySqlRepository];
 const sqlQueryRepository = [
   UsersQuerySqlRepository,
@@ -92,16 +74,16 @@ const sqlRepository = [
   imports: [
     NotificationsModule,
     JwtModule,
-    MongooseModule.forFeature([
-      {
-        name: User.name,
-        schema: UserSchema,
-      },
-      {
-        name: SecurityDevice.name,
-        schema: SecurityDeviceSchema,
-      },
-    ]), // локально подключаем сущности
+    // MongooseModule.forFeature([
+    //   {
+    //     name: User.name,
+    //     schema: UserSchema,
+    //   },
+    //   {
+    //     name: SecurityDevice.name,
+    //     schema: SecurityDeviceSchema,
+    //   },
+    // ]), // локально подключаем сущности
   ],
   controllers: [AuthController, SecurityDevicesController, SaUsersController],
   providers: [
@@ -111,8 +93,6 @@ const sqlRepository = [
     LocalStrategy,
     BearerJwtStrategy,
     RefreshTokenAuthGuard,
-    ...mongooseRepository,
-    ...mongooseExternalQueryRepository,
     ...sqlRepository,
     ...sqlQueryRepository,
     ...sqlExternalQueryRepository,
@@ -145,7 +125,6 @@ const sqlRepository = [
   ],
   exports: [
     BearerJwtStrategy,
-    ...mongooseExternalQueryRepository,
     ...sqlExternalQueryRepository,
     /** при использование  guard через @UseGuard(nameGard), можно не экспортирована поставщиков которые инжектируются в через конструктор
      *  Nest автоматически видит зависимости guard’а через импорт модуля

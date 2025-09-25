@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { BlogDocument } from '../domain/blog.odm-entity';
 import { DomainException } from '../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 import { InjectDataSource } from '@nestjs/typeorm';

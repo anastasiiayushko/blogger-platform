@@ -3,6 +3,7 @@ import { CommentViewDTO } from '../../../src/modules/bloggers-platform/comments/
 import request from 'supertest';
 import { ResponseBodySuperTest } from '../../type/response-super-test';
 import { CommentInputDto } from '../../../src/modules/bloggers-platform/comments/api/input-dto/comment.input-dto';
+import { LikeStatusEnum } from '../../../src/core/types/like-status.enum';
 
 export class CommentApiManager {
   private urlPath = '/api/comments';
@@ -38,6 +39,17 @@ export class CommentApiManager {
   ): Promise<ResponseBodySuperTest<CommentViewDTO>> {
     return request(this.app.getHttpServer())
       .get(`${this.urlPath}/${commentId}`)
+      .set('Authorization', `Bearer ${accessToken}`);
+  }
+
+  async setLikeStatus(
+    commentId: string,
+    status: LikeStatusEnum,
+    accessToken: string,
+  ): Promise<ResponseBodySuperTest<void>> {
+    return request(this.app.getHttpServer())
+      .put(`${this.urlPath}/${commentId}/like-status`)
+      .send({ likeStatus: status })
       .set('Authorization', `Bearer ${accessToken}`);
   }
 }

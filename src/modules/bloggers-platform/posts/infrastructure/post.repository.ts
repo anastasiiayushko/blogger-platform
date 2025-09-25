@@ -94,17 +94,13 @@ export class PostRepository {
     return post;
   }
 
-
   async deleteById(id: string): Promise<boolean> {
     const DELETE_QUERY = `
         DELETE
         FROM public."Posts" as p
         WHERE p.id = $1;
     `;
-    const result = await this.dataSource.query(
-      DELETE_QUERY,
-      [id],
-    );
+    const result = await this.dataSource.query(DELETE_QUERY, [id]);
     return !!result?.[1];
   }
 }

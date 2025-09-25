@@ -1,7 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PostRepository } from '../../infrastructure/post.repository';
-import { InjectModel } from '@nestjs/mongoose';
-import { Post, PostModelType } from '../../domain/post.odm-entity';
 import { BlogQueryRepository } from '../../../blogs/infrastructure/query/blog.query-repository';
 import {
   IsNotEmpty,
@@ -57,7 +55,6 @@ export class UpdatePostCommand {
 @CommandHandler(UpdatePostCommand)
 export class UpdatePostHandler implements ICommandHandler<UpdatePostCommand> {
   constructor(
-    @InjectModel(Post.name) protected PostModel: PostModelType,
     protected postRepository: PostRepository,
     protected blogQueryRepository: BlogQueryRepository,
   ) {}

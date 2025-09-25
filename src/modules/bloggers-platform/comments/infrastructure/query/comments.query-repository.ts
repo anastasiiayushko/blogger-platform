@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { LikeStatusEnum } from '../../../likes/domain/like-status.enum';
 import { CommentViewDTO } from '../mapper/comment.view-dto';
 import { DomainException } from '../../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
 import { GetCommentsQueryParams } from '../../api/input-dto/get-comments-query-params.input-dto';
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated.view-dto';
+import { LikeStatusEnum } from '../../../../../core/types/like-status.enum';
 
 export type CommentWithReactionSqlRow = {
   id: string;
@@ -35,12 +35,12 @@ export class CommentsQueryRepository {
                u."login"                      AS "commentatorLogin",
                COALESCE(r."likesCount", 0)    as "likesCount",
                COALESCE(r."dislikesCount", 0) as "dislikesCount",
-               COALESCE(my.type, 'None')      as "myStatus"
+               COALESCE(my.status, 'None')    as "myStatus"
 
         FROM "Comments" AS c
                  JOIN "Users" AS u ON u.id = c."userId"
                  LEFT JOIN (SELECT "commentId",
-                                   COUNT(*) FILTER (WHERE type = '${LikeStatusEnum.Like}') AS "likesCount", COUNT(*) FILTER (WHERE type = '${LikeStatusEnum.Dislike}') AS "dislikesCount"
+                                   COUNT(*) FILTER (WHERE status = '${LikeStatusEnum.Like}') AS "likesCount", COUNT(*) FILTER (WHERE status = '${LikeStatusEnum.Dislike}') AS "dislikesCount"
                             FROM "CommentReactions"
                             GROUP BY "commentId") AS r ON r."commentId" = c."id"
                  LEFT JOIN "CommentReactions" AS my ON my."commentId" = $1 AND my."userId" = $2
@@ -73,11 +73,12 @@ export class CommentsQueryRepository {
                u."login"                      AS "commentatorLogin",
                COALESCE(r."likesCount", 0)    AS "likesCount",
                COALESCE(r."dislikesCount", 0) AS "dislikesCount",
-               COALESCE(my."type", 'None')    AS "myStatus"
+               COALESCE(my."status", 'None')    AS "myStatus"
         FROM "Comments" AS c
                  JOIN "Users" AS u ON u.id = c."userId"
                  LEFT JOIN (SELECT "commentId",
-                                   COUNT(*) FILTER(WHERE type='Like') AS "likesCount", COUNT(*) FILTER(WHERE type='Dislike') AS "dislikesCount"
+                                   COUNT(*) FILTER(WHERE status='${LikeStatusEnum.Like}') AS "likesCount", 
+                                   COUNT(*) FILTER(WHERE status='${LikeStatusEnum.Dislike}') AS "dislikesCount"
                             FROM "CommentReactions"
                             GROUP BY "commentId") AS r ON r."commentId" = c."id"
                  LEFT JOIN "CommentReactions" my

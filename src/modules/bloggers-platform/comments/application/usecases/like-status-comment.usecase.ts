@@ -1,10 +1,9 @@
-import { LikeStatusEnum } from '../../../likes/domain/like-status.enum';
-import { CommentOdmRepository } from '../../infrastructure/comment.odm-repository';
-
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UsersExternalQueryRepository } from '../../../../user-accounts/infrastructure/external-query/users-external.query-repository';
-import { LikeUpsertService } from '../../../likes/application/services/like-upsert.service';
-import { LikeRepository } from '../../../likes/infrastucture/repository/like-repository';
+import { LikeStatusEnum } from '../../../../../core/types/like-status.enum';
+import { CommentReactionRepository } from '../../infrastructure/comment-reaction.repository';
+import { CommentReaction } from '../../domain/comment-reactions.entity';
+import { UsersExternalQuerySqlRepository } from '../../../../user-accounts/infrastructure/sql/external-query/users-external.query-sql-repository';
+import { CommentRepository } from '../../infrastructure/comment.repository';
 
 export class LikeStatusCommentCommand {
   constructor(
@@ -19,10 +18,9 @@ export class LikeStatusCommentHandler
   implements ICommandHandler<LikeStatusCommentCommand>
 {
   constructor(
-    protected commentRepository: CommentOdmRepository,
-    protected userExternalQueryRepository: UsersExternalQueryRepository,
-    protected likeUpsertService: LikeUpsertService,
-    protected likeRepository: LikeRepository,
+    protected commentRepository: CommentRepository,
+    protected userExternalQueryRepository: UsersExternalQuerySqlRepository,
+    protected commentReactionRepository: CommentReactionRepository,
   ) {}
 
   async execute({
@@ -30,32 +28,36 @@ export class LikeStatusCommentHandler
     commentId,
     status,
   }: LikeStatusCommentCommand): Promise<void> {
-    const comment = await this.commentRepository.findOrNotFoundFail(commentId);
-    const user =
-      await this.userExternalQueryRepository.findOrNotFoundFail(userId);
+    await this.commentRepository.findOrNotFoundFail(commentId);
 
-    await this.likeUpsertService.upsert({
-      authorName: user.login,
-      authorId: userId,
-      parentId: commentId,
-      status: status,
-    });
+    await this.userExternalQueryRepository.findOrNotFoundFail(userId);
 
-    const likesCount = await this.likeRepository.getCountersByParentIdAndStatus(
-      commentId,
-      LikeStatusEnum.Like,
-    );
-    const dislikesCount =
-      await this.likeRepository.getCountersByParentIdAndStatus(
+    const reaction =
+      await this.commentReactionRepository.findByCommentAndUserId(
         commentId,
-        LikeStatusEnum.Dislike,
+        userId,
       );
+    if (!reaction && (status === LikeStatusEnum.None)) {
+      return;
+    }
 
-    comment.updateLikesInfo({
-      likesCount: likesCount,
-      dislikesCount: dislikesCount,
+
+    if (reaction) {
+      const { changed } = reaction.setStatus(status);
+      if (changed) {
+        await this.commentReactionRepository.save(reaction);
+      }
+      return;
+    }
+
+
+    const newReaction = CommentReaction.createInstance({
+      status: status,
+      userId: userId,
+      commentId: commentId,
     });
 
-    await this.commentRepository.save(comment);
+    await this.commentReactionRepository.save(newReaction);
+    return;
   }
 }

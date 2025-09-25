@@ -1,9 +1,8 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { CommentOdmRepository } from '../../infrastructure/comment.odm-repository';
-import { Types } from 'mongoose';
 import { DomainException } from '../../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
 import { CommentRepository } from '../../infrastructure/comment.repository';
+import { CommentReactionRepository } from '../../infrastructure/comment-reaction.repository';
 
 export class DeleteCommentCommand {
   constructor(
@@ -16,10 +15,12 @@ export class DeleteCommentCommand {
 export class DeleteCommentHandler
   implements ICommandHandler<DeleteCommentCommand>
 {
-  constructor(protected commentRepository: CommentRepository) {}
+  constructor(
+    protected commentRepository: CommentRepository,
+    protected commentReactionRepository: CommentReactionRepository,
+  ) {}
 
   async execute({ commentId, userId }: DeleteCommentCommand): Promise<void> {
-    //::TODO ДОБАВИТЬ УДАЛЕНИЕ РЕАКЦИЙ
     const comment = await this.commentRepository.findOrNotFoundFail(commentId);
     const authorId = comment.userId;
     if (authorId !== userId) {
@@ -27,6 +28,12 @@ export class DeleteCommentHandler
         code: DomainExceptionCode.Forbidden,
       });
     }
-    await this.commentRepository.deleteById(commentId);
+
+    const result = await this.commentRepository.deleteById(commentId);
+    if (result) {
+      await this.commentReactionRepository.deleteAllReactionByCommentId(
+        commentId,
+      );
+    }
   }
 }
