@@ -30,8 +30,8 @@ import { GetCommentsQueryParams } from '../../comments/api/input-dto/get-comment
 import { OptionalCurrentUserFormRequest } from '../../../user-accounts/decorators/param/options-current-user-from-request.decorator';
 import { GetCommentsByPostWithPagingQuery } from '../../comments/application/queries-usecases/get-comments-by-post-with-paging.query';
 import { LikeStatusInputDto } from '../../likes/api/input-dto/like-status.input-dto';
-import { LikeStatusCommentCommand } from '../../comments/application/usecases/like-status-comment.usecase';
 import { LikeStatusPostCommand } from '../application/usecases/like-status-post.usecase';
+import { PostQueryRepository } from '../infrastructure/query-repository/post.query-repository';
 
 @Controller('posts')
 @SkipThrottle()
@@ -40,6 +40,7 @@ export class PostController {
     protected commandBus: CommandBus,
     protected queryBus: QueryBus,
     protected commentsQueryRepository: CommentsQueryRepository,
+    protected postQueryRepository: PostQueryRepository,
   ) {}
 
   @Get()
@@ -48,18 +49,16 @@ export class PostController {
     @Query() query: GetPostQueryParams,
     @OptionalCurrentUserFormRequest() user: UserContextDto | null,
   ): Promise<PaginatedViewDto<PostViewDTO[]>> {
-    return this.queryBus.execute<GetPostsWithPagingQuery>(
-      new GetPostsWithPagingQuery(null, query, null),
-    );
+    return await this.postQueryRepository.getAll(query, null, user?.id ?? null);
   }
 
   @Get(':id')
-  // @UseGuards(BearerOptionalJwtAuthGuard)
+  @UseGuards(BearerOptionalJwtAuthGuard)
   async getById(
     @Param('id', UuidValidationPipe) id: string,
-    // @OptionalCurrentUserFormRequest() user: UserContextDto | null,
+    @OptionalCurrentUserFormRequest() user: UserContextDto | null,
   ): Promise<PostViewDTO> {
-    return this.queryBus.execute(new GetPostByIdQuery(id, null));
+    return this.postQueryRepository.getByIdOrNotFoundFail(id, user?.id ?? null);
   }
 
   @Put(':postId/like-status')
@@ -75,39 +74,6 @@ export class PostController {
     );
   }
 
-  //
-  // @Post()
-  // @UseGuards(BasicAuthGuard)
-  // async create(@Body() postInput: PostInputDTO): Promise<PostViewDTO> {
-  //   const postId = await this.commandBus.execute<CreatePostCommand>(
-  //     new CreatePostCommand(
-  //       postInput.blogId,
-  //       postInput.content,
-  //       postInput.shortDescription,
-  //       postInput.title,
-  //     ),
-  //   );
-  //   return this.queryBus.execute<GetPostByIdQuery>(
-  //     new GetPostByIdQuery(postId, null),
-  //   );
-  // }
-  //
-  // @Put(':id')
-  // @UseGuards(BasicAuthGuard)
-  // @HttpCode(HttpStatus.NO_CONTENT)
-  // async update(@Param('id') id: string, @Body() postInput: PostInputDTO) {
-  //   return this.commandBus.execute<UpdatePostCommand>(
-  //     new UpdatePostCommand(id, postInput),
-  //   );
-  // }
-  //
-  // @Delete(':id')
-  // @UseGuards(BasicAuthGuard)
-  // @HttpCode(HttpStatus.NO_CONTENT)
-  // async delete(@Param('id', ObjectIdValidationPipe) id: string) {
-  //   await this.commandBus.execute<DeletePostCommand>(new DeletePostCommand(id));
-  // }
-  //
   @Get(':postId/comments')
   @UseGuards(BearerOptionalJwtAuthGuard)
   async getAllComment(

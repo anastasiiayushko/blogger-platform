@@ -107,7 +107,6 @@ export class CommentReactionRepository {
     return CommentReaction.toDomain(result);
   }
 
-
   async findOrNotFoundFail(
     commentId: string,
     userId: string,
@@ -123,11 +122,14 @@ export class CommentReactionRepository {
   }
 
   async deleteAllReactionByCommentId(commentId: string): Promise<void> {
-    await this.dataSource.query(`
+    await this.dataSource.query(
+      `
         DELETE
         FROM public."CommentReactions" AS r
         WHERE r."commentId" = $1;
 
-    `);
+    `,
+      [commentId],
+    );
   }
 }

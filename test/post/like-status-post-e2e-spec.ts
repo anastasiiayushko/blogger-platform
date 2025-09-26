@@ -172,10 +172,10 @@ describe('POSTS/LIKE-STATUS UPDATE (e2e) ', () => {
 
     expect(postRes.status).toBe(HttpStatus.OK);
 
-    expect(targetPost.extendedLikesInfo.likesCount).toBe(0);
-    expect(targetPost.extendedLikesInfo.dislikesCount).toBe(1);
-    expect(targetPost.extendedLikesInfo.myStatus).toBe(LikeStatusEnum.Dislike);
-    expect(targetPost.extendedLikesInfo.newestLikes.length).toBe(0);
+    expect(postRes.body.extendedLikesInfo.likesCount).toBe(0);
+    expect(postRes.body.extendedLikesInfo.dislikesCount).toBe(1);
+    expect(postRes.body.extendedLikesInfo.myStatus).toBe(LikeStatusEnum.Dislike);
+    expect(postRes.body.extendedLikesInfo.newestLikes.length).toBe(0);
   });
   it('should toggle like status on a post', async () => {
     const createdPostRes = await postApiManager.create(
@@ -246,8 +246,8 @@ describe('POSTS/LIKE-STATUS UPDATE (e2e) ', () => {
 
     const targetPost = createdPostRes.body;
 
-    expect(targetPost.likesInfo.likesCount).toBe(0);
-    expect(targetPost.likesInfo.dislikesCount).toBe(0);
+    expect(targetPost.extendedLikesInfo.likesCount).toBe(0);
+    expect(targetPost.extendedLikesInfo.dislikesCount).toBe(0);
 
     await postApiManager.setLikeStatus(
       targetPost.id,
@@ -293,4 +293,6 @@ describe('POSTS/LIKE-STATUS UPDATE (e2e) ', () => {
 
     expect(reactionErrorRes.status).toBe(HttpStatus.NOT_FOUND);
   });
+
+
 });

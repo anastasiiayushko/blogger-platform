@@ -3,6 +3,8 @@ import { DataSource } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { User } from '../../domin/sql-entity/user.sql-entity';
 import { UserSqlRow } from './rows/user.sql-row';
+import { DomainException } from '../../../../core/exceptions/domain-exception';
+import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 
 @Injectable()
 export class UsersSqlRepository {
@@ -134,5 +136,16 @@ export class UsersSqlRepository {
       return null;
     }
     return User.toDomain(userRow[0]);
+  }
+
+  async findOrNotFoundFail(userId: string): Promise<User> {
+    const user = await this.findById(userId);
+    if (!user) {
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        message: 'User does not exist',
+      });
+    }
+    return user;
   }
 }

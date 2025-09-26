@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { BlogViewDto } from './view-dto/blog.view-dto';
 import { GetBlogsQueryParamsInputDto } from './input-dto/get-blogs-query-params.input-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
@@ -10,6 +10,10 @@ import { UuidValidationPipe } from '../../../../core/pipes/uuid-validation-trans
 import { GetPostQueryParams } from '../../posts/api/input-dto/get-post-query-params.input-dto';
 import { PostViewDTO } from '../../posts/api/view-dto/post.view-dto';
 import { GetPostsWithPagingQuery } from '../../posts/application/query-usecases/get-posts-with-paging.query-handler';
+import { BearerOptionalJwtAuthGuard } from '../../../user-accounts/guards/bearer/bearer-optional-jwt-auth.guard';
+import { OptionalCurrentUserFormRequest } from '../../../user-accounts/decorators/param/options-current-user-from-request.decorator';
+import { UserContextDto } from '../../../user-accounts/decorators/param/user-context.dto';
+import { PostQueryRepository } from '../../posts/infrastructure/query-repository/post.query-repository';
 
 @Controller('blogs')
 @SkipThrottle()
@@ -17,6 +21,7 @@ export class BlogController {
   constructor(
     protected commandBus: CommandBus,
     protected queryBus: QueryBus,
+    protected postQueryRepository: PostQueryRepository,
   ) {}
 
   /**
@@ -53,16 +58,17 @@ export class BlogController {
    * @returns {PaginatedViewDto<PostViewDTO[]>} - A paginated list of post view DTOs.
    */
   @Get(':blogId/posts')
-  // @UseGuards(BearerOptionalJwtAuthGuard)
+  @UseGuards(BearerOptionalJwtAuthGuard)
   async getAllPosts(
     @Param('blogId', UuidValidationPipe) blogId: string,
     @Query() query: GetPostQueryParams,
-    // @OptionalCurrentUserFormRequest() user: UserContextDto | null,
+    @OptionalCurrentUserFormRequest() user: UserContextDto | null,
   ): Promise<PaginatedViewDto<PostViewDTO[]>> {
     await this.queryBus.execute<GetBlogByIdQuery>(new GetBlogByIdQuery(blogId));
-
-    return this.queryBus.execute<GetPostsWithPagingQuery>(
-      new GetPostsWithPagingQuery(null, query, { blogId: blogId }),
+    return this.postQueryRepository.getAll(
+      query,
+      { blogId: blogId },
+      user?.id ?? null,
     );
   }
 }

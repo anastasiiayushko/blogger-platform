@@ -3,6 +3,8 @@ import request from 'supertest';
 
 import { CreateUsersInputDto } from '../../../src/modules/user-accounts/api/input-dto/create-users.input-dto';
 import { ResponseBodySuperTest } from '../../type/response-super-test';
+import { LoginInputDto } from '../../../src/modules/user-accounts/api/input-dto/login.input-dto';
+import { AccessTokenViewDto } from '../../../src/modules/user-accounts/api/view-dto/access-token.view-dto';
 
 export class AuthApiManager {
   private URL_PATH = '/api/auth';
@@ -17,17 +19,36 @@ export class AuthApiManager {
       .send(userInput);
   }
 
-  async refreshToken(cookies: string[], userAgent = 'Chrome') {
+  async refreshToken(
+    cookies: string[],
+    userAgent = 'Chrome',
+  ): ResponseBodySuperTest<AccessTokenViewDto> {
     return await request(this.app.getHttpServer())
       .post(this.URL_PATH + '/refresh-token')
       .set('Cookie', cookies.join('; '))
       .set('User-Agent', userAgent);
   }
 
-  async logout(cookies: string[], userAgent = 'Chrome') {
+  async logout(
+    cookies: string[],
+    userAgent = 'Chrome',
+  ): ResponseBodySuperTest<null> {
     return await request(this.app.getHttpServer())
       .post(this.URL_PATH + '/logout')
       .set('Cookie', cookies.join('; '))
       .set('User-Agent', userAgent);
+  }
+
+  async login(
+    loginInput: LoginInputDto,
+    userAgent = 'Chrome',
+  ): ResponseBodySuperTest<AccessTokenViewDto> {
+    return await request(this.app.getHttpServer())
+      .post(this.URL_PATH + '/logout')
+      .set('User-Agent', userAgent)
+      .send({
+        loginOrEmail: loginInput.loginOrEmail,
+        password: loginInput.password,
+      });
   }
 }
