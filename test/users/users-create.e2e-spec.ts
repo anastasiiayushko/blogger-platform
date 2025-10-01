@@ -4,14 +4,14 @@ import { UserViewDto } from '../../src/modules/user-accounts/api/view-dto/users.
 import { ApiErrorResultType } from '../type/response-super-test';
 import { getAuthHeaderBasicTest } from '../helpers/common-helpers';
 import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
-import { UsersSqlRepository } from '../../src/modules/user-accounts/infrastructure/sql/users.sql-repository';
 import { EmailConfirmationSqlRepository } from '../../src/modules/user-accounts/infrastructure/sql/email-confirmation.sql-repository';
+import { UserRepository } from '../../src/modules/user-accounts/infrastructure/user-repository';
 
 describe('UserController CREATED (e2e) ', () => {
   const basicAuth = getAuthHeaderBasicTest();
 
   let app: INestApplication;
-  let userRepository: UsersSqlRepository;
+  let userRepository: UserRepository;
   let emailConfirmationRepository: EmailConfirmationSqlRepository;
   let userTestManger: UsersApiManagerHelper;
 
@@ -19,7 +19,7 @@ describe('UserController CREATED (e2e) ', () => {
     const init = await initSettings();
     app = init.app;
     userTestManger = init.userTestManger;
-    userRepository = app.get<UsersSqlRepository>(UsersSqlRepository);
+    userRepository = app.get<UserRepository>(UserRepository);
     emailConfirmationRepository = app.get<EmailConfirmationSqlRepository>(
       EmailConfirmationSqlRepository,
     );
@@ -27,6 +27,7 @@ describe('UserController CREATED (e2e) ', () => {
   afterAll(async () => {
     await app.close();
   });
+
 
   it('should be return 401 basic auth not valid', async () => {
     const userRes = await userTestManger.createUser(

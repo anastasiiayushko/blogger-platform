@@ -27,6 +27,9 @@ export class TestingController {
     await this.dataSource.query(
       `TRUNCATE TABLE public."PostReactions" CASCADE;`,
     );
+
+
+    await this.dataSource.query(`TRUNCATE TABLE public.users CASCADE;`)
     return {
       status: true,
     };

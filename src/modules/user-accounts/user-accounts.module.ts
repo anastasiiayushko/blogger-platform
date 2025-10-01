@@ -37,6 +37,10 @@ import { RegistrationUserHandler } from './application/auth-usecases/registratio
 import { RegistrationEmailResendingHandler } from './application/auth-usecases/registration-email-resending.usecase';
 import { SessionDeviceSqlRepository } from './infrastructure/sql/session-device.sql-repository';
 import { SessionDeviceQuerySqlRepository } from './infrastructure/sql/query/session-device.query-sql-repository';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserRepository } from './infrastructure/user-repository';
+import { User } from './domin/user.entity';
+import { UserQueryRepository } from './infrastructure/query/user-query-repositroy';
 
 const cmdHandlerSecurityDevice = [
   CreateSecurityDeviceHandler,
@@ -74,9 +78,10 @@ const sqlRepository = [
   imports: [
     NotificationsModule,
     JwtModule,
+    TypeOrmModule.forFeature([User]),
     // MongooseModule.forFeature([
     //   {
-    //     name: User.name,
+    //     name: User_root.name,
     //     schema: UserSchema,
     //   },
     //   {
@@ -93,6 +98,8 @@ const sqlRepository = [
     LocalStrategy,
     BearerJwtStrategy,
     RefreshTokenAuthGuard,
+    UserRepository,
+    UserQueryRepository,
     ...sqlRepository,
     ...sqlQueryRepository,
     ...sqlExternalQueryRepository,

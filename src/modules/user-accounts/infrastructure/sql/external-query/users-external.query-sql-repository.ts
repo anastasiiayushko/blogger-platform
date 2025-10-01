@@ -23,7 +23,7 @@ export class UsersExternalQuerySqlRepository {
     if (!userRow || !userRow.length) {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
-        message: 'User not found',
+        message: 'User_root not found',
         extensions: [],
       });
     }
@@ -41,7 +41,7 @@ export class UsersExternalQuerySqlRepository {
     if (!user) {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
-        message: 'User not found',
+        message: 'User_root not found',
         extensions: [],
       });
     }

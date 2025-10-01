@@ -26,7 +26,7 @@ export class AuthApiManager {
     return await request(this.app.getHttpServer())
       .post(this.URL_PATH + '/refresh-token')
       .set('Cookie', cookies.join('; '))
-      .set('User-Agent', userAgent);
+      .set('User_root-Agent', userAgent);
   }
 
   async logout(
@@ -36,7 +36,7 @@ export class AuthApiManager {
     return await request(this.app.getHttpServer())
       .post(this.URL_PATH + '/logout')
       .set('Cookie', cookies.join('; '))
-      .set('User-Agent', userAgent);
+      .set('User_root-Agent', userAgent);
   }
 
   async login(
@@ -45,7 +45,7 @@ export class AuthApiManager {
   ): ResponseBodySuperTest<AccessTokenViewDto> {
     return await request(this.app.getHttpServer())
       .post(this.URL_PATH + '/logout')
-      .set('User-Agent', userAgent)
+      .set('User_root-Agent', userAgent)
       .send({
         loginOrEmail: loginInput.loginOrEmail,
         password: loginInput.password,

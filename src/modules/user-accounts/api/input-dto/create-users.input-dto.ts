@@ -1,11 +1,12 @@
 import { IsEmail, IsString, Length, Matches } from 'class-validator';
+
+import { Trim } from '../../../../core/decorators/transform/trim';
+import { ApiProperty } from '@nestjs/swagger';
 import {
   emailConstraints,
   loginConstraints,
   passwordConstraints,
-} from '../../domin/user.entity';
-import { Trim } from '../../../../core/decorators/transform/trim';
-import { ApiProperty } from '@nestjs/swagger';
+} from '../../domin/user.constraints';
 
 export class CreateUsersInputDto {
   @ApiProperty({

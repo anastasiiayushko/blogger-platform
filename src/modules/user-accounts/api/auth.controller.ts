@@ -38,12 +38,13 @@ import { UpdatePasswordCommand } from '../application/auth-usecases/update-passw
 import { RegistrationConfirmationCommand } from '../application/auth-usecases/registration-confirmation.usecase';
 import { RegistrationUserCommand } from '../application/auth-usecases/registration-user.usecase';
 import { RegistrationEmailResendingCommand } from '../application/auth-usecases/registration-email-resending.usecase';
-import { UsersQuerySqlRepository } from '../infrastructure/sql/query/users.query-sql-repository';
+import { UserQueryRepository } from '../infrastructure/query/user-query-repositroy';
+import { UserMeViewDto } from '../infrastructure/mapper/user-me-view-dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(
-    protected userQueryRepository: UsersQuerySqlRepository,
+    protected userQueryRepository: UserQueryRepository,
     protected commandBus: CommandBus,
   ) {}
 
@@ -147,8 +148,10 @@ export class AuthController {
   @Get('/me')
   @UseGuards(BearerJwtAuthGuard)
   @SkipThrottle()
-  async me(@CurrentUserFormRequest() user: UserContextDto) {
-    return await this.userQueryRepository.getUserMeById(user.id);
+  async me(
+    @CurrentUserFormRequest() user: UserContextDto,
+  ): Promise<UserMeViewDto> {
+    return this.userQueryRepository.getUserMeById(user.id);
   }
 
   @Post('/logout')

@@ -5,12 +5,13 @@ import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-
 import { UsersSqlRepository } from '../../src/modules/user-accounts/infrastructure/sql/users.sql-repository';
 import { UserSqlViewDto } from '../../src/modules/user-accounts/infrastructure/sql/mapper/users.sql-view-dto';
 import { randomUUID } from 'crypto';
+import { UserRepository } from '../../src/modules/user-accounts/infrastructure/user-repository';
 
 describe('UserController DELETE (e2e) ', () => {
   const basicAuth = getAuthHeaderBasicTest();
 
   let app: INestApplication;
-  let userRepository: UsersSqlRepository;
+  let userRepository: UserRepository;
   let userTestManger: UsersApiManagerHelper;
   let createdUser: UserSqlViewDto;
 
@@ -18,7 +19,7 @@ describe('UserController DELETE (e2e) ', () => {
     const init = await initSettings();
     app = init.app;
     userTestManger = init.userTestManger;
-    userRepository = app.get<UsersSqlRepository>(UsersSqlRepository);
+    userRepository = app.get<UserRepository>(UserRepository);
     const userRes = await userTestManger.createUser(
       {
         email: 'test@test.com',

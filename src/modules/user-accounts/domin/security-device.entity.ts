@@ -1,38 +1,36 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Model, Types } from 'mongoose';
 import { CreateSecurityDeviceDomainDto } from './dto/crate-securit-device.domain.dto';
 import { UpdateSecurityDeviceDomainDto } from './dto/update-securit-device.domain.dto';
+import { Column, Entity, PrimaryColumn } from 'typeorm';
 
-@Schema({ timestamps: true })
+@Entity('sessions')
 export class SecurityDevice {
-  @Prop({ type: Types.ObjectId, required: true })
-  userId: Types.ObjectId;
+  @PrimaryColumn('uuid')
+  id: string;
 
-  @Prop({ type: String, required: true })
+  @Column({ type: 'uuid' })
+  userId: string;
+
+  @Column({ type: 'varchar' })
   ip: string;
 
-  @Prop({ type: String, required: true, default: 'incognita' })
+  @Column({ type: 'varchar', default: 'anonymous' })
   title: string;
 
-  @Prop({ type: Date, required: true })
+  @Column({ type: 'timestamp' })
   lastActiveDate: Date;
 
-  @Prop({ type: Date, required: true, expires: 60 * 60 * 24 })
+  @Column({ type: 'timestamp' })
   expirationDate: Date;
 
-  _id: Types.ObjectId;
-
-  static createInstance(
-    dto: CreateSecurityDeviceDomainDto,
-  ): SecurityDeviceDocument {
-    const securityDevice = new this();
-    securityDevice._id = dto.deviceId as Types.ObjectId;
+  static createInstance(dto: CreateSecurityDeviceDomainDto): SecurityDevice {
+    const securityDevice = new SecurityDevice();
+    securityDevice.id = dto.deviceId;
     securityDevice.ip = dto.ip;
     securityDevice.title = dto.title;
-    securityDevice.userId = new Types.ObjectId(dto.userId);
+    securityDevice.userId = dto.userId;
     securityDevice.lastActiveDate = dto.lastActiveDate;
     securityDevice.expirationDate = dto.expirationDate;
-    return securityDevice as SecurityDeviceDocument;
+    return securityDevice;
   }
 
   updateDevice(dto: UpdateSecurityDeviceDomainDto): void {
@@ -42,11 +40,3 @@ export class SecurityDevice {
     this.expirationDate = dto.expirationDate;
   }
 }
-
-export const SecurityDeviceSchema =
-  SchemaFactory.createForClass(SecurityDevice);
-SecurityDeviceSchema.loadClass(SecurityDevice);
-
-export type SecurityDeviceDocument = HydratedDocument<SecurityDevice>;
-export type SecurityDeviceModelType = Model<SecurityDeviceDocument> &
-  typeof SecurityDevice;

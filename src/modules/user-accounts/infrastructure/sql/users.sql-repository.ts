@@ -65,7 +65,7 @@ export class UsersSqlRepository {
       result = await this.insert(user);
     }
     if (!result) {
-      throw new Error('User saving failed');
+      throw new Error('User_root saving failed');
     }
 
     return User.toDomain(result);
@@ -114,7 +114,7 @@ export class UsersSqlRepository {
    *
    * @param loginOrEmail - Логин или email пользователя (обязательный).
    * @param email - Email пользователя (необязательный). Если не указан, используется значение loginOrEmail.
-   * @returns Promise<User | null> - Найденный пользователь или null, если не найден.
+   * @returns Promise<User_root | null> - Найденный пользователь или null, если не найден.
    */
   async findByEmailOrLogin(
     loginOrEmail: string,
@@ -143,7 +143,7 @@ export class UsersSqlRepository {
     if (!user) {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
-        message: 'User does not exist',
+        message: 'User_root does not exist',
       });
     }
     return user;

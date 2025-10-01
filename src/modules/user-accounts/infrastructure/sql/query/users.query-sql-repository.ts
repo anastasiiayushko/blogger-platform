@@ -16,8 +16,8 @@ export class UsersQuerySqlRepository {
   private async findById(id: string): Promise<UserSqlRow | null> {
     const SELECT_QUERY = `
         SELECT *
-        FROM public."Users"
-        WHERE public."Users".id = $1;
+        FROM users
+        WHERE id = $1;
     `;
 
     const userRow = await this.datasource.query<UserSqlRow[]>(SELECT_QUERY, [
@@ -26,7 +26,7 @@ export class UsersQuerySqlRepository {
     if (!userRow || !userRow.length) {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
-        message: 'User not found',
+        message: 'User_root not found',
         extensions: [],
       });
     }
@@ -44,7 +44,7 @@ export class UsersQuerySqlRepository {
     if (!user) {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
-        message: 'User not found',
+        message: 'User_root not found',
         extensions: [],
       });
     }
@@ -63,7 +63,7 @@ export class UsersQuerySqlRepository {
     if (!user) {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
-        message: 'User not found',
+        message: 'User_root not found',
         extensions: [],
       });
     }
@@ -93,7 +93,7 @@ export class UsersQuerySqlRepository {
     //::TODO  COLLATE
     const SQL_PAGING = `
         SELECT u.*
-        FROM public."Users" as u
+        FROM public."users" as u
             ${WHERE_FILTER}
         ORDER BY "${query.sortBy}" ${query.sortDirection}
         OFFSET ${query.calculateSkip()} limit ${query.pageSize}
@@ -101,7 +101,7 @@ export class UsersQuerySqlRepository {
 
     const SQL_COUNT = `
         SELECT count(*)
-        FROM public."Users" ${WHERE_FILTER};
+        FROM public."users" ${WHERE_FILTER};
     `;
 
     const totalCount = await this.datasource.query<{ count: number }[]>(

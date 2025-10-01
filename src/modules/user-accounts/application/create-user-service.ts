@@ -2,14 +2,14 @@ import { CryptoService } from './crypto.service';
 import { DomainException } from '../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
 import { CreateUsersInputDto } from '../api/input-dto/create-users.input-dto';
-import { UsersSqlRepository } from '../infrastructure/sql/users.sql-repository';
-import { User } from '../domin/sql-entity/user.sql-entity';
 import { Injectable } from '@nestjs/common';
+import { UserRepository } from '../infrastructure/user-repository';
+import { User } from '../domin/user.entity';
 
 @Injectable()
 export class CreateUserService {
   constructor(
-    protected userRepository: UsersSqlRepository,
+    protected userRepository: UserRepository,
     protected cryptoService: CryptoService,
   ) {}
 
@@ -32,9 +32,9 @@ export class CreateUserService {
 
   /**
    *
-   * Created User entity before all checked to uniq filed (login, email)
+   * Created User_root entity before all checked to uniq filed (login, email)
    * @param {CreateUsersInputDto}  userDto - payload
-   * @returns {string} - User id
+   * @returns {string} - User_root id
    */
   async createUserEntity(userDto: CreateUsersInputDto): Promise<string> {
     await this.validateUniqUser(userDto.login, userDto.email);
@@ -42,16 +42,14 @@ export class CreateUserService {
     const passwordHash = await this.cryptoService.createPasswordHash(
       userDto.password,
     );
+    const user = User.createInstance({
+      passwordHash: passwordHash,
+      email: userDto.email,
+      login: userDto.login,
+    });
 
-    const userId = await this.userRepository.create(
-      User.createInstance({
-        passwordHash: passwordHash,
-        email: userDto.email,
-        login: userDto.login,
-      }),
-    );
-
-    return userId;
+    await this.userRepository.save(user);
+    return user.id;
   }
 
   //::TODO унести создание в usecase

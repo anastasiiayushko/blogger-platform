@@ -7,23 +7,23 @@ import { PaginatedViewDto } from '../../src/core/dto/base.paginated.view-dto';
 import { UsersSortBy } from '../../src/modules/user-accounts/api/input-dto/users-sort-by';
 import { SortDirection } from '../../src/core/dto/base.query-params.input-dto';
 import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
-import { UsersSqlRepository } from '../../src/modules/user-accounts/infrastructure/sql/users.sql-repository';
-import { UserSqlViewDto } from '../../src/modules/user-accounts/infrastructure/sql/mapper/users.sql-view-dto';
+import { UserRepository } from '../../src/modules/user-accounts/infrastructure/user-repository';
+import { UserViewDto } from '../../src/modules/user-accounts/infrastructure/mapper/user-view-dto';
 
 describe('UserController PAGINATION (e2e) ', () => {
   const basicAuth = getAuthHeaderBasicTest();
   const PATH_URL = '/api/sa/users';
 
   let app: INestApplication;
-  let userRepository: UsersSqlRepository;
+  let userRepository: UserRepository;
   let userTestManger: UsersApiManagerHelper;
-  let createdUsers: UserSqlViewDto[] = [];
+  let createdUsers: UserViewDto[] = [];
 
   beforeAll(async () => {
     const init = await initSettings();
     app = init.app;
     userTestManger = init.userTestManger;
-    userRepository = app.get<UsersSqlRepository>(UsersSqlRepository);
+    userRepository = app.get<UserRepository>(UserRepository);
     createdUsers = await userTestManger.createSeveralUsers(10, basicAuth);
     expect(createdUsers.length).toBe(10);
   });
@@ -44,12 +44,19 @@ describe('UserController PAGINATION (e2e) ', () => {
       .query({})
       .set('Authorization', basicAuth)
       .expect(HttpStatus.OK);
-    const data: PaginatedViewDto<UserSqlViewDto[]> = response.body;
+    const data: PaginatedViewDto<UserViewDto[]> = response.body;
     expect(data.pageSize).toBe(10);
     expect(data.page).toBe(1);
     expect(data.totalCount).toBe(10);
     expect(data.pagesCount).toBe(1);
     expect(data.items[9].email).toBe(createdUsers[0].email);
+
+    expect(data.items[0]).toEqual({
+      email: expect.any(String),
+      login: expect.any(String),
+      id: expect.any(String),
+      createdAt: expect.any(String),
+    });
   });
 
   it('Should be return correct data page with paging', async () => {
@@ -63,6 +70,6 @@ describe('UserController PAGINATION (e2e) ', () => {
       .get(PATH_URL)
       .set('Authorization', basicAuth)
       .query(query);
-    const data: PaginatedViewDto<UserSqlViewDto[]> = response.body;
+    const data: PaginatedViewDto<UserViewDto[]> = response.body;
   });
 });

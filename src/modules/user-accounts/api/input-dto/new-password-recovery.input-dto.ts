@@ -1,6 +1,6 @@
 import { IsString, IsNotEmpty, Length } from 'class-validator';
 import { Trim } from '../../../../core/decorators/transform/trim';
-import { passwordConstraints } from '../../domin/user.entity';
+import { passwordConstraints } from '../../domin/user.constraints';
 
 export class NewPasswordRecoveryInputDto {
   @IsNotEmpty()

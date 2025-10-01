@@ -6,7 +6,7 @@ import { ResponseBodySuperTest } from '../../type/response-super-test';
 import { LoginInputDto } from '../../../src/modules/user-accounts/api/input-dto/login.input-dto';
 import { AccessTokenViewDto } from '../../../src/modules/user-accounts/api/view-dto/access-token.view-dto';
 import { delay } from '../common-helpers';
-import { UserSqlViewDto } from '../../../src/modules/user-accounts/infrastructure/sql/mapper/users.sql-view-dto';
+import { UserViewDto } from '../../../src/modules/user-accounts/infrastructure/mapper/user-view-dto';
 
 export class UsersApiManagerHelper {
   private URL_PATH_AUTH = '/api/auth';
@@ -17,7 +17,7 @@ export class UsersApiManagerHelper {
   async createUser(
     userInputDTO: CreateUsersInputDto,
     basicAuth: string,
-  ): ResponseBodySuperTest<UserSqlViewDto> {
+  ): ResponseBodySuperTest<UserViewDto> {
     return await request(this.app.getHttpServer())
       .post(this.URL_SA_USERS)
       .set('Authorization', basicAuth)
@@ -39,16 +39,16 @@ export class UsersApiManagerHelper {
   ): ResponseBodySuperTest<AccessTokenViewDto> {
     return request(this.app.getHttpServer())
       .post(this.URL_PATH_AUTH + '/login')
-      .set('User-Agent', userAgent)
+      .set('User_root-Agent', userAgent)
       .send(loginInputDTO);
   }
 
   async createSeveralUsers(
     userCount: number,
     basicAuth: string,
-  ): Promise<UserSqlViewDto[]> {
+  ): Promise<UserViewDto[]> {
     // const userLength = Array.from({ length: userCount });
-    const responses: ResponseBodySuperTest<UserSqlViewDto>[] = [];
+    const responses: ResponseBodySuperTest<UserViewDto>[] = [];
 
     for (let i = 0; i < userCount; i++) {
       await delay(60);
@@ -63,9 +63,9 @@ export class UsersApiManagerHelper {
 
     const resolved = await Promise.all(responses);
 
-    const users: UserSqlViewDto[] = resolved.map((response) => {
+    const users: UserViewDto[] = resolved.map((response) => {
       expect(response.status).toBe(HttpStatus.CREATED);
-      return response.body as unknown as UserSqlViewDto;
+      return response.body as unknown as UserViewDto;
     });
 
     return users;

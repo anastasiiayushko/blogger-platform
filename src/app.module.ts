@@ -35,7 +35,8 @@ import { ThrottlerConfig } from './core/config/throttler.config';
       username: 'postgres',
       password: 'sa',
       database: 'BloggerPlatformDev',
-      synchronize: false, // Указывает, следует ли автоматически создавать схему базы данных при каждом запуске приложения
+      synchronize: true, // Указывает, следует ли автоматически создавать схему базы данных при каждом запуске приложения
+      autoLoadEntities: true, //
     }),
     UserAccountsModule,
     BloggersPlatformModule,
