@@ -1,10 +1,10 @@
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { UserConfirmationConfig } from '../../config/user-confirmation.config';
-import { EmailConfirmationSqlRepository } from '../../infrastructure/sql/email-confirmation.sql-repository';
 import { EmailConfirmRegistrationEvent } from '../../../notifications/event-usecases/email-confirm-registration.event-usecase';
-import { UsersSqlRepository } from '../../infrastructure/sql/users.sql-repository';
 import { DomainException } from '../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
+import { UserRepository } from '../../infrastructure/user-repository';
+import { EmailConfirmationRepository } from '../../infrastructure/email-confirmation.repository';
 
 export class RegistrationEmailResendingCommand {
   constructor(public email: string) {}
@@ -16,8 +16,8 @@ export class RegistrationEmailResendingHandler
 {
   constructor(
     protected userConfirmationConfig: UserConfirmationConfig,
-    protected userRepository: UsersSqlRepository,
-    protected emailConfirmationRepository: EmailConfirmationSqlRepository,
+    protected userRepository: UserRepository,
+    protected emailConfirmationRepository: EmailConfirmationRepository,
     protected eventBus: EventBus,
   ) {}
 
@@ -44,8 +44,10 @@ export class RegistrationEmailResendingHandler
       hours: this.userConfirmationConfig.emailExpiresInHours,
       min: this.userConfirmationConfig.emailExpiresInMin,
     });
-
+    console.log('before save', emailConfirmation);
     await this.emailConfirmationRepository.save(emailConfirmation);
+
+    console.log('after save', emailConfirmation);
 
     this.eventBus.publish(
       new EmailConfirmRegistrationEvent(cmd.email, emailConfirmation.code),

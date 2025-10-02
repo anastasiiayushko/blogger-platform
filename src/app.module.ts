@@ -36,7 +36,8 @@ import { ThrottlerConfig } from './core/config/throttler.config';
       password: 'sa',
       database: 'BloggerPlatformDev',
       synchronize: true, // Указывает, следует ли автоматически создавать схему базы данных при каждом запуске приложения
-      autoLoadEntities: true, //
+      autoLoadEntities: true, // for dev
+      // logging: true, //for dev
     }),
     UserAccountsModule,
     BloggersPlatformModule,

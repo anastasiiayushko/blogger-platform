@@ -5,12 +5,15 @@ import { CreateUsersInputDto } from '../api/input-dto/create-users.input-dto';
 import { Injectable } from '@nestjs/common';
 import { UserRepository } from '../infrastructure/user-repository';
 import { User } from '../domin/user.entity';
+import { EmailConfirmation } from '../domin/email-confirmation.entity';
+import { UserConfirmationConfig } from '../config/user-confirmation.config';
 
 @Injectable()
 export class CreateUserService {
   constructor(
     protected userRepository: UserRepository,
     protected cryptoService: CryptoService,
+    protected userConfirmationConfig: UserConfirmationConfig,
   ) {}
 
   private async validateUniqUser(login: string, email: string): Promise<void> {
@@ -34,9 +37,13 @@ export class CreateUserService {
    *
    * Created User_root entity before all checked to uniq filed (login, email)
    * @param {CreateUsersInputDto}  userDto - payload
+   * @param {boolean}  isConfirmedEmail - this flag for set confirmation email
    * @returns {string} - User_root id
    */
-  async createUserEntity(userDto: CreateUsersInputDto): Promise<string> {
+  async createUserEntity(
+    userDto: CreateUsersInputDto,
+    isConfirmedEmail: boolean,
+  ): Promise<{ userId: string; confirmationCode: string }> {
     await this.validateUniqUser(userDto.login, userDto.email);
 
     const passwordHash = await this.cryptoService.createPasswordHash(
@@ -48,17 +55,34 @@ export class CreateUserService {
       login: userDto.login,
     });
 
+    const emailConfirmation = EmailConfirmation.createInstance(
+      {
+        hours: this.userConfirmationConfig.emailExpiresInHours,
+        min: this.userConfirmationConfig.emailExpiresInMin,
+      },
+      isConfirmedEmail,
+    );
+    user.emailConfirmation = emailConfirmation;
+
     await this.userRepository.save(user);
-    return user.id;
+    return { userId: user.id, confirmationCode: emailConfirmation.code };
   }
 
-  //::TODO унести создание в usecase
-  /** для админки (подтверждение почты автоматически)
-   * @return {string} - идентификатор созданого пользователя
-   * */
-  async addNewUserSa(userDto: CreateUsersInputDto): Promise<string> {
-    const userId = await this.createUserEntity(userDto);
-
-    return userId;
-  }
+  // /** для админки (подтверждение почты автоматически)
+  //  * @return {string} - идентификатор созданого пользователя
+  //  * */
+  // async addNewUserSa(userDto: CreateUsersInputDto): Promise<string> {
+  //   const result = await this.createUserEntity(userDto, true);
+  //
+  //   return result.userId;
+  // }
+  //
+  // /** для клиента (подтверждение почты обезательно)
+  //  * @return {string} - идентификатор созданого пользователя
+  //  * */
+  // async registrationUserPublic(userDto: CreateUsersInputDto): Promise<string> {
+  //   const result = await this.createUserEntity(userDto, false);
+  //
+  //   return result.userId;
+  // }
 }

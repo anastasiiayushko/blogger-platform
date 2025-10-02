@@ -71,20 +71,21 @@ export class UserRepository {
   }
 
   /**
-   * Deletes a user by ID. If the user is not found, throws NotFoundException.
+   * Soft Delete a user by ID.
    * @param {string} id - The ID of the user to delete.
    * @returns {string} - The ID of the deleted user.
-   * @throws {NotFoundException} - If no user is found with the given ID.
    */
 
   async softDelete(userId: string): Promise<boolean> {
-    const result = await this.userRepository
-      .createQueryBuilder()
-      .softDelete()
-      .where('id = :id', { id: userId })
-      .printSql()
-      .execute();
-    console.log('soft deleted successfully. result: ', result);
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['emailConfirmation'],
+    });
+    if (!user) {
+      return false;
+    }
+
+    await this.userRepository.softRemove(user);
     return true;
   }
 }

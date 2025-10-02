@@ -41,6 +41,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserRepository } from './infrastructure/user-repository';
 import { User } from './domin/user.entity';
 import { UserQueryRepository } from './infrastructure/query/user-query-repositroy';
+import { EmailConfirmation } from './domin/email-confirmation.entity';
+import { EmailConfirmationRepository } from './infrastructure/email-confirmation.repository';
 
 const cmdHandlerSecurityDevice = [
   CreateSecurityDeviceHandler,
@@ -78,7 +80,7 @@ const sqlRepository = [
   imports: [
     NotificationsModule,
     JwtModule,
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, EmailConfirmation]),
     // MongooseModule.forFeature([
     //   {
     //     name: User_root.name,
@@ -100,6 +102,7 @@ const sqlRepository = [
     RefreshTokenAuthGuard,
     UserRepository,
     UserQueryRepository,
+    EmailConfirmationRepository,
     ...sqlRepository,
     ...sqlQueryRepository,
     ...sqlExternalQueryRepository,

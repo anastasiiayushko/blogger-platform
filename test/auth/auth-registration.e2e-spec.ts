@@ -3,20 +3,21 @@ import { initSettings } from '../helpers/init-setting';
 import { getAuthHeaderBasicTest } from '../helpers/common-helpers';
 import request from 'supertest';
 import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
-import { UsersSqlRepository } from '../../src/modules/user-accounts/infrastructure/sql/users.sql-repository';
-import { EmailConfirmationSqlRepository } from '../../src/modules/user-accounts/infrastructure/sql/email-confirmation.sql-repository';
-import { EmailConfirmation } from '../../src/modules/user-accounts/domin/sql-entity/email-confirmation.sql-entity';
 import { User } from '../../src/modules/user-accounts/domin/sql-entity/user.sql-entity';
 import { ThrottlerConfig } from '../../src/core/config/throttler.config';
+import { UserRepository } from '../../src/modules/user-accounts/infrastructure/user-repository';
+import { EmailConfirmationRepository } from '../../src/modules/user-accounts/infrastructure/email-confirmation.repository';
+import { EmailConfirmation } from '../../src/modules/user-accounts/domin/email-confirmation.entity';
 
+//::TODO rewrite test
 describe('Auth /registration', () => {
   const basicAuth = getAuthHeaderBasicTest();
   const PATH_URL_REGISTRATION = '/api/auth/registration';
   let app: INestApplication;
   let throttlerConfig: ThrottlerConfig;
   let userTestManger: UsersApiManagerHelper;
-  let userRepository: UsersSqlRepository;
-  let emailConfirmationRepository: EmailConfirmationSqlRepository;
+  let userRepository: UserRepository;
+  let emailConfirmationRepository: EmailConfirmationRepository;
 
   const existingUser = {
     email: 'test@test.com',
@@ -34,9 +35,9 @@ describe('Auth /registration', () => {
     app = init.app;
     throttlerConfig = app.get<ThrottlerConfig>(ThrottlerConfig);
     userTestManger = init.userTestManger;
-    userRepository = app.get<UsersSqlRepository>(UsersSqlRepository);
-    emailConfirmationRepository = app.get<EmailConfirmationSqlRepository>(
-      EmailConfirmationSqlRepository,
+    userRepository = app.get<UserRepository>(UserRepository);
+    emailConfirmationRepository = app.get<EmailConfirmationRepository>(
+      EmailConfirmationRepository,
     );
     const userRes = await userTestManger.createUser(existingUser, basicAuth);
     expect(userRes.status).toBe(HttpStatus.CREATED);
@@ -56,13 +57,13 @@ describe('Auth /registration', () => {
     expect(User).not.toBeNull();
     expect(User?.id).toBeDefined();
 
-    const EmailConfirmation = (await emailConfirmationRepository.findByUserId(
+    const emailConfirmation = (await emailConfirmationRepository.findByUserId(
       User!.id as string,
     )) as unknown as EmailConfirmation;
 
-    expect(EmailConfirmation.isConfirmed).toBeFalsy();
-    expect(typeof EmailConfirmation.code).toBe('string');
-    expect(EmailConfirmation.expirationAt).toBeInstanceOf(Date);
+    expect(emailConfirmation.isConfirmed).toBeFalsy();
+    expect(typeof emailConfirmation.code).toBe('string');
+    expect(emailConfirmation.expirationAt).toBeInstanceOf(Date);
   });
 
   it('Should be return 400  if the user with the given email  already exists, and not regenerate existing user confirmation code ', async () => {
@@ -94,7 +95,7 @@ describe('Auth /registration', () => {
     );
   });
 
-  it('Should be return 400  if the  login no exists ', async () => {
+  it('Should be return 400  if the login no exists ', async () => {
     const res = await request(app.getHttpServer())
       .post(PATH_URL_REGISTRATION)
       .send({

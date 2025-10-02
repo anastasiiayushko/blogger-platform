@@ -28,8 +28,11 @@ export class TestingController {
       `TRUNCATE TABLE public."PostReactions" CASCADE;`,
     );
 
+    await this.dataSource.query(`TRUNCATE TABLE public.users CASCADE;`);
+    await this.dataSource.query(
+      `TRUNCATE TABLE public.email_confirmations CASCADE;`,
+    );
 
-    await this.dataSource.query(`TRUNCATE TABLE public.users CASCADE;`)
     return {
       status: true,
     };

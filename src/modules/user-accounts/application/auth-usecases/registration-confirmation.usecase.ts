@@ -1,8 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UsersSqlRepository } from '../../infrastructure/sql/users.sql-repository';
-import { EmailConfirmationSqlRepository } from '../../infrastructure/sql/email-confirmation.sql-repository';
 import { DomainException } from '../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
+import { EmailConfirmationRepository } from '../../infrastructure/email-confirmation.repository';
 
 export class RegistrationConfirmationCommand {
   constructor(public code: string) {}
@@ -13,8 +12,7 @@ export class RegistrationConfirmationCommandHandler
   implements ICommandHandler<RegistrationConfirmationCommand>
 {
   constructor(
-    protected userRepository: UsersSqlRepository,
-    protected emailConfirmationRepository: EmailConfirmationSqlRepository,
+    protected emailConfirmationRepository: EmailConfirmationRepository,
   ) {}
 
   async execute(command: RegistrationConfirmationCommand): Promise<void> {

@@ -3,18 +3,18 @@ import { initSettings } from '../helpers/init-setting';
 import request from 'supertest';
 import { randomUUID } from 'crypto';
 import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
-import { UsersSqlRepository } from '../../src/modules/user-accounts/infrastructure/sql/users.sql-repository';
-import { EmailConfirmationSqlRepository } from '../../src/modules/user-accounts/infrastructure/sql/email-confirmation.sql-repository';
-import { EmailConfirmation } from '../../src/modules/user-accounts/domin/sql-entity/email-confirmation.sql-entity';
 import { UserConfirmationConfig } from '../../src/modules/user-accounts/config/user-confirmation.config';
 import { ApiErrorResultType } from '../type/response-super-test';
 import { ThrottlerConfig } from '../../src/core/config/throttler.config';
+import { UserRepository } from '../../src/modules/user-accounts/infrastructure/user-repository';
+import { EmailConfirmationRepository } from '../../src/modules/user-accounts/infrastructure/email-confirmation.repository';
+import { EmailConfirmation } from '../../src/modules/user-accounts/domin/email-confirmation.entity';
 
 describe('Auth /registration-confirmation', () => {
   const PATH_URL_REG_CONFIRMATION = '/api/auth/registration-confirmation';
   let app: INestApplication;
-  let userRepository: UsersSqlRepository;
-  let emailConfirmationRepository: EmailConfirmationSqlRepository;
+  let userRepository: UserRepository;
+  let emailConfirmationRepository: EmailConfirmationRepository;
   let userTestManager: UsersApiManagerHelper;
   let confirmConfig: UserConfirmationConfig;
   let throttlerConfig: ThrottlerConfig;
@@ -29,9 +29,9 @@ describe('Auth /registration-confirmation', () => {
     app = init.app;
     userTestManager = init.userTestManger;
     throttlerConfig = app.get<ThrottlerConfig>(ThrottlerConfig);
-    userRepository = app.get<UsersSqlRepository>(UsersSqlRepository);
-    emailConfirmationRepository = app.get<EmailConfirmationSqlRepository>(
-      EmailConfirmationSqlRepository,
+    userRepository = app.get<UserRepository>(UserRepository);
+    emailConfirmationRepository = app.get<EmailConfirmationRepository>(
+      EmailConfirmationRepository,
     );
     confirmConfig = app.get<UserConfirmationConfig>(UserConfirmationConfig);
   });
@@ -47,36 +47,37 @@ describe('Auth /registration-confirmation', () => {
     const User = await userRepository.findByEmailOrLogin(userAuthData.email);
     expect(User).not.toBeNull();
 
-    const EmailConfirmation = (await emailConfirmationRepository.findByUserId(
+    const emailConfirmation = (await emailConfirmationRepository.findByUserId(
       User!.id as string,
     )) as unknown as EmailConfirmation;
-    expect(EmailConfirmation.isConfirmed).toBeFalsy();
-    expect(typeof EmailConfirmation.code).toBe('string');
-    expect(EmailConfirmation.expirationAt).toBeInstanceOf(Date);
+    expect(emailConfirmation.isConfirmed).toBeFalsy();
+    expect(typeof emailConfirmation.code).toBe('string');
+    expect(emailConfirmation.expirationAt).toBeInstanceOf(Date);
 
     const confirmResponse = await request(app.getHttpServer())
       .post(PATH_URL_REG_CONFIRMATION)
-      .send({ code: EmailConfirmation.code });
+      .send({ code: emailConfirmation.code });
 
     expect(confirmResponse.status).toBe(HttpStatus.NO_CONTENT);
-    const EmailConfirm = (await emailConfirmationRepository.findByUserId(
+
+    const emailConfirmed = (await emailConfirmationRepository.findByUserId(
       User!.id as string,
     )) as unknown as EmailConfirmation;
 
-    expect(EmailConfirm.isConfirmed).toBeTruthy();
+    expect(emailConfirmed.isConfirmed).toBeTruthy();
   });
 
   it(`should be return 400 if the code has already been confirmed`, async () => {
     const User = await userRepository.findByEmailOrLogin(userAuthData.email);
-    const EmailConfirmation = (await emailConfirmationRepository.findByUserId(
+    const emailConfirEntity = (await emailConfirmationRepository.findByUserId(
       User!.id as string,
     )) as unknown as EmailConfirmation;
 
-    expect(EmailConfirmation.isConfirmed).toBeTruthy();
+    expect(emailConfirEntity.isConfirmed).toBeTruthy();
 
     const confirmationRes = await request(app.getHttpServer())
       .post(PATH_URL_REG_CONFIRMATION)
-      .send({ code: EmailConfirmation.code });
+      .send({ code: emailConfirEntity.code });
 
     expect(confirmationRes.status).toBe(HttpStatus.BAD_REQUEST);
     expect(confirmationRes.body).toEqual<ApiErrorResultType>({
@@ -94,12 +95,12 @@ describe('Auth /registration-confirmation', () => {
 
     const User = await userRepository.findByEmailOrLogin('user1@gmail.com');
 
-    const EmailConfirmationBeforeConfirm =
+    const emailConfirmation =
       (await emailConfirmationRepository.findByUserId(
         User!.id as string,
       )) as unknown as EmailConfirmation;
 
-    expect(EmailConfirmationBeforeConfirm.isConfirmed).toBeFalsy();
+    expect(emailConfirmation.isConfirmed).toBeFalsy();
 
     const rejectConfirmResponse = await request(app.getHttpServer())
       .post(PATH_URL_REG_CONFIRMATION)
@@ -110,11 +111,12 @@ describe('Auth /registration-confirmation', () => {
       errorsMessages: [{ field: 'code', message: expect.any(String) }],
     });
 
-    const EmailConfirmation = (await emailConfirmationRepository.findByUserId(
+    const emailConfirmed
+      = (await emailConfirmationRepository.findByUserId(
       User!.id as string,
     )) as unknown as EmailConfirmation;
 
-    expect(EmailConfirmation.isConfirmed).toBeFalsy();
+    expect(emailConfirmed.isConfirmed).toBeFalsy();
   });
 
   it(`should be return 400 if code confirmation expired`, async () => {

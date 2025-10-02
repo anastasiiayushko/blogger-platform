@@ -37,7 +37,7 @@ export class EmailConfirmationSqlRepository {
       await this.dataSource.query(
         `
             SELECT e."userId", e.code, e."expirationAt", e."isConfirmed", id
-            FROM public."EmailConfirmations" as e
+            FROM public."email_confirmaitons" as e
             where e."userId" = $1`,
         [userId],
       );
@@ -50,7 +50,7 @@ export class EmailConfirmationSqlRepository {
 
   private async insert(userDto: InputType): Promise<EmailConfirmationSqlRow> {
     const INSERT_SQL = `
-        INSERT INTO public."EmailConfirmations"
+        INSERT INTO public."email_confirmaitons"
             ("userId", code, "expirationAt", "isConfirmed")
         VALUES ($1, $2, $3, $4) RETURNING *;
     `;
@@ -69,7 +69,7 @@ export class EmailConfirmationSqlRepository {
 
   private async update(userDto: InputType): Promise<EmailConfirmationSqlRow> {
     const UPDATE_SQL = `
-        UPDATE public."EmailConfirmations"
+        UPDATE public."email_confirmaitons"
         SET code=$1,
             "expirationAt" = $2,
             "isConfirmed" = $3,
@@ -103,7 +103,7 @@ export class EmailConfirmationSqlRepository {
     const deleteResult: [[], number] = await this.dataSource.query(
       `
           DELETE
-          FROM public."EmailConfirmations" as c
+          FROM public."email_confirmaitons" as c
           WHERE c."userId" = $1;
       `,
       [userId],

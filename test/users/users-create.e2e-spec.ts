@@ -1,18 +1,18 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { initSettings } from '../helpers/init-setting';
-import { UserViewDto } from '../../src/modules/user-accounts/api/view-dto/users.view-dto';
 import { ApiErrorResultType } from '../type/response-super-test';
 import { getAuthHeaderBasicTest } from '../helpers/common-helpers';
 import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
-import { EmailConfirmationSqlRepository } from '../../src/modules/user-accounts/infrastructure/sql/email-confirmation.sql-repository';
 import { UserRepository } from '../../src/modules/user-accounts/infrastructure/user-repository';
+import { UserViewDto } from '../../src/modules/user-accounts/infrastructure/mapper/user-view-dto';
+import { EmailConfirmationRepository } from '../../src/modules/user-accounts/infrastructure/email-confirmation.repository';
 
-describe('UserController CREATED (e2e) ', () => {
+describe('SaUserController  CREATED (e2e) ', () => {
   const basicAuth = getAuthHeaderBasicTest();
 
   let app: INestApplication;
   let userRepository: UserRepository;
-  let emailConfirmationRepository: EmailConfirmationSqlRepository;
+  let emailConfirmationRepository: EmailConfirmationRepository;
   let userTestManger: UsersApiManagerHelper;
 
   beforeEach(async () => {
@@ -20,14 +20,13 @@ describe('UserController CREATED (e2e) ', () => {
     app = init.app;
     userTestManger = init.userTestManger;
     userRepository = app.get<UserRepository>(UserRepository);
-    emailConfirmationRepository = app.get<EmailConfirmationSqlRepository>(
-      EmailConfirmationSqlRepository,
+    emailConfirmationRepository = app.get<EmailConfirmationRepository>(
+      EmailConfirmationRepository,
     );
   });
   afterAll(async () => {
     await app.close();
   });
-
 
   it('should be return 401 basic auth not valid', async () => {
     const userRes = await userTestManger.createUser(
@@ -41,7 +40,7 @@ describe('UserController CREATED (e2e) ', () => {
     expect(userRes.status).toBe(HttpStatus.UNAUTHORIZED);
   });
 
-  it('Should be return 201 if valid header basic auth and correct data. Default Account verified', async () => {
+  it('Should be return 201 and add new user to system. Default Account verified', async () => {
     const userView = await userTestManger.createSeveralUsers(1, basicAuth);
 
     expect(userView[0]).toMatchObject<UserViewDto>({

@@ -1,5 +1,4 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { EmailConfirmationSqlRepository } from '../../infrastructure/sql/email-confirmation.sql-repository';
 import { PasswordRecoverySqlRepository } from '../../infrastructure/sql/password-recovery.sql-repository';
 import { SessionDeviceSqlRepository } from '../../infrastructure/sql/session-device.sql-repository';
 import { UserRepository } from '../../infrastructure/user-repository';
@@ -13,8 +12,7 @@ export class SaDeleteUserHandler
   implements ICommandHandler<SaDeleteUserCommand>
 {
   constructor(
-    protected userSqlRepository: UserRepository,
-    protected emailConfirmationRepository: EmailConfirmationSqlRepository,
+    protected userRepository: UserRepository,
     protected passwordRecoverySqlRepository: PasswordRecoverySqlRepository,
     protected sessionDeviceRepository: SessionDeviceSqlRepository,
   ) {}
@@ -24,7 +22,7 @@ export class SaDeleteUserHandler
     // await this.sessionDeviceRepository.deleteAllSessionByUserId(userId);
     // await this.emailConfirmationRepository.deleteByUserId(userId);
     // await this.passwordRecoverySqlRepository.deleteByUserId(userId);
-    await this.userSqlRepository.softDelete(userId);
+    await this.userRepository.softDelete(userId);
     return;
   }
 }

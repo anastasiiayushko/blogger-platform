@@ -2,12 +2,11 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import { initSettings } from '../helpers/init-setting';
 import { getAuthHeaderBasicTest } from '../helpers/common-helpers';
 import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
-import { UsersSqlRepository } from '../../src/modules/user-accounts/infrastructure/sql/users.sql-repository';
 import { UserSqlViewDto } from '../../src/modules/user-accounts/infrastructure/sql/mapper/users.sql-view-dto';
 import { randomUUID } from 'crypto';
 import { UserRepository } from '../../src/modules/user-accounts/infrastructure/user-repository';
 
-describe('UserController DELETE (e2e) ', () => {
+describe('SaUserController DELETE (e2e) ', () => {
   const basicAuth = getAuthHeaderBasicTest();
 
   let app: INestApplication;
@@ -20,6 +19,7 @@ describe('UserController DELETE (e2e) ', () => {
     app = init.app;
     userTestManger = init.userTestManger;
     userRepository = app.get<UserRepository>(UserRepository);
+
     const userRes = await userTestManger.createUser(
       {
         email: 'test@test.com',
@@ -43,11 +43,11 @@ describe('UserController DELETE (e2e) ', () => {
     expect(user).not.toBeNull();
   });
 
-  it('Should be return 404 error if user by id not found', async () => {
+  it('Should be return 404 error if user is not exists', async () => {
     const response = await userTestManger.deleteById(randomUUID(), basicAuth);
     expect(response.status).toBe(HttpStatus.NOT_FOUND);
   });
-  it('Should be 204 deleted existing user by id', async () => {
+  it('Should be 204 soft deleted existing user by id', async () => {
     const response = await userTestManger.deleteById(createdUser.id, basicAuth);
     expect(response.status).toBe(HttpStatus.NO_CONTENT);
 
