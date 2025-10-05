@@ -9,7 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { DomainException } from '../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 import { DateUtil } from '../../../../core/utils/DateUtil';
-import { SessionDeviceSqlRepository } from '../../infrastructure/sql/session-device.sql-repository';
+import { SessionDeviceRepository } from '../../infrastructure/session-device.repository';
 
 type RefreshTokenPayloadTYpe = {
   deviceId: string;
@@ -23,7 +23,7 @@ export class RefreshTokenAuthGuard implements CanActivate {
   constructor(
     @Inject(REFRESH_TOKEN_STRATEGY_INJECT_TOKEN)
     private refreshTokenContext: JwtService,
-    private sessionDeviceRepository: SessionDeviceSqlRepository,
+    private sessionDeviceRepository: SessionDeviceRepository,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {

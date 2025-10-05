@@ -2,7 +2,6 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import { initSettings } from '../helpers/init-setting';
 import request from 'supertest';
 import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
-import { EmailConfirmationSqlRepository } from '../../src/modules/user-accounts/infrastructure/sql/email-confirmation.sql-repository';
 import { ApiErrorResultType } from '../type/response-super-test';
 import { ThrottlerConfig } from '../../src/core/config/throttler.config';
 import { EmailConfirmationRepository } from '../../src/modules/user-accounts/infrastructure/email-confirmation.repository';
@@ -28,7 +27,7 @@ describe('Auth /registration-email-resending', () => {
     throttlerConfig = app.get<ThrottlerConfig>(ThrottlerConfig);
     userRepository = app.get<UserRepository>(UserRepository);
     emailConfirmationRepository = app.get<EmailConfirmationRepository>(
-      EmailConfirmationSqlRepository,
+      EmailConfirmationRepository,
     );
   });
 

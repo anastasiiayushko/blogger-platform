@@ -34,10 +34,10 @@ export class SessionDevice {
   static createInstance(dto: CreateSecurityDeviceDomainDto): SessionDevice {
     return new SessionDevice({
       id: null,
-      deviceId: dto.deviceId as string,
+      deviceId: dto.id as string,
       userId: dto.userId,
-      expirationAt: dto.expirationDate,
-      lastActiveAt: dto.lastActiveDate,
+      expirationAt: dto.expirationAt,
+      lastActiveAt: dto.lastActiveAt,
       title: dto.title,
       ip: dto.ip,
     });
@@ -46,8 +46,8 @@ export class SessionDevice {
   updateDevice(dto: UpdateSecurityDeviceDomainDto) {
     this._ip = dto.ip;
     this._title = dto.title;
-    this._lastActiveAt = dto.lastActiveDate;
-    this._expirationAt = dto.expirationDate;
+    this._lastActiveAt = dto.lastActiveAt;
+    this._expirationAt = dto.expirationAt;
   }
 
   /** Для маппера */

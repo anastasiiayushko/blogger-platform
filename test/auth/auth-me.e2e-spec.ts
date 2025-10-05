@@ -2,14 +2,16 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import { initSettings } from '../helpers/init-setting';
 import { getAuthHeaderBasicTest } from '../helpers/common-helpers';
 import request from 'supertest';
-import { UserMeViewDto } from '../../src/modules/user-accounts/api/view-dto/user-me.view-dto';
 import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
 import { AccessTokenViewDto } from '../../src/modules/user-accounts/api/view-dto/access-token.view-dto';
 import { JwtService } from '@nestjs/jwt';
+import { UserMeViewModel } from '../../src/modules/user-accounts/infrastructure/view-model/user-me-view-model';
+import { AuthApiManager } from '../helpers/api-manager/auth-api-manager';
 
 describe('Auth me ', () => {
   const basicAuth = getAuthHeaderBasicTest();
   let app: INestApplication;
+  let authApiManager: AuthApiManager;
   let userTestManger: UsersApiManagerHelper;
   let jwtService: JwtService;
 
@@ -23,6 +25,7 @@ describe('Auth me ', () => {
     const init = await initSettings();
     app = init.app;
     userTestManger = init.userTestManger;
+    authApiManager = new AuthApiManager(app);
     jwtService = app.get<JwtService>(JwtService);
     const userRes = await userTestManger.createUser(userAuthData, basicAuth);
     expect(userRes.status).toBe(HttpStatus.CREATED);
@@ -42,14 +45,13 @@ describe('Auth me ', () => {
     expect(loginResponse.status).toBe(HttpStatus.OK);
     expect(accessToken).toEqual(expect.any(String));
 
-    const meRes = await request(app.getHttpServer())
-      .get('/api/auth/me')
-      .set('Authorization', `Bearer ${accessToken}`)
-      .expect(HttpStatus.OK);
+    const meRes = await authApiManager.me(accessToken);
+    expect(meRes.status).toBe(HttpStatus.OK);
 
-    expect(meRes.body).toEqual<UserMeViewDto>({
+    expect(meRes.body).toEqual<UserMeViewModel>({
       login: userAuthData.login,
       email: userAuthData.email,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       userId: expect.any(String),
     });
   });
@@ -61,9 +63,13 @@ describe('Auth me ', () => {
     });
     expect(loginRes.status).toBe(HttpStatus.OK);
     const { accessToken } = loginRes.body as AccessTokenViewDto;
-    const decode = jwtService.decode(accessToken);
+    const decode = jwtService.decode<{
+      userId: string;
+      iat: number;
+      exp: number;
+    }>(accessToken);
     const expired = jwtService.sign(
-      { userId: decode!.userId },
+      { userId: decode.userId },
       { secret: process.env.ACCESS_TOKEN_SECRET!, expiresIn: '-30s' },
     );
     const meRes = await request(app.getHttpServer())

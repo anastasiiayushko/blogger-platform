@@ -1,8 +1,9 @@
-import { Column, Entity, OneToOne } from 'typeorm';
+import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
 import { BaseOrmEntity } from '../../../core/base-orm-entity/base-orm-entity';
 import { EmailConfirmation } from './email-confirmation.entity';
+import { SessionDevice } from './session-device.entity';
 
-@Entity('users')
+@Entity('user')
 export class User extends BaseOrmEntity {
   @Column({ type: 'varchar', unique: true })
   login: string;
@@ -13,8 +14,11 @@ export class User extends BaseOrmEntity {
   @Column({ type: 'varchar' })
   password: string;
 
-  @OneToOne(() => EmailConfirmation, (e) => e.user, {cascade:true})
+  @OneToOne(() => EmailConfirmation, (e) => e.user, { cascade: true })
   emailConfirmation: EmailConfirmation;
+
+  @OneToMany(() => SessionDevice, (securityDevice) => securityDevice.user, {})
+  sessionDevices: SessionDevice[];
 
   static createInstance(userInput: {
     login: string;

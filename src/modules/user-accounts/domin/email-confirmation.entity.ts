@@ -7,9 +7,9 @@ import { DomainException } from '../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
 import { BaseExpirationInputDto } from '../../../core/dto/base.expiration-input-dto';
 
-@Entity('email_confirmations')
+@Entity()
 export class EmailConfirmation extends BaseOrmEntity {
-  @Column({ type: 'boolean' })
+  @Column({ type: 'boolean', nullable: false, default: false })
   isConfirmed: boolean;
 
   @Column({ type: 'uuid', nullable: false })
@@ -36,7 +36,6 @@ export class EmailConfirmation extends BaseOrmEntity {
       hours: expiration.hours,
       minutes: expiration.min,
     });
-    const primaryId = null;
     const code = randomUUID();
     const emailConfirmation = new EmailConfirmation();
     emailConfirmation.code = code;

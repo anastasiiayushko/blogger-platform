@@ -35,7 +35,7 @@ describe('Auth /login', () => {
     await app.close();
   });
 
-  it('Should be return status 200 and the sign in', async () => {
+  it('Should be return status 200 and the sign in to system', async () => {
     const res = await userTestManger.login({
       loginOrEmail: userCredentials.login,
       password: userCredentials.password,

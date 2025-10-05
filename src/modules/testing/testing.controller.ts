@@ -17,21 +17,20 @@ export class TestingController {
     // );
     // await Promise.all(promises);
 
-    await this.dataSource.query(`TRUNCATE TABLE public."Users" CASCADE;`);
-    await this.dataSource.query(`TRUNCATE TABLE public."Blogs" CASCADE;`);
-    await this.dataSource.query(`TRUNCATE TABLE public."Posts" CASCADE;`);
-    await this.dataSource.query(`TRUNCATE TABLE public."Comments" CASCADE;`);
-    await this.dataSource.query(
-      `TRUNCATE TABLE public."CommentReactions" CASCADE;`,
-    );
-    await this.dataSource.query(
-      `TRUNCATE TABLE public."PostReactions" CASCADE;`,
-    );
+    // await this.dataSource.query(`TRUNCATE TABLE public."Blogs" CASCADE;`);
+    // await this.dataSource.query(`TRUNCATE TABLE public."Posts" CASCADE;`);
+    // await this.dataSource.query(`TRUNCATE TABLE public."Comments" CASCADE;`);
+    // await this.dataSource.query(
+    //   `TRUNCATE TABLE public."CommentReactions" CASCADE;`,
+    // );
+    // await this.dataSource.query(
+    //   `TRUNCATE TABLE public."PostReactions" CASCADE;`,
+    // );
 
-    await this.dataSource.query(`TRUNCATE TABLE public.users CASCADE;`);
     await this.dataSource.query(
-      `TRUNCATE TABLE public.email_confirmations CASCADE;`,
+      `TRUNCATE TABLE public.email_confirmation CASCADE;`,
     );
+    await this.dataSource.query(`TRUNCATE TABLE public."user" CASCADE;`);
 
     return {
       status: true,

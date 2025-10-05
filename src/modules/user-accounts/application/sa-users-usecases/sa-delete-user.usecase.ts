@@ -1,6 +1,4 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { PasswordRecoverySqlRepository } from '../../infrastructure/sql/password-recovery.sql-repository';
-import { SessionDeviceSqlRepository } from '../../infrastructure/sql/session-device.sql-repository';
 import { UserRepository } from '../../infrastructure/user-repository';
 
 export class SaDeleteUserCommand {
@@ -13,8 +11,8 @@ export class SaDeleteUserHandler
 {
   constructor(
     protected userRepository: UserRepository,
-    protected passwordRecoverySqlRepository: PasswordRecoverySqlRepository,
-    protected sessionDeviceRepository: SessionDeviceSqlRepository,
+    // protected passwordRecoverySqlRepository: PasswordRecoverySqlRepository,
+    // protected sessionDeviceRepository: SessionDeviceSqlRepository,
   ) {}
 
   async execute({ userId }: SaDeleteUserCommand): Promise<void> {

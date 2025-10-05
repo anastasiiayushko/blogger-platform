@@ -1,31 +1,44 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { User } from '../../domin/user.entity';
 import { DomainException } from '../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 import { GetUsersQueryParams } from '../../api/input-dto/get-users-query-params.input-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
-import { UserViewDto } from '../mapper/user-view-dto';
-import { UserMeViewDto } from '../mapper/user-me-view-dto';
-import { SortDirection } from '../../../../core/dto/base.query-params.input-dto';
+import { UserMeViewModel } from '../view-model/user-me-view-model';
+import { UserViewModel } from '../view-model/user-view-model';
 
 @Injectable()
 export class UserQueryRepository {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    private readonly dataSource: DataSource,
   ) {}
 
-  private async findById(id: string): Promise<User | null> {
+  /**
+   * Find a user by ID. If the user is not found, throws NotFoundException.
+   * @param {string} id - The ID of the user to find.
+   * @returns {UserViewModel} - The user representation in DTO format.
+   * @throws {NotFoundException} - If no user is found with the given ID.
+   */
+  async findOrNotFoundFail(id: string): Promise<UserViewModel> {
     const user = await this.userRepository
       .createQueryBuilder('u')
+      .select([
+        'u.id as id',
+        'u.email as email',
+        'u.login as login',
+        'u.created_at as "createdAt"',
+      ])
       .where('u.id = :id', { id })
-      .printSql()
-      .getOne();
+      .getRawOne<UserViewModel>();
     if (!user) {
-      return null;
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        message: 'User_root not found',
+        extensions: [],
+      });
     }
     return user;
   }
@@ -33,11 +46,16 @@ export class UserQueryRepository {
   /**
    * Find a user by ID. If the user is not found, throws NotFoundException.
    * @param {string} id - The ID of the user to find.
-   * @returns {UserViewDto} - The user representation in DTO format.
+   * @returns {UserMeViewModel} - The user representation in DTO format.
    * @throws {NotFoundException} - If no user is found with the given ID.
    */
-  async findOrNotFoundFail(id: string): Promise<UserViewDto> {
-    const user = await this.findById(id);
+
+  async getUserMeById(id: string): Promise<UserMeViewModel> {
+    const user = await this.userRepository
+      .createQueryBuilder('u')
+      .select(['u.id as "userId"', 'u.email as email', 'u.login as login'])
+      .where('u.id = :id', { id })
+      .getRawOne<UserMeViewModel>();
     if (!user) {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
@@ -45,38 +63,36 @@ export class UserQueryRepository {
         extensions: [],
       });
     }
-    return UserViewDto.mapToView(user);
-  }
-
-  /**
-   * Find a user by ID. If the user is not found, throws NotFoundException.
-   * @param {string} id - The ID of the user to find.
-   * @returns {UserMeViewDto} - The user representation in DTO format.
-   * @throws {NotFoundException} - If no user is found with the given ID.
-   */
-
-  async getUserMeById(id: string): Promise<UserMeViewDto> {
-    const user = await this.findById(id);
-    if (!user) {
-      throw new DomainException({
-        code: DomainExceptionCode.NotFound,
-        message: 'User_root not found',
-        extensions: [],
-      });
-    }
-    return UserMeViewDto.mapToView(user);
+    return user;
   }
 
   async getAll(
     query: GetUsersQueryParams,
-  ): Promise<PaginatedViewDto<UserViewDto[]>> {
-    const conditions: string[] = [];
-    const params: any[] = [];
+  ): Promise<PaginatedViewDto<UserViewModel[]>> {
+    // 1) Белый список сорти column -> SQL-выражение
+    const SORT_MAP: Record<string, string> = {
+      id: 'u.id',
+      login: 'u.login',
+      email: 'u.email',
+      createdAt: 'u.created_at',
+      updatedAt: 'u.updated_at',
+    };
 
-    const userSelectQueryBuilder = this.userRepository.createQueryBuilder('u');
+    const sortCol = SORT_MAP[query.sortBy] ?? 'u.created_at';
+    const sortDir: 'ASC' | 'DESC' =
+      String(query.sortDirection).toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
+    const baseQB = this.userRepository
+      .createQueryBuilder('u')
+      .select([
+        'u.id as id',
+        'u.email as email',
+        'u.login as login',
+        'u.created_at as "createdAt"',
+      ]);
 
     if (query.searchLoginTerm) {
-      userSelectQueryBuilder.where('u.login ILIKE :login', {
+      baseQB.where('u.login ILIKE :login', {
         login: `%${query.searchLoginTerm}%`,
       });
     }
@@ -85,27 +101,23 @@ export class UserQueryRepository {
       const condition = 'u.email ILIKE :email';
       const params = { email: `%${query.searchEmailTerm}%` };
 
-      if (query.searchLoginTerm) {
-        userSelectQueryBuilder.orWhere(condition, params);
-      } else {
-        userSelectQueryBuilder.where(condition, params);
-      }
+      query?.searchLoginTerm
+        ? baseQB.orWhere(condition, params)
+        : baseQB.where(condition, params);
     }
 
-    const sortDirection = query.sortDirection;
+    // 4) Счётчик — на клон билдерa, чтобы исключить сайд-эффекты
+    const totalCount = await baseQB.clone().getCount();
 
-    const totalCount = await userSelectQueryBuilder.getCount();
-    const items = await userSelectQueryBuilder
-      .orderBy(
-        `u.${query.sortBy}`,
-        `${sortDirection}` as unknown as 'ASC' | 'DESC',
-      )
-      .skip(query.calculateSkip()) // = OFFSET
-      .take(query.pageSize) // = LIMIT
-      .getMany();
+    // 5) Пагинированные строки
+    const items = await baseQB
+      .orderBy(sortCol, sortDir)
+      .skip(query.calculateSkip()) // OFFSET
+      .take(query.pageSize) // LIMIT
+      .getRawMany<UserViewModel>(); // маппится по alias’ам из select’а
 
     return PaginatedViewDto.mapToView({
-      items: items.map(UserViewDto.mapToView),
+      items: items,
       totalCount: totalCount,
       page: query.pageNumber,
       size: query.pageSize,

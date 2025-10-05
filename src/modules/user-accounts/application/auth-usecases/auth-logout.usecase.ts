@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { DomainException } from '../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
-import { SessionDeviceSqlRepository } from '../../infrastructure/sql/session-device.sql-repository';
+import { SessionDeviceRepository } from '../../infrastructure/session-device.repository';
 
 export class AuthLogoutCommand {
   constructor(
@@ -13,19 +13,23 @@ export class AuthLogoutCommand {
 @CommandHandler(AuthLogoutCommand)
 export class AuthLogoutHandler implements ICommandHandler<AuthLogoutCommand> {
   constructor(
-    private readonly securityDeviceRepository: SessionDeviceSqlRepository,
+    private readonly securityDeviceRepository: SessionDeviceRepository,
   ) {}
 
   async execute({ deviceId, userId }: AuthLogoutCommand): Promise<void> {
-    const device = await this.securityDeviceRepository.findDeviceByIdAndUserId(
-      deviceId,
-      userId,
-    );
-    if (!device) {
+    const targetDevice =
+      await this.securityDeviceRepository.findByDeviceAndUserIds(
+        deviceId,
+        userId,
+      );
+    if (!targetDevice) {
       throw new DomainException({
         code: DomainExceptionCode.Unauthorized,
       });
     }
-    await this.securityDeviceRepository.deleteById(deviceId, userId);
+    await this.securityDeviceRepository.deleteByDeviceIdByCurrentUserId(
+      deviceId,
+      userId,
+    );
   }
 }

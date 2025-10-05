@@ -3,7 +3,6 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserAccountsModule } from './modules/user-accounts/user-accounts.module';
-import { BloggersPlatformModule } from './modules/bloggers-platform/bloggers-platform.module';
 import { TestingModule } from './modules/testing/testing.module';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { AllExceptionsFilter } from './core/exceptions/filters/all-exceptions.filter';
@@ -14,6 +13,7 @@ import { DomainException } from './core/exceptions/domain-exception';
 import { DomainExceptionCode } from './core/exceptions/domain-exception-codes';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerConfig } from './core/config/throttler.config';
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 
 @Module({
   imports: [
@@ -35,12 +35,13 @@ import { ThrottlerConfig } from './core/config/throttler.config';
       username: 'postgres',
       password: 'sa',
       database: 'BloggerPlatformDev',
-      synchronize: true, // Указывает, следует ли автоматически создавать схему базы данных при каждом запуске приложения
+      synchronize: true, // Указывает, следует ли автоматически создавать схему базы данных при каждом запуске приложения. Рекомендуется отключить в продакшене
       autoLoadEntities: true, // for dev
-      // logging: true, //for dev
+      logging: true, //Включает или выключает логирование запросов к базе данных
+      namingStrategy: new SnakeNamingStrategy(),
     }),
     UserAccountsModule,
-    BloggersPlatformModule,
+    // BloggersPlatformModule,
     TestingModule,
     ThrottlerModule.forRootAsync({
       inject: [ThrottlerConfig],

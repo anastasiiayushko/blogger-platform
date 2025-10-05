@@ -20,8 +20,9 @@ export class EmailConfirmationRepository {
 
   async findByUserId(userId: string): Promise<EmailConfirmation | null> {
     const confirmaiton = await this.emailRepository.findOne({
+      // relations: ['user'],
       where: {
-        userId: userId,
+        user: { id: userId },
       },
     });
     return confirmaiton;

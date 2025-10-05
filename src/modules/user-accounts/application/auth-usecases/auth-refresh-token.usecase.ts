@@ -1,4 +1,4 @@
-import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import {
   ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
@@ -6,7 +6,9 @@ import {
 } from '../../constants/auth-tokens.inject-constants';
 import { JwtService } from '@nestjs/jwt';
 import { DateUtil } from '../../../../core/utils/DateUtil';
-import { UpdateSecurityDeviceCommand } from '../security-devices-usecases/update-security-device.usecase';
+import { SessionDeviceRepository } from '../../infrastructure/session-device.repository';
+import { DomainException } from '../../../../core/exceptions/domain-exception';
+import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 
 type AuthRefreshTokenCmdType = {
   deviceId: string;
@@ -39,29 +41,42 @@ export class AuthRefreshTokenHandler
     private accessTokenContext: JwtService,
     @Inject(REFRESH_TOKEN_STRATEGY_INJECT_TOKEN)
     private refreshTokenContext: JwtService,
-    protected commandBus: CommandBus,
+    private sessionDeviceRepository: SessionDeviceRepository,
   ) {}
 
   async execute(
     command: AuthRefreshTokenCommand,
   ): Promise<AuthRefreshTokenResponse> {
+    const targetDevice =
+      await this.sessionDeviceRepository.findByDeviceAndUserIds(
+        command.deviceId,
+        command.userId,
+      );
+
+    if (!targetDevice) {
+      throw new DomainException({
+        code: DomainExceptionCode.Unauthorized,
+      });
+    }
+
     const newRefreshToken = await this.refreshTokenContext.signAsync({
       userId: command.userId,
       deviceId: command.deviceId,
     });
 
-    const decode = this.refreshTokenContext.decode(newRefreshToken);
+    const decode = this.refreshTokenContext.decode<{
+      iat: number;
+      exp: number;
+    }>(newRefreshToken);
 
-    await this.commandBus.execute<UpdateSecurityDeviceCommand>(
-      new UpdateSecurityDeviceCommand({
-        userId: command.userId,
-        deviceId: command.deviceId,
-        ip: command.ip,
-        agent: command.agent,
-        lastActiveDate: DateUtil.convertUnixToUTC(decode.iat),
-        expirationDate: DateUtil.convertUnixToUTC(decode.exp),
-      }),
-    );
+    targetDevice.updateDevice({
+      ip: command.ip,
+      title: command.agent,
+      lastActiveAt: DateUtil.convertUnixToUTC(decode.iat),
+      expirationAt: DateUtil.convertUnixToUTC(decode.exp),
+    });
+
+    await this.sessionDeviceRepository.save(targetDevice);
 
     return {
       accessToken: this.accessTokenContext.sign({ userId: command.userId }),

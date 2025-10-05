@@ -2,7 +2,6 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CreateUsersInputDto } from '../../api/input-dto/create-users.input-dto';
 import { CreateUserService } from '../create-user-service';
 import { UserConfirmationConfig } from '../../config/user-confirmation.config';
-import { EmailConfirmation } from '../../domin/email-confirmation.entity';
 
 export class SaCreateUserCommand {
   login: string;

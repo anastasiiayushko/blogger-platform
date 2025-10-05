@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { SessionDeviceSqlRepository } from '../../infrastructure/sql/session-device.sql-repository';
+import { SessionDeviceRepository } from '../../infrastructure/session-device.repository';
 
 export class TerminateAllOtherDevicesCommand {
   constructor(
@@ -12,7 +12,7 @@ export class TerminateAllOtherDevicesCommand {
 export class TerminateAllOtherDevicesHandler
   implements ICommandHandler<TerminateAllOtherDevicesCommand>
 {
-  constructor(private sessionDeviceRepository: SessionDeviceSqlRepository) {}
+  constructor(private sessionDeviceRepository: SessionDeviceRepository) {}
 
   //::TODO почему нет проверки на существование сессии
   async execute(command: TerminateAllOtherDevicesCommand): Promise<void> {

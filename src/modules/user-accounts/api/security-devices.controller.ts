@@ -12,29 +12,28 @@ import {
   RefreshTokenPayloadFromRequest,
 } from '../decorators/param/refresh-token-payload-from-request.decorators';
 import { RefreshTokenAuthGuard } from '../guards/refresh-token/refresh-token-auth.guard';
-import { ObjectIdValidationPipe } from '../../../core/pipes/object-id-validation-transform-pipe';
 import { CommandBus } from '@nestjs/cqrs';
 import { TerminateAllOtherDevicesCommand } from '../application/security-devices-usecases/terminate-current-device.usecase';
 import { DeleteDeviceByIdCommand } from '../application/security-devices-usecases/delete-device-by-id.usecase';
 import { SkipThrottle } from '@nestjs/throttler';
-import { SessionDeviceQuerySqlRepository } from '../infrastructure/sql/query/session-device.query-sql-repository';
-import { SessionDeviceViewDTO } from '../infrastructure/sql/mapper/session-device.sql-view-dto';
 import { UuidValidationPipe } from '../../../core/pipes/uuid-validation-transform-pipe';
+import { SessionDeviceQueryRepository } from '../infrastructure/query/session-device.query-repository';
+import { DeviceViewModel } from '../infrastructure/view-model/device-view-model';
 
 @Controller('/security/devices')
 @SkipThrottle()
 export class SecurityDevicesController {
   constructor(
     protected commandBus: CommandBus,
-    protected sessionDeviceQueryRepository: SessionDeviceQuerySqlRepository,
+    protected sessionDeviceQueryRepository: SessionDeviceQueryRepository,
   ) {}
 
   @Get('')
   @UseGuards(RefreshTokenAuthGuard)
   async getById(
     @RefreshTokenPayloadFromRequest() payload: RefreshTokenPayloadDto,
-  ): Promise<SessionDeviceViewDTO[]> {
-    return await this.sessionDeviceQueryRepository.getAllDevicesByUserId(
+  ): Promise<DeviceViewModel[]> {
+    return this.sessionDeviceQueryRepository.getAllDevicesByUserId(
       payload.userId,
     );
   }
@@ -57,9 +56,10 @@ export class SecurityDevicesController {
   async terminateDevice(
     @Param('deviceId', UuidValidationPipe) deviceId: string,
     @RefreshTokenPayloadFromRequest() payload: RefreshTokenPayloadDto,
-  ) {
-    return this.commandBus.execute<DeleteDeviceByIdCommand>(
+  ): Promise<void> {
+    await this.commandBus.execute<DeleteDeviceByIdCommand>(
       new DeleteDeviceByIdCommand(deviceId, payload.userId),
     );
+    return;
   }
 }

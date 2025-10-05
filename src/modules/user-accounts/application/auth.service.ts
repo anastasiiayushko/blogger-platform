@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { CryptoService } from './crypto.service';
-import { UsersSqlRepository } from '../infrastructure/sql/users.sql-repository';
+import { UserRepository } from '../infrastructure/user-repository';
 
 @Injectable()
 //::TODO рефакторинг
 export class AuthService {
   constructor(
-    protected userRepository: UsersSqlRepository,
+    protected userRepository: UserRepository,
     protected cryptoService: CryptoService,
   ) {}
 

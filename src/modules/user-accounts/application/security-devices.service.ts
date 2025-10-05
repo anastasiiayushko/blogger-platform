@@ -3,8 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import {
   SecurityDevice,
   SecurityDeviceModelType,
-} from '../domin/security-device.entity';
-import { SecurityDeviceRepository } from '../infrastructure/security-device.repository';
+} from '../domin/session-device.entity';
+import { SessionDeviceRepository } from '../infrastructure/session-device.repository';
 import { Types } from 'mongoose';
 
 export class SecurityDeviceInputDto {
@@ -21,7 +21,7 @@ export class SecurityDevicesService {
   constructor(
     @InjectModel(SecurityDevice.name)
     private readonly securityDeviceModel: SecurityDeviceModelType,
-    private readonly securityDeviceRepository: SecurityDeviceRepository,
+    private readonly securityDeviceRepository: SessionDeviceRepository,
   ) {}
 
   private async create(device: SecurityDeviceInputDto) {}

@@ -1,4 +1,4 @@
-import { SecurityDeviceDocument } from '../../domin/security-device.entity';
+//::TODO dto unused
 
 export class SecurityDeviceViewDto {
   public ip: string;
@@ -6,12 +6,9 @@ export class SecurityDeviceViewDto {
   public lastActiveDate: string;
   public deviceId: string;
 
-  static mapView(device: SecurityDeviceDocument): SecurityDeviceViewDto {
+  static mapView(): SecurityDeviceViewDto {
     const dto = new SecurityDeviceViewDto();
-    dto.ip = device.ip;
-    dto.deviceId = device._id.toString();
-    dto.title = device.title;
-    dto.lastActiveDate = device.lastActiveDate.toISOString();
+
     return dto;
   }
 }

@@ -13,12 +13,13 @@ import { AuthApiManager } from '../helpers/api-manager/auth-api-manager';
 import { REFRESH_TOKEN_STRATEGY_INJECT_TOKEN } from '../../src/modules/user-accounts/constants/auth-tokens.inject-constants';
 import { JwtService } from '@nestjs/jwt';
 import { SecurityDeviceViewDto } from '../../src/modules/user-accounts/api/view-dto/security-device.view-dto';
-import { UserViewDto } from '../../src/modules/user-accounts/api/view-dto/users.view-dto';
 import {
   decodeAndValidateRefreshToken,
   validateJwtTokenRegex,
   validateTokenCookie,
 } from '../util/token-util';
+import { UserViewDto } from '../../src/modules/user-accounts/infrastructure/mapper/user-view-dto';
+import { DeviceViewModel } from '../../src/modules/user-accounts/infrastructure/view-model/device-view-model';
 
 describe('Auth /refresh-token', () => {
   const basicAuth = getAuthHeaderBasicTest();
@@ -61,6 +62,7 @@ describe('Auth /refresh-token', () => {
       'Chrome v100.0.4896.127',
     );
     expect(resLoginUser.status).toBe(HttpStatus.OK);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     validateJwtTokenRegex(resLoginUser.body.accessToken);
 
     const cookiesLogin = excludeCookiesFromHeaders(resLoginUser.headers);
@@ -79,24 +81,29 @@ describe('Auth /refresh-token', () => {
     const resGetDevices =
       await securityDevicesApiManger.getAllDeviceSessions(cookiesLogin);
 
+    const deviceList = resGetDevices.body as DeviceViewModel[];
     expect(resGetDevices.status).toBe(HttpStatus.OK);
-    expect(resGetDevices.body.length).toEqual(1);
+    expect(deviceList.length).toEqual(1);
 
-    const device: SecurityDeviceViewDto = resGetDevices.body[0];
-    const user: UserViewDto = resCreated.body;
+    const currentDevice = deviceList[0];
+    const user = resCreated.body as UserViewDto;
     // const decodeRefresh = await refreshTokenContext.decode(refreshToken);
 
     await decodeAndValidateRefreshToken(
       refreshTokenContext,
       refreshTokenValueLogin,
       user.id,
-      device.deviceId,
-      device.lastActiveDate,
+      currentDevice.deviceId,
+      currentDevice.lastActiveDate,
     );
 
     const resRefresh = await authApiManager.refreshToken(cookiesLogin);
     expect(resRefresh.status).toBe(HttpStatus.OK);
-    validateJwtTokenRegex(resRefresh.body.accessToken);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const accessToken = resRefresh.body.accessToken as string;
+
+    validateJwtTokenRegex(accessToken);
 
     const cookiesRefresh = excludeCookiesFromHeaders(resRefresh.headers);
 
@@ -116,8 +123,9 @@ describe('Auth /refresh-token', () => {
     const resGetDevicesAfterUpdate =
       await securityDevicesApiManger.getAllDeviceSessions(cookiesRefresh);
 
-    const deviceAfterUpdate: SecurityDeviceViewDto =
-      resGetDevicesAfterUpdate.body[0];
+    const devicesList = resGetDevicesAfterUpdate.body as DeviceViewModel[];
+
+    const deviceAfterUpdate: SecurityDeviceViewDto = devicesList[0];
 
     await decodeAndValidateRefreshToken(
       refreshTokenContext,
@@ -130,7 +138,7 @@ describe('Auth /refresh-token', () => {
 
   // Логин с другого устройства добавляет новую запись в список сессий.
   it('Should be 401 if refreshToken invalid', async () => {
-    const resCreated = await userApiManager.createUser(userNika, basicAuth);
+    await userApiManager.createUser(userNika, basicAuth);
     const resLogin = await userApiManager.login(
       {
         loginOrEmail: userNika.email,
@@ -150,9 +158,6 @@ describe('Auth /refresh-token', () => {
     const resRefreshExpireToken =
       await authApiManager.refreshToken(cookiesLogin);
 
-    const cookiesExpiresIn = excludeCookiesFromHeaders(
-      resRefreshExpireToken.headers,
-    );
 
     expect(resRefreshExpireToken.status).toBe(HttpStatus.UNAUTHORIZED);
   });

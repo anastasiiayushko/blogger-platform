@@ -41,6 +41,11 @@ import { RegistrationEmailResendingCommand } from '../application/auth-usecases/
 import { UserQueryRepository } from '../infrastructure/query/user-query-repositroy';
 import { UserMeViewDto } from '../infrastructure/mapper/user-me-view-dto';
 
+type PairTokenType = {
+  accessToken: string;
+  refreshToken: string;
+};
+
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -56,14 +61,15 @@ export class AuthController {
     @CurrentUserFormRequest() user: UserContextDto,
     @Res({ passthrough: true }) res: Response,
   ): Promise<AccessTokenViewDto> {
-    const result = await this.commandBus.execute<AuthLoginCommand>(
-      new AuthLoginCommand(user.id, agentAndIp.ip, agentAndIp.userAgent),
-    );
-    res.cookie('refreshToken', result.refreshToken, {
+    const pairToken = await this.commandBus.execute<
+      AuthLoginCommand,
+      PairTokenType
+    >(new AuthLoginCommand(user.id, agentAndIp.ip, agentAndIp.userAgent));
+    res.cookie('refreshToken', pairToken.refreshToken, {
       httpOnly: true,
       secure: true,
     });
-    return { accessToken: result.accessToken };
+    return { accessToken: pairToken.accessToken };
   }
 
   @Post('/refresh-token')
@@ -76,7 +82,10 @@ export class AuthController {
     refreshTokenPayload: RefreshTokenPayloadDto,
     @Res({ passthrough: true }) res: Response,
   ): Promise<AccessTokenViewDto> {
-    const result = await this.commandBus.execute<AuthRefreshTokenCommand>(
+    const pairToken = await this.commandBus.execute<
+      AuthRefreshTokenCommand,
+      PairTokenType
+    >(
       new AuthRefreshTokenCommand({
         userId: refreshTokenPayload.userId,
         deviceId: refreshTokenPayload.deviceId,
@@ -84,11 +93,11 @@ export class AuthController {
         agent: agentAndIp.userAgent,
       }),
     );
-    res.cookie('refreshToken', result.refreshToken, {
+    res.cookie('refreshToken', pairToken.refreshToken, {
       httpOnly: true,
       secure: true,
     });
-    return { accessToken: result.accessToken };
+    return { accessToken: pairToken.accessToken };
   }
 
   @ApiResponse({
