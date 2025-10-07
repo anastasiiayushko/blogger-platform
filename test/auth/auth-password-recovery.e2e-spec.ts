@@ -3,9 +3,9 @@ import { initSettings } from '../helpers/init-setting';
 import { getAuthHeaderBasicTest } from '../helpers/common-helpers';
 import request from 'supertest';
 import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
-import { PasswordRecoverySqlRepository } from '../../src/modules/user-accounts/infrastructure/sql/password-recovery.sql-repository';
 import { EmailPasswordRecoveryHandler } from '../../src/modules/notifications/event-usecases/email-password-recovery.event-usecase';
 import { ThrottlerConfig } from '../../src/core/config/throttler.config';
+import { PasswordRecoveryRepository } from '../../src/modules/user-accounts/infrastructure/password-recovery.repository';
 
 describe('Auth /password-recovery', () => {
   const basicAuth = getAuthHeaderBasicTest();
@@ -13,7 +13,7 @@ describe('Auth /password-recovery', () => {
   let app: INestApplication;
   let throttlerConfig: ThrottlerConfig;
   let userTestManger: UsersApiManagerHelper;
-  let passwordRecoveryRepository: PasswordRecoverySqlRepository;
+  let passwordRecoveryRepository: PasswordRecoveryRepository;
   let registeredUserId: string;
   let emailPasswordRecoveryHandler: EmailPasswordRecoveryHandler;
 
@@ -29,8 +29,8 @@ describe('Auth /password-recovery', () => {
     throttlerConfig = app.get<ThrottlerConfig>(ThrottlerConfig);
 
     userTestManger = init.userTestManger;
-    passwordRecoveryRepository = app.get<PasswordRecoverySqlRepository>(
-      PasswordRecoverySqlRepository,
+    passwordRecoveryRepository = app.get<PasswordRecoveryRepository>(
+      PasswordRecoveryRepository,
     );
     emailPasswordRecoveryHandler = app.get<EmailPasswordRecoveryHandler>(
       EmailPasswordRecoveryHandler,
@@ -62,6 +62,9 @@ describe('Auth /password-recovery', () => {
       await passwordRecoveryRepository.findByUserId(registeredUserId);
     expect(passwordRecovery!.isConfirmed).toBeFalsy();
   });
+
+
+
 
   it('Should be return 400 if inputModel has invalid email ', async () => {
     const recovery = await request(app.getHttpServer())

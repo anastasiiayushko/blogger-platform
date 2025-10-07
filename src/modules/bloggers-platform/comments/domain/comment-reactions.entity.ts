@@ -2,7 +2,7 @@ import {
   BaseEntityNewType,
   BaseEntityPersistedType,
 } from '../../../../core/types/base-entity.type';
-import { LikeStatusEnum } from '../../likes/domain/like-status.enum';
+import { LikeStatusEnum } from '../../../../core/types/like-status.enum';
 
 type BaseCommentReaction = {
   commentId: string;

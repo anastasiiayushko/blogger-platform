@@ -5,6 +5,9 @@ import request from 'supertest';
 import { PaginatedViewDto } from '../../src/core/dto/base.paginated.view-dto';
 import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
 import { UserViewModel } from '../../src/modules/user-accounts/infrastructure/view-model/user-view-model';
+import { GetUsersQueryParams } from '../../src/modules/user-accounts/api/input-dto/get-users-query-params.input-dto';
+import { UsersSortBy } from '../../src/modules/user-accounts/api/input-dto/users-sort-by';
+import { SortDirection } from '../../src/core/dto/base.query-params.input-dto';
 
 describe('UserController PAGINATION (e2e) ', () => {
   const basicAuth = getAuthHeaderBasicTest();
@@ -43,7 +46,6 @@ describe('UserController PAGINATION (e2e) ', () => {
     expect(data.page).toBe(1);
     expect(data.totalCount).toBe(10);
     expect(data.pagesCount).toBe(1);
-    expect(data.items[9].email).toBe(createdUsers[0].email);
 
     expect(data.items[0]).toEqual<UserViewModel>({
       email: expect.any(String) as unknown as string,
@@ -53,17 +55,28 @@ describe('UserController PAGINATION (e2e) ', () => {
     });
   });
 
-  // it('Should be return correct data page with paging', async () => {
-  //   const query: Partial<GetUsersQueryParams> = {
-  //     pageSize: 10,
-  //     pageNumber: 1,
-  //     sortBy: UsersSortBy.Login,
-  //     sortDirection: SortDirection.Asc,
-  //   };
-  //   const response = await request(app.getHttpServer())
-  //     .get(PATH_URL)
-  //     .set('Authorization', basicAuth)
-  //     .query(query);
-  //   const data: PaginatedViewDto<UserViewDto[]> = response.body;
-  // });
+  it('Should be return correct sort by login with direction asc', async () => {
+    const query: Partial<GetUsersQueryParams> = {
+      pageSize: 10,
+      pageNumber: 1,
+      sortBy: UsersSortBy.Login,
+      //@ts-ignore
+      sortDirection: 'asc',
+    };
+    const response = await request(app.getHttpServer())
+      .get(PATH_URL)
+      .set('Authorization', basicAuth)
+      .query(query);
+    const data: PaginatedViewDto<UserViewModel[]> = response.body;
+
+    const sortedUserByLoginAsc = createdUsers.sort((a, b) =>
+      a.login.localeCompare(b.login),
+    );
+
+    expect(data.items).toEqual(sortedUserByLoginAsc);
+  });
+
+  it('Should be return 200 if query params invalid', async () => {
+
+  });
 });

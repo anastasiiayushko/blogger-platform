@@ -2,8 +2,8 @@ import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, Min } from 'class-validator';
 
 export enum SortDirection {
-  Asc = 'ASC',
-  Desc = 'DESC',
+  Asc = 'asc',
+  Desc = 'desc',
 }
 
 //базовый класс для query параметров с пагинацией
@@ -24,7 +24,6 @@ export class BaseQueryParams {
 
   @IsEnum(SortDirection)
   @IsOptional()
-  // @Type(() => String) // если используешь class-transformer
   sortDirection: SortDirection = SortDirection.Desc;
 
   calculateSkip() {

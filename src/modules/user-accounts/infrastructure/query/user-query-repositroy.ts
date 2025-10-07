@@ -71,11 +71,9 @@ export class UserQueryRepository {
   ): Promise<PaginatedViewDto<UserViewModel[]>> {
     // 1) Белый список сорти column -> SQL-выражение
     const SORT_MAP: Record<string, string> = {
-      id: 'u.id',
-      login: 'u.login',
-      email: 'u.email',
+      login: 'u.login COLLATE "C"',
+      email: 'u.email COLLATE "C"',
       createdAt: 'u.created_at',
-      updatedAt: 'u.updated_at',
     };
 
     const sortCol = SORT_MAP[query.sortBy] ?? 'u.created_at';

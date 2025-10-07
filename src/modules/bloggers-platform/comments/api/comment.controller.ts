@@ -18,12 +18,12 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { DeleteCommentCommand } from '../application/usecases/delete-comment.usecases';
 import { BearerOptionalJwtAuthGuard } from '../../../user-accounts/guards/bearer/bearer-optional-jwt-auth.guard';
 import { LikeStatusCommentCommand } from '../application/usecases/like-status-comment.usecase';
-import { LikeStatusInputDto } from '../../likes/api/input-dto/like-status.input-dto';
 import { OptionalCurrentUserFormRequest } from '../../../user-accounts/decorators/param/options-current-user-from-request.decorator';
 import { SkipThrottle } from '@nestjs/throttler';
 import { CommentsQueryRepository } from '../infrastructure/query/comments.query-repository';
 import { CommentViewDTO } from '../infrastructure/mapper/comment.view-dto';
 import { UuidValidationPipe } from '../../../../core/pipes/uuid-validation-transform-pipe';
+import { LikeStatusInputDto } from '../../../../core/dto/list-status-input-dto';
 
 @Controller('comments')
 @SkipThrottle()
@@ -54,7 +54,7 @@ export class CommentController {
     @Body() inputDto: LikeStatusInputDto,
     @CurrentUserFormRequest() user: UserContextDto,
   ) {
-    return  this.commandBus.execute<LikeStatusCommentCommand>(
+    return this.commandBus.execute<LikeStatusCommentCommand>(
       new LikeStatusCommentCommand(commentId, user.id, inputDto.likeStatus),
     );
   }
@@ -67,7 +67,7 @@ export class CommentController {
     @Body() inputDto: CommentInputDto,
     @CurrentUserFormRequest() user: UserContextDto,
   ) {
-    return  this.commandBus.execute<UpdateCommentCommand>(
+    return this.commandBus.execute<UpdateCommentCommand>(
       new UpdateCommentCommand(commentId, user.id, inputDto.content),
     );
   }
@@ -79,7 +79,7 @@ export class CommentController {
     @Param('commentId', UuidValidationPipe) commentId: string,
     @CurrentUserFormRequest() user: UserContextDto,
   ) {
-    return  this.commandBus.execute<DeleteCommentCommand>(
+    return this.commandBus.execute<DeleteCommentCommand>(
       new DeleteCommentCommand(commentId, user.id),
     );
   }

@@ -2,7 +2,7 @@ import {
   BaseEntityNewType,
   BaseEntityPersistedType,
 } from '../../../../core/types/base-entity.type';
-import { LikeStatusEnum } from '../../likes/domain/like-status.enum';
+import { LikeStatusEnum } from '../../../../core/types/like-status.enum';
 
 type BaseReaction = {
   postId: string;
@@ -11,8 +11,7 @@ type BaseReaction = {
 };
 
 export type PostReactionNewType = PostReaction<BaseEntityNewType>;
-export type PostReactionPersistedType =
-  PostReaction<BaseEntityPersistedType>;
+export type PostReactionPersistedType = PostReaction<BaseEntityPersistedType>;
 
 export type PostReactionUnionType = PostReaction<
   BaseEntityNewType | BaseEntityPersistedType
@@ -106,11 +105,11 @@ export class PostReaction<
     return reactionPrimitive;
   }
 
-  setStatus(status: LikeStatusEnum): {changed: boolean} {
+  setStatus(status: LikeStatusEnum): { changed: boolean } {
     if (this._status !== status) {
       this._status = status;
-      return {changed: true};
+      return { changed: true };
     }
-    return {changed: false};
+    return { changed: false };
   }
 }

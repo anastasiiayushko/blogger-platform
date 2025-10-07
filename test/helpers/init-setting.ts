@@ -18,7 +18,7 @@ type ReturnInitSetting = {
   app: INestApplication;
   // databaseConnection: Connection;
   userTestManger: UsersApiManagerHelper;
-  // httpServer: any
+  // httpServer: anyу
 };
 
 export const initSettings = async (

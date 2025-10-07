@@ -44,10 +44,7 @@ export class RegistrationEmailResendingHandler
       hours: this.userConfirmationConfig.emailExpiresInHours,
       min: this.userConfirmationConfig.emailExpiresInMin,
     });
-    console.log('before save', emailConfirmation);
     await this.emailConfirmationRepository.save(emailConfirmation);
-
-    console.log('after save', emailConfirmation);
 
     this.eventBus.publish(
       new EmailConfirmRegistrationEvent(cmd.email, emailConfirmation.code),

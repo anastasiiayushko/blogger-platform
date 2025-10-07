@@ -1,9 +1,9 @@
-import { LikeStatusEnum } from '../../../likes/domain/like-status.enum';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PostRepository } from '../../infrastructure/post.repository';
 import { UsersExternalQuerySqlRepository } from '../../../../user-accounts/infrastructure/sql/external-query/users-external.query-sql-repository';
 import { PostReactionRepository } from '../../infrastructure/post-reaction.repository';
 import { PostReaction } from '../../domain/post-reactions.entity';
+import { LikeStatusEnum } from '../../../../../core/types/like-status.enum';
 
 export class LikeStatusPostCommand {
   constructor(

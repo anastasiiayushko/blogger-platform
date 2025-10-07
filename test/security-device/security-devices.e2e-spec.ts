@@ -6,20 +6,20 @@ import {
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
 import { initSettings } from '../helpers/init-setting';
-import { SessionDeviceSqlRepository } from '../../src/modules/user-accounts/infrastructure/sql/session-device.sql-repository';
 import { JwtService } from '@nestjs/jwt';
 import { REFRESH_TOKEN_STRATEGY_INJECT_TOKEN } from '../../src/modules/user-accounts/constants/auth-tokens.inject-constants';
 import { DateUtil } from '../../src/core/utils/DateUtil';
 import { SecurityDevicesApiManager } from '../helpers/api-manager/security-devices-api-manager';
 import { ThrottlerConfig } from '../../src/core/config/throttler.config';
 import { randomUUID } from 'crypto';
+import { SessionDeviceRepository } from '../../src/modules/user-accounts/infrastructure/session-device.repository';
 
 describe('Security devices', () => {
   const basicAuth = getAuthHeaderBasicTest();
   let app: INestApplication;
   let userTestManger: UsersApiManagerHelper;
   let securityDevicesApiManager: SecurityDevicesApiManager;
-  let sessionDeviceRepository: SessionDeviceSqlRepository;
+  let sessionDeviceRepository: SessionDeviceRepository;
   let refreshTokenContext: JwtService;
 
   const userCredentials = {
@@ -40,8 +40,8 @@ describe('Security devices', () => {
     app = init.app;
     userTestManger = init.userTestManger;
     securityDevicesApiManager = new SecurityDevicesApiManager(app);
-    sessionDeviceRepository = app.get<SessionDeviceSqlRepository>(
-      SessionDeviceSqlRepository,
+    sessionDeviceRepository = app.get<SessionDeviceRepository>(
+      SessionDeviceRepository,
     );
     refreshTokenContext = app.get<JwtService>(
       REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
@@ -79,7 +79,7 @@ describe('Security devices', () => {
       decode.deviceId,
     );
 
-    expect(sessionDevice!.userId).toBe(decode.userId);
+    expect(sessionDevice!.user.id).toBe(decode.userId);
     expect(DateUtil.convertUnixToUTC(decode.iat)).toEqual(
       sessionDevice!.lastActiveAt,
     );
@@ -231,7 +231,7 @@ describe('Security devices', () => {
     const currentSessionDevice = await sessionDeviceRepository.findByDeviceId(
       decodeOtherUser.deviceId,
     );
-    expect(currentSessionDevice!.userId).toEqual(decodeOtherUser.userId);
+    expect(currentSessionDevice!.user.id).toEqual(decodeOtherUser.userId);
   });
 
   it('should be 404 If try to delete the deviceId not existing', async () => {

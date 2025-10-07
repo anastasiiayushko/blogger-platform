@@ -19,7 +19,6 @@ export class RegistrationConfirmationCommandHandler
     const emailConfirmation = await this.emailConfirmationRepository.findByCode(
       command.code,
     );
-    //::TODO нужно ли ходить и проверять есть ли сам пользователь в бд
     if (
       !emailConfirmation ||
       emailConfirmation.isConfirmed ||

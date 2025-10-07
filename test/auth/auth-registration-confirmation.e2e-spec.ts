@@ -85,7 +85,7 @@ describe('Auth /registration-confirmation', () => {
     });
   });
 
-  it(`should be return 400 if code confirmation invalid`, async () => {
+  it(`should be return 400 if confirmation code not existing`, async () => {
     const registerRes = await userTestManager.registrationUser({
       login: 'user1',
       email: 'user1@gmail.com',
@@ -118,7 +118,19 @@ describe('Auth /registration-confirmation', () => {
 
     expect(emailConfirmed.isConfirmed).toBeFalsy();
   });
+  it('should be return 400 if recovery code invalid type (uuid)', async () => {
+    const rejectConfirmResponse = await request(app.getHttpServer())
+      .post(PATH_URL_REG_CONFIRMATION)
+      .send({ code: '1355HHfasdf-asdfadfjk' });
 
+    expect(rejectConfirmResponse.status).toBe(HttpStatus.BAD_REQUEST);
+
+    expect(rejectConfirmResponse.body).toEqual({
+      errorsMessages: [
+        { field: expect.any(String), message: expect.any(String) },
+      ],
+    });
+  });
   it(`should be return 400 if code confirmation expired`, async () => {
     confirmConfig.emailExpiresInHours = -1;
     const registerRes = await userTestManager.registrationUser({

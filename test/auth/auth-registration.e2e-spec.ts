@@ -1,6 +1,6 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { initSettings } from '../helpers/init-setting';
-import { getAuthHeaderBasicTest } from '../helpers/common-helpers';
+import { generateRandomStringForTest, getAuthHeaderBasicTest } from '../helpers/common-helpers';
 import request from 'supertest';
 import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
 import { User } from '../../src/modules/user-accounts/domin/sql-entity/user.sql-entity';
@@ -8,6 +8,7 @@ import { ThrottlerConfig } from '../../src/core/config/throttler.config';
 import { UserRepository } from '../../src/modules/user-accounts/infrastructure/user-repository';
 import { EmailConfirmationRepository } from '../../src/modules/user-accounts/infrastructure/email-confirmation.repository';
 import { EmailConfirmation } from '../../src/modules/user-accounts/domin/email-confirmation.entity';
+import { loginConstraints } from '../../src/modules/user-accounts/domin/user.constraints';
 
 //::TODO rewrite test
 describe('Auth /registration', () => {
@@ -105,6 +106,44 @@ describe('Auth /registration', () => {
       });
     expect(res.status).toBe(HttpStatus.BAD_REQUEST);
     expect(res.body.errorsMessages).toEqual([
+      { field: expect.any(String), message: expect.any(String) },
+    ]);
+  });
+  it('Should be return 400  if the email incorrect ', async () => {
+    const res = await request(app.getHttpServer())
+      .post(PATH_URL_REGISTRATION)
+      .send({
+        email: 'new)@test.sdflom',
+        login: existingUser.login,
+        password: 'password123',
+      });
+    expect(res.status).toBe(HttpStatus.BAD_REQUEST);
+    expect(res.body.errorsMessages).toEqual([
+      { field: expect.any(String), message: expect.any(String) },
+    ]);
+  });
+  it('Should be return 400  if the login less or more Length ', async () => {
+    const res = await request(app.getHttpServer())
+      .post(PATH_URL_REGISTRATION)
+      .send({
+        email: 'new@test.com',
+        login: generateRandomStringForTest(loginConstraints.minLength - 1),
+        password: 'password123',
+      });
+    expect(res.status).toBe(HttpStatus.BAD_REQUEST);
+    expect(res.body.errorsMessages).toEqual([
+      { field: expect.any(String), message: expect.any(String) },
+    ]);
+
+    const res2 = await request(app.getHttpServer())
+      .post(PATH_URL_REGISTRATION)
+      .send({
+        email: 'new@test.com',
+        login: generateRandomStringForTest(loginConstraints.maxLength + 1),
+        password: 'password123',
+      });
+    expect(res2.status).toBe(HttpStatus.BAD_REQUEST);
+    expect(res2.body.errorsMessages).toEqual([
       { field: expect.any(String), message: expect.any(String) },
     ]);
   });

@@ -29,9 +29,9 @@ import { BearerOptionalJwtAuthGuard } from '../../../user-accounts/guards/bearer
 import { GetCommentsQueryParams } from '../../comments/api/input-dto/get-comments-query-params.input-dto';
 import { OptionalCurrentUserFormRequest } from '../../../user-accounts/decorators/param/options-current-user-from-request.decorator';
 import { GetCommentsByPostWithPagingQuery } from '../../comments/application/queries-usecases/get-comments-by-post-with-paging.query';
-import { LikeStatusInputDto } from '../../likes/api/input-dto/like-status.input-dto';
 import { LikeStatusPostCommand } from '../application/usecases/like-status-post.usecase';
 import { PostQueryRepository } from '../infrastructure/query-repository/post.query-repository';
+import { LikeStatusInputDto } from '../../../../core/dto/list-status-input-dto';
 
 @Controller('posts')
 @SkipThrottle()

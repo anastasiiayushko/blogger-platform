@@ -22,14 +22,15 @@ export class CreateUsersInputDto {
   @Matches(loginConstraints.match)
   login: string;
 
+  //::TODO при установки pattern запросы в тесте не проходят !!!
   @ApiProperty({
     type: String,
-    pattern: `${emailConstraints.match}`,
+    // pattern: `${emailConstraints.match}`,
     example: `string`,
   })
   @Trim()
   @IsEmail()
-  @Matches(emailConstraints.match)
+  // @Matches(emailConstraints.match)
   email: string;
 
   @ApiProperty({

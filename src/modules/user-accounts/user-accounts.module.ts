@@ -30,44 +30,47 @@ import { SessionDeviceQueryRepository } from './infrastructure/query/session-dev
 import { AuthLoginHandler } from './application/auth-usecases/auth-login.usecase';
 import { AuthRefreshTokenHandler } from './application/auth-usecases/auth-refresh-token.usecase';
 import { AuthLogoutHandler } from './application/auth-usecases/auth-logout.usecase';
+import { PasswordRecovery } from './domin/password-recovery.entity';
+import { PasswordRecoveryHandler } from './application/auth-usecases/auth-password-recovery.usecase';
+import { PasswordRecoveryRepository } from './infrastructure/password-recovery.repository';
+import { UpdatePasswordCommandHandler } from './application/auth-usecases/update-password.usecase';
+import { DeleteDeviceByIdHandler } from './application/security-devices-usecases/delete-device-by-id.usecase';
+import { TerminateAllOtherDevicesHandler } from './application/security-devices-usecases/terminate-current-device.usecase';
+import { RegistrationConfirmationCommandHandler } from './application/auth-usecases/registration-confirmation.usecase';
+import { RegistrationUserHandler } from './application/auth-usecases/registration-user.usecase';
+import { RegistrationEmailResendingHandler } from './application/auth-usecases/registration-email-resending.usecase';
 
-// const cmdHandlerSecurityDevice = [
-//   CreateSecurityDeviceHandler,
-//   UpdateSecurityDeviceHandler,
-//   DeleteDeviceByIdHandler,
-//   TerminateAllOtherDevicesHandler,
-// ];
+const cmdHandlerSecurityDevice = [
+  DeleteDeviceByIdHandler,
+  TerminateAllOtherDevicesHandler,
+];
 const cmdHandlerAuth = [
   AuthLoginHandler,
   AuthRefreshTokenHandler,
   AuthLogoutHandler,
-  // PasswordRecoveryHandler,
-  // UpdatePasswordCommandHandler,
-  // RegistrationConfirmationCommandHandler,
-  // RegistrationUserHandler,
-  // RegistrationEmailResendingHandler,
+  PasswordRecoveryHandler,
+  UpdatePasswordCommandHandler,
+  RegistrationConfirmationCommandHandler,
+  RegistrationUserHandler,
+  RegistrationEmailResendingHandler,
 ];
 
 const cmdSaHandlerUser = [SaCreateUserHandler, SaDeleteUserHandler];
 const configs = [UserAccountConfig, UserConfirmationConfig];
 
 // const sqlExternalQueryRepository = [UsersExternalQuerySqlRepository];
-const sqlQueryRepository = [
-  // UsersQuerySqlRepository,
-  // SessionDeviceQuerySqlRepository,
-];
-const sqlRepository = [
-  // UsersSqlRepository,
-  // EmailConfirmationSqlRepository,
-  // PasswordRecoverySqlRepository,
-  // SessionDeviceSqlRepository,
-];
+
 
 @Module({
   imports: [
     NotificationsModule,
     JwtModule,
-    TypeOrmModule.forFeature([User, EmailConfirmation, SessionDevice]),
+    TypeOrmModule.forFeature([
+      User,
+      EmailConfirmation,
+      SessionDevice,
+      PasswordRecovery,
+    ]),
     // MongooseModule.forFeature([
     //   {
     //     name: User_root.name,
@@ -92,10 +95,9 @@ const sqlRepository = [
     EmailConfirmationRepository,
     SessionDeviceRepository,
     SessionDeviceQueryRepository,
-    ...sqlQueryRepository,
-    ...sqlRepository,
+    PasswordRecoveryRepository,
     ...configs,
-    // ...cmdHandlerSecurityDevice,
+    ...cmdHandlerSecurityDevice,
     ...cmdHandlerAuth,
     ...cmdSaHandlerUser,
     //пример инстанцирования через токен

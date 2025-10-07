@@ -6,13 +6,13 @@ import {
 } from '../helpers/common-helpers';
 import request from 'supertest';
 import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
-import { UsersSqlRepository } from '../../src/modules/user-accounts/infrastructure/sql/users.sql-repository';
-import { PasswordRecoverySqlRepository } from '../../src/modules/user-accounts/infrastructure/sql/password-recovery.sql-repository';
-import { passwordConstraints } from '../../src/modules/user-accounts/domin/user.entity';
 import { randomUUID } from 'crypto';
 import { ApiErrorResultType } from '../type/response-super-test';
 import { UserConfirmationConfig } from '../../src/modules/user-accounts/config/user-confirmation.config';
 import { ThrottlerConfig } from '../../src/core/config/throttler.config';
+import { passwordConstraints } from '../../src/modules/user-accounts/domin/user.constraints';
+import { UserRepository } from '../../src/modules/user-accounts/infrastructure/user-repository';
+import { PasswordRecoveryRepository } from '../../src/modules/user-accounts/infrastructure/password-recovery.repository';
 
 describe('Auth /new-password', () => {
   const basicAuth = getAuthHeaderBasicTest();
@@ -21,8 +21,8 @@ describe('Auth /new-password', () => {
   let app: INestApplication;
   let throttlerConfig: ThrottlerConfig;
   let userTestManger: UsersApiManagerHelper;
-  let userRepository: UsersSqlRepository;
-  let recoveryPasswordRepository: PasswordRecoverySqlRepository;
+  let userRepository: UserRepository;
+  let passRecoveryRepository: PasswordRecoveryRepository;
   let confirmationConfig: UserConfirmationConfig;
   let registeredUserId: string;
 
@@ -41,9 +41,9 @@ describe('Auth /new-password', () => {
     confirmationConfig = app.get<UserConfirmationConfig>(
       UserConfirmationConfig,
     );
-    userRepository = app.get<UsersSqlRepository>(UsersSqlRepository);
-    recoveryPasswordRepository = app.get<PasswordRecoverySqlRepository>(
-      PasswordRecoverySqlRepository,
+    userRepository = app.get<UserRepository>(UserRepository);
+    passRecoveryRepository = app.get<PasswordRecoveryRepository>(
+      PasswordRecoveryRepository,
     );
     const userRes = await userTestManger.createUser(
       infoRegisteredUser,
@@ -68,7 +68,7 @@ describe('Auth /new-password', () => {
     expect(recoveryPassResponse.status).toBe(HttpStatus.NO_CONTENT);
 
     const recoveryPassNotConfirmed =
-      await recoveryPasswordRepository.findByUserId(registeredUserId);
+      await passRecoveryRepository.findByUserId(registeredUserId);
     expect(recoveryPassNotConfirmed!.isConfirmed).toBeFalsy();
 
     const newPasswordResponse = await request(app.getHttpServer())
@@ -81,7 +81,7 @@ describe('Auth /new-password', () => {
     expect(newPasswordResponse.status).toBe(HttpStatus.NO_CONTENT);
 
     const recoveryPasswordConfirm =
-      await recoveryPasswordRepository.findByUserId(registeredUserId);
+      await passRecoveryRepository.findByUserId(registeredUserId);
     expect(recoveryPasswordConfirm!.isConfirmed).toBeTruthy();
 
     const userAfterUpdatePass = await userRepository.findById(registeredUserId);
@@ -154,7 +154,7 @@ describe('Auth /new-password', () => {
       .send({ email: infoRegisteredUser.email });
 
     const recoveryPasswordByUser =
-      await recoveryPasswordRepository.findByUserId(registeredUserId);
+      await passRecoveryRepository.findByUserId(registeredUserId);
 
     const codeExpiredResponse = await request(app.getHttpServer())
       .post(PATH_URL_NEW_PASS)

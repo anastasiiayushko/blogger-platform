@@ -2,6 +2,8 @@ import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
 import { BaseOrmEntity } from '../../../core/base-orm-entity/base-orm-entity';
 import { EmailConfirmation } from './email-confirmation.entity';
 import { SessionDevice } from './session-device.entity';
+import { PasswordRecovery } from './password-recovery.entity';
+import { IsEmail } from 'class-validator';
 
 @Entity('user')
 export class User extends BaseOrmEntity {
@@ -9,6 +11,7 @@ export class User extends BaseOrmEntity {
   login: string;
 
   @Column({ type: 'varchar', unique: true })
+  @IsEmail()
   email: string;
 
   @Column({ type: 'varchar' })
@@ -19,6 +22,9 @@ export class User extends BaseOrmEntity {
 
   @OneToMany(() => SessionDevice, (securityDevice) => securityDevice.user, {})
   sessionDevices: SessionDevice[];
+
+  @OneToOne(() => PasswordRecovery, (pr) => pr.user, {})
+  passwordRecovery: PasswordRecovery;
 
   static createInstance(userInput: {
     login: string;

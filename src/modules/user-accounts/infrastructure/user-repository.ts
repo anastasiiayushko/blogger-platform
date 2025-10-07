@@ -30,19 +30,9 @@ export class UserRepository {
     loginOrEmail: string,
     email?: string,
   ): Promise<User | null> {
-    const user = await this.userRepository
-      .createQueryBuilder('u')
-      .where('u.login = :login OR u.email = :email', {
-        login: loginOrEmail,
-        email: email ?? loginOrEmail,
-      })
-      .printSql()
-      .getOne();
-
-    if (!user) {
-      return null;
-    }
-    return user;
+    return this.userRepository.findOne({
+      where: [{ login: loginOrEmail }, { email: email ?? loginOrEmail }],
+    });
   }
 
   /**

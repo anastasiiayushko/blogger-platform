@@ -12,13 +12,14 @@ import { REFRESH_TOKEN_STRATEGY_INJECT_TOKEN } from '../../src/modules/user-acco
 import { SecurityDevicesApiManager } from '../helpers/api-manager/security-devices-api-manager';
 import { UserAccountConfig } from '../../src/modules/user-accounts/config/user-account.config';
 import { delay } from '../helpers/delay-helper';
+import { SessionDeviceRepository } from '../../src/modules/user-accounts/infrastructure/session-device.repository';
 
 describe('Security devices refresh token expire (2s)', () => {
   const basicAuth = getAuthHeaderBasicTest();
   let app: INestApplication;
   let userTestManger: UsersApiManagerHelper;
   let securityDevicesApiManager: SecurityDevicesApiManager;
-  let sessionDeviceRepository: SessionDeviceSqlRepository;
+  let sessionDeviceRepository: SessionDeviceRepository;
   let refreshTokenContext: JwtService;
 
   const userCredentials = {
@@ -43,8 +44,8 @@ describe('Security devices refresh token expire (2s)', () => {
     app = init.app;
     userTestManger = init.userTestManger;
     securityDevicesApiManager = new SecurityDevicesApiManager(app);
-    sessionDeviceRepository = app.get<SessionDeviceSqlRepository>(
-      SessionDeviceSqlRepository,
+    sessionDeviceRepository = app.get<SessionDeviceRepository>(
+      SessionDeviceRepository,
     );
     refreshTokenContext = app.get<JwtService>(
       REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,

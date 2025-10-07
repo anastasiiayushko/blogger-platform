@@ -47,6 +47,7 @@ import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
       inject: [ThrottlerConfig],
       useFactory: (config: ThrottlerConfig) => {
         const enabled = config.enabled;
+        console.log('Throttler on', enabled);
         return {
           throttlers: enabled ? [{ limit: config.limit, ttl: config.ttl }] : [],
           errorMessage: () => {
