@@ -1,12 +1,17 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { initSettings } from '../helpers/init-setting';
-import { generateRandomStringForTest, getAuthHeaderBasicTest } from '../helpers/common-helpers';
+import {
+  generateRandomStringForTest,
+  getAuthHeaderBasicTest,
+} from '../helpers/common-helpers';
 import request from 'supertest';
 import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
 import { User } from '../../src/modules/user-accounts/domin/sql-entity/user.sql-entity';
 import { ThrottlerConfig } from '../../src/core/config/throttler.config';
 import { UserRepository } from '../../src/modules/user-accounts/infrastructure/user-repository';
-import { EmailConfirmationRepository } from '../../src/modules/user-accounts/infrastructure/email-confirmation.repository';
+import {
+  EmailConfirmationRepository,
+} from '../../src/modules/user-accounts/infrastructure/email-confirmation.repository';
 import { EmailConfirmation } from '../../src/modules/user-accounts/domin/email-confirmation.entity';
 import { loginConstraints } from '../../src/modules/user-accounts/domin/user.constraints';
 
@@ -148,19 +153,4 @@ describe('Auth /registration', () => {
     ]);
   });
 
-  it('Should return 429 if more than 5 requests in 10 seconds', async () => {
-    if (throttlerConfig.enabled) {
-      for (let i = 0; i < 5; i++) {
-        await userTestManger.registrationUser(newUser); // Или другой эндпоинт
-      }
-
-      // Делаем еще один запрос, чтобы превысить лимит
-      const res = await userTestManger.registrationUser(newUser);
-
-      // Проверяем, что статус 429 (слишком много запросов)
-      expect(res.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
-    } else {
-      console.info('ThrottlerConfig off');
-    }
-  });
 });

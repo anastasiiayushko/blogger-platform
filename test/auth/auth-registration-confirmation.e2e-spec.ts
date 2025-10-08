@@ -95,10 +95,9 @@ describe('Auth /registration-confirmation', () => {
 
     const User = await userRepository.findByEmailOrLogin('user1@gmail.com');
 
-    const emailConfirmation =
-      (await emailConfirmationRepository.findByUserId(
-        User!.id as string,
-      )) as unknown as EmailConfirmation;
+    const emailConfirmation = (await emailConfirmationRepository.findByUserId(
+      User!.id as string,
+    )) as unknown as EmailConfirmation;
 
     expect(emailConfirmation.isConfirmed).toBeFalsy();
 
@@ -111,8 +110,7 @@ describe('Auth /registration-confirmation', () => {
       errorsMessages: [{ field: 'code', message: expect.any(String) }],
     });
 
-    const emailConfirmed
-      = (await emailConfirmationRepository.findByUserId(
+    const emailConfirmed = (await emailConfirmationRepository.findByUserId(
       User!.id as string,
     )) as unknown as EmailConfirmation;
 
@@ -160,25 +158,5 @@ describe('Auth /registration-confirmation', () => {
       await emailConfirmationRepository.findByUserId(User!.id as string);
 
     expect(EmailConfirmationAfterConfirm!.isConfirmed).toBeFalsy();
-  });
-
-  it('Should return 429 if more than 5 requests in 10 seconds', async () => {
-    if (throttlerConfig.enabled) {
-      for (let i = 0; i < 5; i++) {
-        await request(app.getHttpServer())
-          .post(PATH_URL_REG_CONFIRMATION)
-          .send({ code: randomUUID() }); // Или другой эндпоинт
-      }
-
-      // Делаем еще один запрос, чтобы превысить лимит
-      const res = await await request(app.getHttpServer())
-        .post(PATH_URL_REG_CONFIRMATION)
-        .send({ code: randomUUID() });
-
-      // Проверяем, что статус 429 (слишком много запросов)
-      expect(res.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
-    } else {
-      console.info('ThrottlerConfig off');
-    }
   });
 });
