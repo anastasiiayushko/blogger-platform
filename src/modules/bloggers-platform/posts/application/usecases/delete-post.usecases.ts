@@ -19,6 +19,6 @@ export class DeletePostHandler implements ICommandHandler<DeletePostCommand> {
 
   async execute(cmd: DeletePostCommand): Promise<void> {
     await this.postRepo.getByIdOrNotFoundFail(cmd.postId);
-    await this.postRepo.deleteById(cmd.postId);
+    await this.postRepo.softDeleteById(cmd.postId);
   }
 }

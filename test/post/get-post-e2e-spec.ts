@@ -4,9 +4,9 @@ import { BlogApiManager } from '../helpers/api-manager/blog-api-manager';
 import { initSettings } from '../helpers/init-setting';
 import { BlogViewDto } from '../../src/modules/bloggers-platform/blogs/api/view-dto/blog.view-dto';
 import { PostViewDTO } from '../../src/modules/bloggers-platform/posts/api/view-dto/post.view-dto';
-import { LikeStatusEnum } from '../../src/modules/bloggers-platform/likes/domain/like-status.enum';
 import { randomUUID } from 'crypto';
 import { PostApiManager } from '../helpers/api-manager/post-api-manager';
+import { LikeStatusEnum } from '../../src/core/types/like-status.enum';
 
 describe('Returns post by id /posts/:postId', () => {
   const basicAuth = getAuthHeaderBasicTest();

@@ -47,7 +47,7 @@ export class BlogRepository {
    * @returns {boolean} - Result.deleteCount.
 
    */
-  async delete(id: string): Promise<boolean> {
+  async softDeleteById(id: string): Promise<boolean> {
     const result = await this.blogRepository.softDelete(id);
     return !!result.raw;
   }

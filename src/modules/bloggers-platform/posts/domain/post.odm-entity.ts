@@ -5,7 +5,6 @@ import {
 } from './extended-likes-info.raw-schema';
 import { CreatePostDomainDto } from './dto/create-post.domain.dto';
 import { HydratedDocument, Model, Types } from 'mongoose';
-import { UpdatePostDomainDto } from './dto/update-post.domain.dto';
 import { UpdateExtendedLikesPostDomainDTO } from './dto/update-extended-likes-post.domain.dto';
 import {
   postContentConstraints,
@@ -110,7 +109,7 @@ export class Post {
     return post as PostDocument;
   }
 
-  updatePost(dto: UpdatePostDomainDto) {
+  updatePost(dto: any) {
     this.blogId = new Types.ObjectId(dto.blogId);
     this.blogName = dto.blogName;
     this.content = dto.content;

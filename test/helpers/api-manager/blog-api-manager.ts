@@ -6,6 +6,7 @@ import { BlogViewDto } from '../../../src/modules/bloggers-platform/blogs/api/vi
 import {
   ApiErrorResultType,
   ResponseBodySuperTest,
+  toTypedResponseSupperTest,
 } from '../../type/response-super-test';
 import { GetBlogsQueryParamsInputDto } from '../../../src/modules/bloggers-platform/blogs/api/input-dto/get-blogs-query-params.input-dto';
 import { PaginatedViewDto } from '../../../src/core/dto/base.paginated.view-dto';
@@ -22,28 +23,30 @@ export class BlogApiManager {
 
   constructor(private app: INestApplication) {}
 
-  async create(
+  async create<T = BlogViewDto>(
     inputDto: BlogInputDto,
     basicAuth: string = this.basicAuth,
-  ): ResponseBodySuperTest<BlogViewDto | ApiErrorResultType> {
-    return request(this.app.getHttpServer())
+  ): ResponseBodySuperTest<T> {
+    const res = await request(this.app.getHttpServer())
       .post(this.saUrlPath)
       .set('Authorization', basicAuth)
       .send(inputDto);
+
+    return toTypedResponseSupperTest<T>(res);
   }
 
   async update(
     blogId: string,
     inputDto: BlogInputDto,
     basicAuth: string = this.basicAuth,
-  ) {
+  ): ResponseBodySuperTest<null> {
     return request(this.app.getHttpServer())
       .put(`${this.saUrlPath}/${blogId}`)
       .set('Authorization', basicAuth)
       .send(inputDto);
   }
 
-  async findById(blogId: string) {
+  async findById(blogId: string): ResponseBodySuperTest<BlogViewDto> {
     return request(this.app.getHttpServer()).get(`${this.urlPath}/${blogId}`);
   }
 
@@ -83,7 +86,7 @@ export class BlogApiManager {
           newestLikes: [],
         },
       });
-      return response.body as PostViewDTO;
+      return response.body as unknown as PostViewDTO;
     });
 
     return posts;
@@ -93,7 +96,8 @@ export class BlogApiManager {
     blogCount: number,
     basicAuth: string = this.basicAuth,
   ): Promise<BlogViewDto[]> {
-    const responses: ResponseBodySuperTest<BlogViewDto>[] = [];
+    const responses: ResponseBodySuperTest<BlogViewDto | ApiErrorResultType>[] =
+      [];
 
     for (let i = 0; i < blogCount; i++) {
       await delay(60);
@@ -145,11 +149,11 @@ export class BlogApiManager {
       .set('Authorization', basicAuth);
   }
 
-  async createPostForBlog(
+  async createPostForBlog<T=PostViewDTO>(
     blogId: string,
     inputModel: BlogPostInputDto,
     basicAuth: string = this.basicAuth,
-  ): ResponseBodySuperTest<PostViewDTO> {
+  ): ResponseBodySuperTest<T> {
     return request(this.app.getHttpServer())
       .post(this.saUrlPath + '/' + blogId + '/posts')
       .send(inputModel)

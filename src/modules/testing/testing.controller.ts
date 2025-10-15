@@ -26,7 +26,12 @@ export class TestingController {
     // await this.dataSource.query(
     //   `TRUNCATE TABLE public."PostReactions" CASCADE;`,
     // );
-
+    await this.dataSource.query(
+      `TRUNCATE TABLE public.post CASCADE;`,
+    );
+    await this.dataSource.query(
+      `TRUNCATE TABLE public.blog CASCADE;`,
+    );
     await this.dataSource.query(
       `TRUNCATE TABLE public.email_confirmation CASCADE;`,
     );

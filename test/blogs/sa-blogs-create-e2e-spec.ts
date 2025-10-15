@@ -11,8 +11,6 @@ import {
   blogDescriptionConstraints,
   blogNameConstraints,
 } from '../../src/modules/bloggers-platform/blogs/domain/blog-constraints';
-import { PaginatedViewDto } from '../../src/core/dto/base.paginated.view-dto';
-import { BlogViewDto } from '../../src/modules/bloggers-platform/blogs/api/view-dto/blog.view-dto';
 import { ApiErrorResultType } from '../type/response-super-test';
 
 describe('SaBlogController CREATED (e2e) ', () => {
@@ -35,7 +33,7 @@ describe('SaBlogController CREATED (e2e) ', () => {
     await app.close();
   });
   it('Create blog invalid basic auth. should be status 401', async () => {
-    const createdBlogRes = await blogApiManger.create(
+    const createdBlogRes = await blogApiManger.create<null>(
       blogInputDto,
       randomUUID(),
     );
@@ -48,7 +46,7 @@ describe('SaBlogController CREATED (e2e) ', () => {
   });
 
   it('Create blog incorrect empty data, should be errorsMessage and status 400', async () => {
-    const createBlogResponse = await blogApiManger.create(
+    const createBlogResponse = await blogApiManger.create<ApiErrorResultType>(
       {
         name: '',
         description: '',
@@ -78,22 +76,19 @@ describe('SaBlogController CREATED (e2e) ', () => {
     const blogsResponse = await blogApiManger.getAllBlogs();
     expect(blogsResponse.status).toBe(HttpStatus.OK);
 
-    const body = blogsResponse.body as PaginatedViewDto<BlogViewDto[]>;
-    expect(body.items).toEqual([]);
+    expect(blogsResponse.body.items).toEqual([]);
   });
 
   it('Create incorrect field name empty, should be errorsMessage and status 400', async () => {
-    const createBlogResponse = await blogApiManger.create({
+    const createBlogResponse = await blogApiManger.create<ApiErrorResultType>({
       ...blogInputDto,
       name: '',
     });
-    const bodyError = createBlogResponse.body as ApiErrorResultType;
-
-    expect(bodyError.errorsMessages[0].message).toEqual(expect.any(String));
-
-    expect(bodyError.errorsMessages).toEqual([{ message: '', field: 'name' }]);
-
     expect(createBlogResponse.status).toBe(HttpStatus.BAD_REQUEST);
+    expect(createBlogResponse.body.errorsMessages).toEqual([
+      { message: expect.any(String), field: 'name' },
+    ]);
+
     const blogsResponse = await blogApiManger.getAllBlogs();
 
     expect(blogsResponse.status).toBe(HttpStatus.OK);
@@ -104,13 +99,13 @@ describe('SaBlogController CREATED (e2e) ', () => {
     const nameMax = generateRandomStringForTest(
       blogNameConstraints.maxLength + 1,
     );
-    const createBlogResponse = await blogApiManger.create({
+    const createBlogResponse = await blogApiManger.create<ApiErrorResultType>({
       ...blogInputDto,
       name: nameMax,
     });
-    expect(createBlogResponse.body).toEqual({
-      errorsMessages: [{ message: expect.any(String), field: 'name' }],
-    });
+    expect(createBlogResponse.body.errorsMessages).toEqual([
+      { message: expect.any(String), field: 'name' },
+    ]);
     expect(createBlogResponse.status).toBe(HttpStatus.BAD_REQUEST);
     const blogsResponse = await blogApiManger.getAllBlogs();
 
@@ -122,7 +117,7 @@ describe('SaBlogController CREATED (e2e) ', () => {
     const descriptionMax = generateRandomStringForTest(
       blogDescriptionConstraints.maxLength + 1,
     );
-    const createdResponse = await blogApiManger.create({
+    const createdResponse = await blogApiManger.create<ApiErrorResultType>({
       ...blogInputDto,
       description: descriptionMax,
     });
@@ -137,7 +132,7 @@ describe('SaBlogController CREATED (e2e) ', () => {
   });
 
   it('Create data incorrect field description empty, should be errorsMessage and status 400', async () => {
-    const createBlogResponse = await blogApiManger.create({
+    const createBlogResponse = await blogApiManger.create<ApiErrorResultType>({
       ...blogInputDto,
       description: ' ',
     });
@@ -152,7 +147,7 @@ describe('SaBlogController CREATED (e2e) ', () => {
   });
 
   it('Create data incorrect field websiteUrl empty, should be errorsMessage and status 400', async () => {
-    const createBlogResponse = await blogApiManger.create({
+    const createBlogResponse = await blogApiManger.create<ApiErrorResultType>({
       ...blogInputDto,
       websiteUrl: ' ',
     });
@@ -184,7 +179,7 @@ describe('SaBlogController CREATED (e2e) ', () => {
     });
 
     const findBlogResponse = await blogApiManger.findById(
-      createResponse.body!.id as unknown as string,
+      createResponse.body.id,
     );
     expect(findBlogResponse.status).toBe(HttpStatus.OK);
     expect(findBlogResponse.body).toMatchObject({

@@ -1,10 +1,11 @@
 import { CreateBlogDomainDto } from './dto/create-blog.domain.dto';
-import { Entity, Column } from 'typeorm';
+import { Entity, Column, ManyToOne, OneToMany } from 'typeorm';
 import { BaseOrmEntity } from '../../../../core/base-orm-entity/base-orm-entity';
+import { Post } from '../../posts/domain/post.entity';
 
 @Entity()
 export class Blog extends BaseOrmEntity {
-  @Column({ type: 'text' })
+  @Column({ type: 'text', collation: 'C' })
   name: string;
   @Column({ type: 'text' })
   description: string;
@@ -14,6 +15,9 @@ export class Blog extends BaseOrmEntity {
 
   @Column({ type: 'boolean', default: false })
   isMembership: boolean;
+
+  @OneToMany(() => Post, (post) => post.blog)
+  posts: Post[];
 
   static createInstance(dto: CreateBlogDomainDto): Blog {
     const blog = new Blog();

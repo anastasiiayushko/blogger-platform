@@ -4,8 +4,8 @@ import { BlogApiManager } from '../helpers/api-manager/blog-api-manager';
 import { initSettings } from '../helpers/init-setting';
 import { BlogViewDto } from '../../src/modules/bloggers-platform/blogs/api/view-dto/blog.view-dto';
 import { PostViewDTO } from '../../src/modules/bloggers-platform/posts/api/view-dto/post.view-dto';
-import { LikeStatusEnum } from '../../src/modules/bloggers-platform/likes/domain/like-status.enum';
 import { randomUUID } from 'crypto';
+import { LikeStatusEnum } from '../../src/core/types/like-status.enum';
 
 describe('Returns posts for blog with paging  and sorting /blogs/:blogId/posts', () => {
   const basicAuth = getAuthHeaderBasicTest();
@@ -84,7 +84,6 @@ describe('Returns posts for blog with paging  and sorting /blogs/:blogId/posts',
     const totalCountPosts = postsForBlog2.length;
     const pageSize = 3;
     const pagesCount = Math.ceil(totalCountPosts / pageSize);
-
 
     const postsResponse = await blogApiManger.getPostsWithPagingByParamBlogId(
       blog2Id,

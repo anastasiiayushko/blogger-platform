@@ -13,10 +13,10 @@ import {
   postTitleConstraints,
 } from '../../src/modules/bloggers-platform/posts/domain/post.constraints';
 import { PostViewDTO } from '../../src/modules/bloggers-platform/posts/api/view-dto/post.view-dto';
-import { LikeStatusEnum } from '../../src/modules/bloggers-platform/likes/domain/like-status.enum';
 import { randomUUID } from 'crypto';
 import { BlogInputDto } from '../../src/modules/bloggers-platform/blogs/api/input-dto/blog.input-dto';
 import { ApiErrorResultType } from '../type/response-super-test';
+import { LikeStatusEnum } from '../../src/core/types/like-status.enum';
 
 describe('Create new post for specific blog /blogs/:blogId/posts', () => {
   const basicAuth = getAuthHeaderBasicTest();
@@ -56,7 +56,7 @@ describe('Create new post for specific blog /blogs/:blogId/posts', () => {
     );
 
     expect(postResponse.status).toBe(HttpStatus.CREATED);
-    expect(postResponse.body).toMatchObject<PostViewDTO>({
+    expect(postResponse.body).toEqual<PostViewDTO>({
       id: expect.any(String),
       title: postFakeData.title,
       shortDescription: postFakeData.shortDescription,
@@ -99,29 +99,29 @@ describe('Create new post for specific blog /blogs/:blogId/posts', () => {
     };
     for (const field in fields) {
       const value: string = fields[field];
-      const postTitleResponse = await blogApiManger.createPostForBlog(
-        mainBlog.id,
-        {
-          ...postFakeData,
-          [field]: value,
-        },
-        basicAuth,
-      );
+      const postTitleResponse =
+        await blogApiManger.createPostForBlog<ApiErrorResultType>(
+          mainBlog.id,
+          {
+            ...postFakeData,
+            [field]: value,
+          },
+          basicAuth,
+        );
 
       expect(postTitleResponse.status).toBe(HttpStatus.BAD_REQUEST);
 
-      expect(postTitleResponse.body).toMatchObject<ApiErrorResultType>({
-        errorsMessages: expect.arrayContaining([
-          { field: field, message: expect.any(String) },
-        ]),
-      });
+      expect(postTitleResponse.body.errorsMessages).toEqual([
+        { field: field, message: expect.any(String) },
+      ]);
     }
 
-    const postResponse = await blogApiManger.createPostForBlog(
-      mainBlog.id,
-      {} as BlogPostInputDto,
-      basicAuth,
-    );
+    const postResponse =
+      await blogApiManger.createPostForBlog<ApiErrorResultType>(
+        mainBlog.id,
+        {} as BlogPostInputDto,
+        basicAuth,
+      );
     expect(postResponse.status).toBe(HttpStatus.BAD_REQUEST);
 
     expect(postResponse.body).toMatchObject<ApiErrorResultType>({
@@ -145,14 +145,15 @@ describe('Create new post for specific blog /blogs/:blogId/posts', () => {
     };
     for (const field in fields) {
       const value: string = fields[field];
-      const postTitleResponse = await blogApiManger.createPostForBlog(
-        mainBlog.id,
-        {
-          ...postFakeData,
-          [field]: value,
-        },
-        basicAuth,
-      );
+      const postTitleResponse =
+        await blogApiManger.createPostForBlog<ApiErrorResultType>(
+          mainBlog.id,
+          {
+            ...postFakeData,
+            [field]: value,
+          },
+          basicAuth,
+        );
 
       expect(postTitleResponse.status).toBe(HttpStatus.BAD_REQUEST);
 

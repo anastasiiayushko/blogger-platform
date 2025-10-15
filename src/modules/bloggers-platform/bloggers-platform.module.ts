@@ -8,23 +8,35 @@ import { SaBlogController } from './blogs/api/sa-blog.controller';
 import { Blog } from './blogs/domain/blog.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BlogQueryRepository } from './blogs/infrastructure/query/blog.query-repository';
+import { BlogController } from './blogs/api/blog.controller';
+import { GetBlogsWithPagingQueryHandler } from './blogs/application/query-usecases/get-blogs-with-paging.query-usecase';
+import { GetBlogByIdQueryHandler } from './blogs/application/query-usecases/get-blog-by-id.query-usecase';
+import { CreatePostHandler } from './posts/application/usecases/create-post.usecases';
+import { UpdatePostHandler } from './posts/application/usecases/update-post.usecases';
+import { DeletePostHandler } from './posts/application/usecases/delete-post.usecases';
+import { GetPostByIdQueryHandler } from './posts/application/query-usecases/get-post-by-id.query-handler';
+import { GetPostWithPagingQueryHandler } from './posts/application/query-usecases/get-posts-with-paging.query-handler';
+import { Post } from './posts/domain/post.entity';
+import { PostController } from './posts/api/post.controller';
+import { PostRepository } from './posts/infrastructure/post.repository';
+import { PostQueryRepository } from './posts/infrastructure/query-repository/post.query-repository';
 
 const cmdBlogHandler = [
   CreateBlogHandler,
   DeleteBlogHandler,
   UpdateBlogHandler,
-  // GetBlogsWithPagingQueryHandler,
-  // GetBlogByIdQueryHandler,
+  GetBlogsWithPagingQueryHandler,
+  GetBlogByIdQueryHandler,
 ];
 
-// const cmdPostHandler = [
-//   CreatePostHandler,
-//   UpdatePostHandler,
-//   DeletePostHandler,
-//   LikeStatusPostHandler,
-//   GetPostByIdQueryHandler,
-//   GetPostWithPagingQueryHandler,
-// ];
+const cmdPostHandler = [
+  CreatePostHandler,
+  UpdatePostHandler,
+  DeletePostHandler,
+  // LikeStatusPostHandler,
+  GetPostByIdQueryHandler,
+  GetPostWithPagingQueryHandler,
+];
 // const cmdCommentHandler = [
 //   CreateCommentHandler,
 //   GetCommentByIdQueryHandler,
@@ -37,7 +49,7 @@ const cmdBlogHandler = [
 @Module({
   imports: [
     // Регистрация сущностей (схем) в модуле
-    TypeOrmModule.forFeature([Blog]),
+    TypeOrmModule.forFeature([Blog, Post]),
     // MongooseModule.forFeature([
     //   { name: Blog.name, schema: BlogSchema },
     //   { name: Post.name, schema: PostSchema },
@@ -47,22 +59,22 @@ const cmdBlogHandler = [
     UserAccountsModule,
   ],
   controllers: [
-    // BlogController,
+    BlogController,
     SaBlogController,
-    // PostController,
+    PostController,
     // CommentController,
   ],
   providers: [
     BlogRepository,
     BlogQueryRepository,
-    // PostRepository,
-    // PostQueryRepository,
+    PostRepository,
+    PostQueryRepository,
     // PostReactionRepository,
     // CommentRepository,
     // CommentsQueryRepository,
     // CommentReactionRepository,
     ...cmdBlogHandler,
-    // ...cmdPostHandler,
+    ...cmdPostHandler,
     // ...cmdCommentHandler,
   ],
 })

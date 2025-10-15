@@ -1,22 +1,12 @@
-import {
-  generateRandomStringForTest,
-  getAuthHeaderBasicTest,
-} from '../helpers/common-helpers';
+import { getAuthHeaderBasicTest } from '../helpers/common-helpers';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { BlogApiManager } from '../helpers/api-manager/blog-api-manager';
 import { initSettings } from '../helpers/init-setting';
 import { BlogViewDto } from '../../src/modules/bloggers-platform/blogs/api/view-dto/blog.view-dto';
 import { BlogPostInputDto } from '../../src/modules/bloggers-platform/blogs/api/input-dto/blog-post.input-dto';
-import {
-  postContentConstraints,
-  postShortDescConstraints,
-  postTitleConstraints,
-} from '../../src/modules/bloggers-platform/posts/domain/post.constraints';
 import { PostViewDTO } from '../../src/modules/bloggers-platform/posts/api/view-dto/post.view-dto';
-import { LikeStatusEnum } from '../../src/modules/bloggers-platform/likes/domain/like-status.enum';
 import { randomUUID } from 'crypto';
 import { BlogInputDto } from '../../src/modules/bloggers-platform/blogs/api/input-dto/blog.input-dto';
-import { ApiErrorResultType } from '../type/response-super-test';
 import { PostQueryRepository } from '../../src/modules/bloggers-platform/posts/infrastructure/query-repository/post.query-repository';
 import { DomainException } from '../../src/core/exceptions/domain-exception';
 

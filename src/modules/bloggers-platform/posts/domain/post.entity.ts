@@ -1,80 +1,42 @@
 import { CreatePostDomainDto } from './dto/create-post.domain.dto';
+import { Column, Entity, ManyToOne } from 'typeorm';
+import { BaseOrmEntity } from '../../../../core/base-orm-entity/base-orm-entity';
+import { Blog } from '../../blogs/domain/blog.entity';
+import { UpdatePostDomainDto } from './dto/update-post.domain.dto';
 
-export type PostNewType = Post & { id: null; createdAt: null };
-export type PostPersistedType = Post & { id: string; createdAt: Date };
+@Entity()
+export class Post extends BaseOrmEntity {
+  @Column({ type: 'text', nullable: false, collation: 'C' })
+  title: string;
 
-class UpdatePostInputDto {
-  public title: string;
-  public shortDescription: string;
-  public content: string;
-}
+  @Column({ type: 'text', nullable: false, collation: 'C' })
+  shortDescription: string;
 
-export class Post {
-  constructor(
-    public id: null | string, //PK
-    public blogId: string, //FK
-    public title: string,
-    public shortDescription: string,
-    public content: string,
-    public createdAt: Date | null,
-  ) {}
+  @Column({ type: 'text', nullable: false, collation: 'C' })
+  content: string;
 
-  static createInstance(dto: CreatePostDomainDto): PostNewType {
-    return new Post(
-      null,
-      dto.blogId,
-      dto.title,
-      dto.shortDescription,
-      dto.content,
-      null,
-    ) as PostNewType;
+  // Хранит FK (blogId) — владеющая сторона
+  @ManyToOne(() => Blog, (b) => b.posts, {
+    nullable: false, // пост без блога запрещён
+    // cascade: ['soft-delete'],
+  })
+  blog: Blog;
+
+  @Column({ type: 'uuid', nullable: false })
+  blogId: string; // синхронен с FK колонкой
+
+  static createInstance(dto: CreatePostDomainDto): Post {
+    const post = new Post();
+    post.title = dto.title;
+    post.content = dto.content;
+    post.shortDescription = dto.shortDescription;
+    post.blogId = dto.blogId;
+    return post;
   }
 
-  updatePost(inputDto: UpdatePostInputDto): void {
+  updatePost(inputDto: UpdatePostDomainDto): void {
     this.title = inputDto.title;
     this.shortDescription = inputDto.shortDescription;
     this.content = inputDto.content;
-  }
-
-  static toDomain(row: {
-    id: string;
-    blogId: string;
-    title: string;
-    shortDescription: string;
-    content: string;
-    createdAt: Date;
-  }): PostPersistedType {
-    return new Post(
-      row.id,
-      row.blogId,
-      row.title,
-      row.shortDescription,
-      row.content,
-      row.createdAt,
-    ) as PostPersistedType;
-  }
-
-  static toPrimitive(post: PostPersistedType): PostPersistedType;
-  static toPrimitive(post: PostNewType): PostNewType;
-  static toPrimitive(post: Post): any {
-    /* instanceof ветки → вернуть точный лит */
-    if (post.id && typeof post.id === 'string') {
-      return {
-        id: post.id,
-        title: post.title,
-        shortDescription: post.shortDescription,
-        content: post.content,
-        createdAt: post.createdAt,
-        blogId: post.blogId,
-      } as PostPersistedType;
-    }
-    return {
-      id: post.id,
-      title: post.title,
-      shortDescription: post.shortDescription,
-      content: post.content,
-      createdAt: post.createdAt,
-      blogId: post.blogId,
-    } as PostNewType;
   }
 }

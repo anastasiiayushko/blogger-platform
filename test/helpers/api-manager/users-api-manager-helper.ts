@@ -86,15 +86,17 @@ export class UsersApiManagerHelper {
     return await Promise.all(usersLoginInSystem);
   }
 
-  async registrationUser(
+  async registrationUser<T = null>(
     userInput: CreateUsersInputDto,
-  ): ResponseBodySuperTest {
+  ): ResponseBodySuperTest<T> {
     return await request(this.app.getHttpServer())
       .post(this.URL_PATH_AUTH + '/registration')
       .send(userInput);
   }
 
-  async refreshToken(cookies: string[]) {
+  async refreshToken(
+    cookies: string[],
+  ): ResponseBodySuperTest<AccessTokenViewDto> {
     return await request(this.app.getHttpServer())
       .post(this.URL_PATH_AUTH + '/refresh-token')
       .set('Cookie', cookies.join('; '));
