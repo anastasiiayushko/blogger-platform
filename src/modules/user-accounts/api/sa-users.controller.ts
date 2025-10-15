@@ -21,7 +21,7 @@ import { GetUsersQueryParams } from './input-dto/get-users-query-params.input-dt
 import { SkipThrottle } from '@nestjs/throttler';
 import { UserQueryRepository } from '../infrastructure/query/user-query-repositroy';
 import { PaginatedViewDto } from '../../../core/dto/base.paginated.view-dto';
-import { UserViewModel } from '../infrastructure/view-model/user-view-model';
+import { UserViewDto } from '../infrastructure/mapper/user-view-dto';
 
 @Injectable()
 @Controller('/sa/users')
@@ -36,12 +36,12 @@ export class SaUsersController {
   @Get('')
   getAll(
     @Query() query: GetUsersQueryParams,
-  ): Promise<PaginatedViewDto<UserViewModel[]>> {
+  ): Promise<PaginatedViewDto<UserViewDto[]>> {
     return this.userQueryRepository.getAll(query);
   }
 
   @Post()
-  async create(@Body() userDto: CreateUsersInputDto): Promise<UserViewModel> {
+  async create(@Body() userDto: CreateUsersInputDto): Promise<UserViewDto> {
     const userId: string = (await this.commandBus.execute<SaCreateUserCommand>(
       new SaCreateUserCommand({
         login: userDto.login,

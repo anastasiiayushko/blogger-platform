@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { IsEnum, IsNotEmpty, IsNumber } from 'class-validator';
 import { ConfigService } from '@nestjs/config';
-import { configValidationUtility } from '../setup/config-validation.utility';
+import { configValidationUtility } from '../../setup/config-validation.utility';
 
 export enum Environments {
   DEVELOPMENT = 'development',

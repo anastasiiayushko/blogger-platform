@@ -14,8 +14,8 @@ import { UserAccountConfig } from '../../src/modules/user-accounts/config/user-a
 import { CommentApiManager } from '../helpers/api-manager/comment-api-manager';
 import { randomUUID } from 'crypto';
 import { CommentViewDTO } from '../../src/modules/bloggers-platform/comments/infrastructure/mapper/comment.view-dto';
-import { LikeStatusEnum } from '../../src/modules/bloggers-platform/likes/domain/like-status.enum';
 import { ApiErrorResultType } from '../type/response-super-test';
+import { LikeStatusEnum } from '../../src/core/types/like-status.enum';
 
 describe('Comments UPDATE (e2e) ', () => {
   const basicAuth = getAuthHeaderBasicTest();

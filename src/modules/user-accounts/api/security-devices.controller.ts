@@ -18,7 +18,7 @@ import { DeleteDeviceByIdCommand } from '../application/security-devices-usecase
 import { SkipThrottle } from '@nestjs/throttler';
 import { UuidValidationPipe } from '../../../core/pipes/uuid-validation-transform-pipe';
 import { SessionDeviceQueryRepository } from '../infrastructure/query/session-device.query-repository';
-import { DeviceViewModel } from '../infrastructure/view-model/device-view-model';
+import { SessionDeviceViewDTO } from '../infrastructure/sql/mapper/session-device.sql-view-dto';
 
 @Controller('/security/devices')
 @SkipThrottle()
@@ -32,7 +32,7 @@ export class SecurityDevicesController {
   @UseGuards(RefreshTokenAuthGuard)
   async getById(
     @RefreshTokenPayloadFromRequest() payload: RefreshTokenPayloadDto,
-  ): Promise<DeviceViewModel[]> {
+  ): Promise<SessionDeviceViewDTO[]> {
     return this.sessionDeviceQueryRepository.getAllDevicesByUserId(
       payload.userId,
     );

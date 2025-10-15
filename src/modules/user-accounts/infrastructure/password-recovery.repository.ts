@@ -13,14 +13,14 @@ export class PasswordRecoveryRepository {
   async findByCode(code: string): Promise<PasswordRecovery | null> {
     return this.passRecoveryRepository.findOne({
       select: {
-        user:{id: true},
+        user: { id: true },
         id: true,
-        code:true,
+        code: true,
         expirationAt: true,
         isConfirmed: true,
       },
       relations: {
-        user:true,
+        user: true,
       },
       where: { code },
     });
@@ -35,7 +35,7 @@ export class PasswordRecoveryRepository {
   }
 
   async deleteByUserId(userId: string): Promise<boolean> {
-    throw new Error('Method not implemented.');
-    return false;
+    throw new Error(`Method not implemented. ${userId} `);
+    return Promise.resolve(true);
   }
 }

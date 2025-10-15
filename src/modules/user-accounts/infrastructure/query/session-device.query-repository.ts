@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SessionDevice } from '../../domin/session-device.entity';
 import { Repository } from 'typeorm';
-import { DeviceViewModel } from '../view-model/device-view-model';
+import { SecurityDeviceViewDto } from '../mapper/security-device.view-dto';
 
 @Injectable()
 export class SessionDeviceQueryRepository {
@@ -11,16 +11,23 @@ export class SessionDeviceQueryRepository {
     private sessionDeviceRepository: Repository<SessionDevice>,
   ) {}
 
-  async getAllDevicesByUserId(userId: string): Promise<DeviceViewModel[]> {
-    return await this.sessionDeviceRepository
-      .createQueryBuilder('s')
-      .select([
-        's.id as "deviceId"',
-        's.title as title',
-        's.ip as ip',
-        's.last_active_at as "lastActiveDate"',
-      ])
-      .where('s.user.id = :userId', { userId })
-      .getRawMany<DeviceViewModel>();
+  async getAllDevicesByUserId(
+    userId: string,
+  ): Promise<SecurityDeviceViewDto[]> {
+    const devices = await this.sessionDeviceRepository.find({
+      where: {
+        user: {
+          id: userId,
+        },
+      },
+      select: {
+        id: true,
+        title: true,
+        ip: true,
+        lastActiveAt: true,
+      },
+    });
+
+    return devices.map((d) => SecurityDeviceViewDto.mapView(d));
   }
 }

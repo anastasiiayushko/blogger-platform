@@ -1,4 +1,4 @@
-import { UserSqlRow } from '../sql/rows/user.sql-row';
+import { User } from '../../domin/user.entity';
 
 export class UserViewDto {
   id: string;
@@ -8,12 +8,12 @@ export class UserViewDto {
 
   /**
    * Converts a row slq   into a UserViewDto.
-   * @param {UserSqlRow} user - The user row from the database.
+   * @param {User} user - The user from the database.
    * @returns {UserSqlViewDto} - The transformed user DTO.
    */
-  static mapToView(user: UserSqlRow): UserViewDto {
+  static mapToView(user: User): UserViewDto {
     const dto = new UserViewDto();
-    dto.id = user.id.toString();
+    dto.id = user.id;
     dto.login = user.login;
     dto.email = user.email;
     dto.createdAt = user.createdAt.toISOString();

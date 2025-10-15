@@ -1,9 +1,9 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PostRepository } from '../../infrastructure/post.repository';
-import { UsersExternalQuerySqlRepository } from '../../../../user-accounts/infrastructure/sql/external-query/users-external.query-sql-repository';
 import { PostReactionRepository } from '../../infrastructure/post-reaction.repository';
 import { PostReaction } from '../../domain/post-reactions.entity';
 import { LikeStatusEnum } from '../../../../../core/types/like-status.enum';
+import { UserExternalQueryRepository } from '../../../../user-accounts/infrastructure/external-query/user-external.query-repository';
 
 export class LikeStatusPostCommand {
   constructor(
@@ -19,13 +19,13 @@ export class LikeStatusPostHandler
 {
   constructor(
     protected postRepository: PostRepository,
-    protected usersExternalQuerySqlRepository: UsersExternalQuerySqlRepository,
+    protected userExternalQueryRepository: UserExternalQueryRepository,
     protected postReactionRepository: PostReactionRepository,
   ) {}
 
   async execute({ postId, userId, status }: LikeStatusPostCommand) {
     await this.postRepository.getByIdOrNotFoundFail(postId);
-    await this.usersExternalQuerySqlRepository.findOrNotFoundFail(userId);
+    await this.userExternalQueryRepository.findOrNotFoundFail(userId);
 
     const reaction = await this.postReactionRepository.findByPostAndUserId(
       postId,

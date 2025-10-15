@@ -7,13 +7,13 @@ export class DeleteBlogCommand {
 
 @CommandHandler(DeleteBlogCommand)
 export class DeleteBlogHandler
-  implements ICommandHandler<DeleteBlogCommand, boolean>
+  implements ICommandHandler<DeleteBlogCommand, void>
 {
   constructor(private blogRepo: BlogRepository) {}
 
-  async execute(command: DeleteBlogCommand): Promise<boolean> {
-
+  async execute(command: DeleteBlogCommand): Promise<void> {
     await this.blogRepo.findOrNotFoundFail(command.id);
-    return await this.blogRepo.delete(command.id);
+    await this.blogRepo.delete(command.id);
+    //::TODO добаивть вызов софт делита для постов
   }
 }

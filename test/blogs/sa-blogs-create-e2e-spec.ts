@@ -11,6 +11,9 @@ import {
   blogDescriptionConstraints,
   blogNameConstraints,
 } from '../../src/modules/bloggers-platform/blogs/domain/blog-constraints';
+import { PaginatedViewDto } from '../../src/core/dto/base.paginated.view-dto';
+import { BlogViewDto } from '../../src/modules/bloggers-platform/blogs/api/view-dto/blog.view-dto';
+import { ApiErrorResultType } from '../type/response-super-test';
 
 describe('SaBlogController CREATED (e2e) ', () => {
   const basicAuth = getAuthHeaderBasicTest();
@@ -54,15 +57,18 @@ describe('SaBlogController CREATED (e2e) ', () => {
       basicAuth,
     );
 
-    expect(createBlogResponse.body).toMatchObject({
+    expect(createBlogResponse.body).toEqual({
       errorsMessages: expect.arrayContaining([
-        expect.objectContaining({ message: expect.any(String), field: 'name' }),
         expect.objectContaining({
-          message: expect.any(String),
+          message: expect.any(String) as string,
+          field: 'name',
+        }),
+        expect.objectContaining({
+          message: expect.any(String) as string,
           field: 'description',
         }),
         expect.objectContaining({
-          message: expect.any(String),
+          message: expect.any(String) as string,
           field: 'websiteUrl',
         }),
       ]),
@@ -70,9 +76,10 @@ describe('SaBlogController CREATED (e2e) ', () => {
     expect(createBlogResponse.status).toBe(HttpStatus.BAD_REQUEST);
 
     const blogsResponse = await blogApiManger.getAllBlogs();
-
     expect(blogsResponse.status).toBe(HttpStatus.OK);
-    expect(blogsResponse.body.items).toEqual([]);
+
+    const body = blogsResponse.body as PaginatedViewDto<BlogViewDto[]>;
+    expect(body.items).toEqual([]);
   });
 
   it('Create incorrect field name empty, should be errorsMessage and status 400', async () => {
@@ -80,9 +87,12 @@ describe('SaBlogController CREATED (e2e) ', () => {
       ...blogInputDto,
       name: '',
     });
-    expect(createBlogResponse.body).toEqual({
-      errorsMessages: [{ message: expect.any(String), field: 'name' }],
-    });
+    const bodyError = createBlogResponse.body as ApiErrorResultType;
+
+    expect(bodyError.errorsMessages[0].message).toEqual(expect.any(String));
+
+    expect(bodyError.errorsMessages).toEqual([{ message: '', field: 'name' }]);
+
     expect(createBlogResponse.status).toBe(HttpStatus.BAD_REQUEST);
     const blogsResponse = await blogApiManger.getAllBlogs();
 
@@ -91,7 +101,7 @@ describe('SaBlogController CREATED (e2e) ', () => {
   });
 
   it('Create incorrect field name more than maxLen 15, should be errorsMessage and status 400', async () => {
-    let nameMax = generateRandomStringForTest(
+    const nameMax = generateRandomStringForTest(
       blogNameConstraints.maxLength + 1,
     );
     const createBlogResponse = await blogApiManger.create({

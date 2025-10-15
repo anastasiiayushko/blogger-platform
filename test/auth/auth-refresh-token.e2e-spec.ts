@@ -12,14 +12,13 @@ import { SecurityDevicesApiManager } from '../helpers/api-manager/security-devic
 import { AuthApiManager } from '../helpers/api-manager/auth-api-manager';
 import { REFRESH_TOKEN_STRATEGY_INJECT_TOKEN } from '../../src/modules/user-accounts/constants/auth-tokens.inject-constants';
 import { JwtService } from '@nestjs/jwt';
-import { SecurityDeviceViewDto } from '../../src/modules/user-accounts/api/view-dto/security-device.view-dto';
 import {
   decodeAndValidateRefreshToken,
   validateJwtTokenRegex,
   validateTokenCookie,
 } from '../util/token-util';
 import { UserViewDto } from '../../src/modules/user-accounts/infrastructure/mapper/user-view-dto';
-import { DeviceViewModel } from '../../src/modules/user-accounts/infrastructure/view-model/device-view-model';
+import { SecurityDeviceViewDto } from '../../src/modules/user-accounts/infrastructure/mapper/security-device.view-dto';
 
 describe('Auth /refresh-token', () => {
   const basicAuth = getAuthHeaderBasicTest();
@@ -81,7 +80,7 @@ describe('Auth /refresh-token', () => {
     const resGetDevices =
       await securityDevicesApiManger.getAllDeviceSessions(cookiesLogin);
 
-    const deviceList = resGetDevices.body as DeviceViewModel[];
+    const deviceList = resGetDevices.body as SecurityDeviceViewDto[];
     expect(resGetDevices.status).toBe(HttpStatus.OK);
     expect(deviceList.length).toEqual(1);
 
@@ -123,7 +122,8 @@ describe('Auth /refresh-token', () => {
     const resGetDevicesAfterUpdate =
       await securityDevicesApiManger.getAllDeviceSessions(cookiesRefresh);
 
-    const devicesList = resGetDevicesAfterUpdate.body as DeviceViewModel[];
+    const devicesList =
+      resGetDevicesAfterUpdate.body as SecurityDeviceViewDto[];
 
     const deviceAfterUpdate: SecurityDeviceViewDto = devicesList[0];
 
@@ -157,7 +157,6 @@ describe('Auth /refresh-token', () => {
 
     const resRefreshExpireToken =
       await authApiManager.refreshToken(cookiesLogin);
-
 
     expect(resRefreshExpireToken.status).toBe(HttpStatus.UNAUTHORIZED);
   });

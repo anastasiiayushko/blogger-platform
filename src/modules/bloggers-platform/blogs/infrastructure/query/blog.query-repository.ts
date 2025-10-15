@@ -1,51 +1,38 @@
 import { Injectable } from '@nestjs/common';
-import { Blog } from '../../domain/blog.odm-entity';
+import { Blog } from '../../domain/blog.entity';
 import { BlogViewDto } from '../../api/view-dto/blog.view-dto';
-import {
-  BlogSortByEnum,
-  GetBlogsQueryParamsInputDto,
-} from '../../api/input-dto/get-blogs-query-params.input-dto';
+import { GetBlogsQueryParamsInputDto } from '../../api/input-dto/get-blogs-query-params.input-dto';
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated.view-dto';
 import { DomainException } from '../../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
-import { BlogSqlRow } from '../blog.repository';
-import { SortDirection } from '../../../../../core/dto/base.query-params.input-dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ILike, Repository } from 'typeorm';
 
 @Injectable()
 export class BlogQueryRepository {
-  constructor(@InjectDataSource() protected dataSource: DataSource) {}
+  constructor(
+    @InjectRepository(Blog) protected blogRepository: Repository<Blog>,
+  ) {}
 
-  private async _findByIdQuery(id: string): Promise<BlogViewDto | null> {
-    const SELECT_QUERY = `
-        SELECT *
-        FROM public."Blogs"
-        WHERE id = $1
-
-    `;
-
-    const blogRow = await this.dataSource.query<BlogSqlRow[]>(SELECT_QUERY, [
-      id,
-    ]);
-    if (!blogRow || blogRow.length === 0) {
-      return null;
-    }
-    return BlogViewDto.mapToView(blogRow[0]);
-  }
-
+  /**
+   * find blog by id.
+   * @param {string} id - The ID of the blog to find.
+   * @returns {BlogViewDto | null} - The ID of the find blog.
+   */
   async findById(id: string): Promise<BlogViewDto | null> {
-    return await this._findByIdQuery(id);
+    const blog = await this.blogRepository.findOneBy({ id: id });
+    return blog ? BlogViewDto.mapToView(blog) : null;
   }
 
   /**
-   * find new a blog.
+   * find blog by id or throws.
    * @param {string} id - The ID of the blog to find.
-   * @returns {Blog | null} - The ID of the find blog.
+   * @returns {BlogViewDto} - The ID of the find blog.
    * @throws {NotFound} - If no blog is found with the given ID.
    */
   async findOrNotFoundFail(id: string): Promise<BlogViewDto> {
-    const blog = await this._findByIdQuery(id);
+    const blog = await this.blogRepository.findOneBy({ id: id });
+
     if (!blog) {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
@@ -53,54 +40,48 @@ export class BlogQueryRepository {
         extensions: [],
       });
     }
-    return blog;
+    return BlogViewDto.mapToView(blog);
   }
 
+  /**
+   * Returns all blogs with paging.
+   * @param {GetBlogsQueryParamsInputDto} query - The params of the blog to filter.
+   * @returns {PaginatedViewDto<BlogViewDto[]>}
+   */
   async getAll(
     query: GetBlogsQueryParamsInputDto,
   ): Promise<PaginatedViewDto<BlogViewDto[]>> {
-    const allowedSortBy = Object.values(BlogSortByEnum);
-    const sortBy = allowedSortBy.includes(query.sortBy)
-      ? query.sortBy
-      : BlogSortByEnum.createAt;
-    const sortDirection =
-      query.sortDirection?.toUpperCase() === SortDirection.Asc.toUpperCase()
-        ? SortDirection.Asc
-        : SortDirection.Desc;
-
-    let WHERE = ``;
-    const queryParams: any[] = [];
+    let whereOptions: any[] = [];
 
     if (query.searchNameTerm) {
-      queryParams.push(`%${query.searchNameTerm}%`);
-      WHERE += `WHERE b.name ILIKE $${queryParams.length}`;
+      whereOptions.push({ name: ILike(`%${query.searchNameTerm.trim()}%`) });
     }
+    const items = await this.blogRepository.find({
+      where: whereOptions,
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        websiteUrl: true,
+        createdAt: true,
+        isMembership: true,
+      },
+      order: {
+        [query.sortBy]: query.sortDirection,
+      },
+      skip: query.calculateSkip(),
+      take: query.pageSize,
+    });
 
-    const SELECT_QUERY = `
-        SELECT b.id, b.name, b.description, b."websiteUrl", b."createdAt", b."isMembership"
-        FROM public."Blogs" AS b
-            ${WHERE}
-        ORDER BY "${sortBy}" ${sortDirection}
-        OFFSET ${query.calculateSkip()} limit ${query.pageSize};
-    `;
-    const items = await this.dataSource.query<BlogSqlRow[]>(
-      SELECT_QUERY,
-      queryParams,
-    );
-
-    const totalResult = await this.dataSource.query<[{ total: number }]>(
-      `SELECT count(b.id) as total
-       FROM public."Blogs" AS b
-           ${WHERE};
-      `,
-      queryParams,
-    );
+    const totalCount = await this.blogRepository.count({
+      where: whereOptions,
+    });
 
     return PaginatedViewDto.mapToView({
-      totalCount: +totalResult?.[0].total,
+      totalCount: totalCount,
       size: query.pageSize,
       page: query.pageNumber,
-      items: items.map((blog) => BlogViewDto.mapToView(blog)),
+      items: items.map((b) => BlogViewDto.mapToView(b)),
     });
   }
 }

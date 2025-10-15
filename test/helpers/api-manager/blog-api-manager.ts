@@ -3,19 +3,17 @@ import { BlogInputDto } from '../../../src/modules/bloggers-platform/blogs/api/i
 import request from 'supertest';
 import { delay, getAuthHeaderBasicTest } from '../common-helpers';
 import { BlogViewDto } from '../../../src/modules/bloggers-platform/blogs/api/view-dto/blog.view-dto';
-import { ResponseBodySuperTest } from '../../type/response-super-test';
+import {
+  ApiErrorResultType,
+  ResponseBodySuperTest,
+} from '../../type/response-super-test';
 import { GetBlogsQueryParamsInputDto } from '../../../src/modules/bloggers-platform/blogs/api/input-dto/get-blogs-query-params.input-dto';
 import { PaginatedViewDto } from '../../../src/core/dto/base.paginated.view-dto';
 import { PostInputDTO } from '../../../src/modules/bloggers-platform/posts/api/input-dto/post.input-dto';
-import {
-  postContentConstraints,
-  postShortDescConstraints,
-  postTitleConstraints,
-} from '../../../src/modules/bloggers-platform/posts/domain/post.constraints';
 import { PostViewDTO } from '../../../src/modules/bloggers-platform/posts/api/view-dto/post.view-dto';
 import { BlogPostInputDto } from '../../../src/modules/bloggers-platform/blogs/api/input-dto/blog-post.input-dto';
-import { LikeStatusEnum } from '../../../src/modules/bloggers-platform/likes/domain/like-status.enum';
 import { GetPostQueryParams } from '../../../src/modules/bloggers-platform/posts/api/input-dto/get-post-query-params.input-dto';
+import { LikeStatusEnum } from '../../../src/core/types/like-status.enum';
 
 export class BlogApiManager {
   private urlPath = '/api/blogs';
@@ -27,7 +25,7 @@ export class BlogApiManager {
   async create(
     inputDto: BlogInputDto,
     basicAuth: string = this.basicAuth,
-  ): ResponseBodySuperTest<BlogViewDto> {
+  ): ResponseBodySuperTest<BlogViewDto | ApiErrorResultType> {
     return request(this.app.getHttpServer())
       .post(this.saUrlPath)
       .set('Authorization', basicAuth)
@@ -53,15 +51,6 @@ export class BlogApiManager {
     const responses: ResponseBodySuperTest<PostViewDTO>[] = [];
 
     for (let i = 0; i < postsCount; i++) {
-      const titleLen = Math.floor(
-        Math.random() * postTitleConstraints.maxLength - 1,
-      );
-      const descLen = Math.floor(
-        Math.random() * postShortDescConstraints.maxLength - 1,
-      );
-      const contentLen = Math.floor(
-        Math.random() * postContentConstraints.maxLength - 1,
-      );
       await delay(60);
       const body: Omit<PostInputDTO, 'blogId'> = {
         title: `post num${i}`,
@@ -79,7 +68,7 @@ export class BlogApiManager {
 
     const posts: PostViewDTO[] = resolved.map((response) => {
       expect(response.status).toBe(HttpStatus.CREATED);
-      expect(response.body).toMatchObject<PostViewDTO>({
+      expect(response.body).toEqual({
         id: expect.any(String),
         title: expect.any(String),
         shortDescription: expect.any(String),
@@ -94,7 +83,7 @@ export class BlogApiManager {
           newestLikes: [],
         },
       });
-      return response.body as unknown as PostViewDTO;
+      return response.body as PostViewDTO;
     });
 
     return posts;

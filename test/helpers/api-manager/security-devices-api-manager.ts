@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { ResponseBodySuperTest } from '../../type/response-super-test';
 import request from 'supertest';
-import { DeviceViewModel } from '../../../src/modules/user-accounts/infrastructure/view-model/device-view-model';
+import { SecurityDeviceViewDto } from '../../../src/modules/user-accounts/infrastructure/mapper/security-device.view-dto';
 
 export class SecurityDevicesApiManager {
   private URL_PATH = '/api/security/devices';
@@ -10,7 +10,7 @@ export class SecurityDevicesApiManager {
 
   async getAllDeviceSessions(
     cookies: string[],
-  ): ResponseBodySuperTest<DeviceViewModel[]> {
+  ): ResponseBodySuperTest<SecurityDeviceViewDto[]> {
     return await request(this.app.getHttpServer())
       .get(this.URL_PATH)
       .set('Cookie', cookies.join('; '));

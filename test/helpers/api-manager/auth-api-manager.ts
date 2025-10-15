@@ -5,7 +5,7 @@ import { CreateUsersInputDto } from '../../../src/modules/user-accounts/api/inpu
 import { ResponseBodySuperTest } from '../../type/response-super-test';
 import { LoginInputDto } from '../../../src/modules/user-accounts/api/input-dto/login.input-dto';
 import { AccessTokenViewDto } from '../../../src/modules/user-accounts/api/view-dto/access-token.view-dto';
-import { UserMeViewModel } from '../../../src/modules/user-accounts/infrastructure/view-model/user-me-view-model';
+import { UserMeViewDto } from '../../../src/modules/user-accounts/infrastructure/mapper/user-me-view-dto';
 
 export class AuthApiManager {
   private URL_PATH = '/api/auth';
@@ -53,7 +53,7 @@ export class AuthApiManager {
       });
   }
 
-  async me(accessToken: string): ResponseBodySuperTest<UserMeViewModel> {
+  async me(accessToken: string): ResponseBodySuperTest<UserMeViewDto> {
     return await request(this.app.getHttpServer())
       .get(this.URL_PATH + '/me')
       .set('Authorization', `Bearer ${accessToken}`);

@@ -14,34 +14,34 @@ import { DomainExceptionCode } from './core/exceptions/domain-exception-codes';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerConfig } from './core/config/throttler.config';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+import { DatabaseConfig } from './core/config/database-config';
+import { BloggersPlatformModule } from './modules/bloggers-platform/bloggers-platform.module';
 
 @Module({
   imports: [
     CoreModule,
     configModule, //  инициализация конфигурации
-    // Глобальная регистрация подключения к базе данных
-    // MongooseModule.forRootAsync({
-    //   useFactory(coreConfig: CoreConfig) {
-    //     const uri = coreConfig.mongoUrl;
-    //     console.info(`MongoDB connect URI: ${uri}`);
-    //     return { uri };
-    //   },
-    //   inject: [CoreConfig],
-    // }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: 'sa',
-      database: 'BloggerPlatformDev',
-      synchronize: true, // Указывает, следует ли автоматически создавать схему базы данных при каждом запуске приложения. Рекомендуется отключить в продакшене
-      autoLoadEntities: true, // for dev
-      logging: true, //Включает или выключает логирование запросов к базе данных
-      namingStrategy: new SnakeNamingStrategy(),
+    TypeOrmModule.forRootAsync({
+      // явно подтягиваем модуль, который экспортирует DatabaseConfig
+      imports: [CoreModule],
+      inject: [DatabaseConfig],
+      useFactory(databaseConfig: DatabaseConfig) {
+        return {
+          type: 'postgres',
+          host: databaseConfig.host,
+          port: databaseConfig.port,
+          username: databaseConfig.username,
+          password: databaseConfig.password,
+          database: databaseConfig.database,
+          synchronize: databaseConfig.synchronize, // Указывает, следует ли автоматически создавать схему базы данных при каждом запуске приложения. Рекомендуется отключить в продакшене
+          autoLoadEntities: databaseConfig.autoLoadEntities, // for dev
+          logging: databaseConfig.logging, //Включает или выключает логирование запросов к базе данных
+          namingStrategy: new SnakeNamingStrategy(),
+        };
+      },
     }),
     UserAccountsModule,
-    // BloggersPlatformModule,
+    BloggersPlatformModule,
     TestingModule,
     ThrottlerModule.forRootAsync({
       inject: [ThrottlerConfig],

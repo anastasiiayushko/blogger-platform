@@ -39,6 +39,7 @@ import { TerminateAllOtherDevicesHandler } from './application/security-devices-
 import { RegistrationConfirmationCommandHandler } from './application/auth-usecases/registration-confirmation.usecase';
 import { RegistrationUserHandler } from './application/auth-usecases/registration-user.usecase';
 import { RegistrationEmailResendingHandler } from './application/auth-usecases/registration-email-resending.usecase';
+import { UserExternalQueryRepository } from './infrastructure/external-query/user-external.query-repository';
 
 const cmdHandlerSecurityDevice = [
   DeleteDeviceByIdHandler,
@@ -59,7 +60,6 @@ const cmdSaHandlerUser = [SaCreateUserHandler, SaDeleteUserHandler];
 const configs = [UserAccountConfig, UserConfirmationConfig];
 
 // const sqlExternalQueryRepository = [UsersExternalQuerySqlRepository];
-
 
 @Module({
   imports: [
@@ -92,6 +92,7 @@ const configs = [UserAccountConfig, UserConfirmationConfig];
     RefreshTokenAuthGuard,
     UserRepository,
     UserQueryRepository,
+    UserExternalQueryRepository,
     EmailConfirmationRepository,
     SessionDeviceRepository,
     SessionDeviceQueryRepository,
@@ -125,6 +126,7 @@ const configs = [UserAccountConfig, UserConfirmationConfig];
   ],
   exports: [
     BearerJwtStrategy,
+    UserExternalQueryRepository,
     // ...sqlExternalQueryRepository,
     /** при использование  guard через @UseGuard(nameGard), можно не экспортирована поставщиков которые инжектируются в через конструктор
      *  Nest автоматически видит зависимости guard’а через импорт модуля

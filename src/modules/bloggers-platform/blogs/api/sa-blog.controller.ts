@@ -24,15 +24,7 @@ import { GetBlogByIdQuery } from '../application/query-usecases/get-blog-by-id.q
 import { GetBlogsWithPagingQuery } from '../application/query-usecases/get-blogs-with-paging.query-usecase';
 import { SkipThrottle } from '@nestjs/throttler';
 import { UuidValidationPipe } from '../../../../core/pipes/uuid-validation-transform-pipe';
-import { BlogPostInputDto } from './input-dto/blog-post.input-dto';
-import { PostViewDTO } from '../../posts/api/view-dto/post.view-dto';
-import { CreatePostCommand } from '../../posts/application/usecases/create-post.usecases';
-import { GetPostByIdQuery } from '../../posts/application/query-usecases/get-post-by-id.query-handler';
-import { GetPostQueryParams } from '../../posts/api/input-dto/get-post-query-params.input-dto';
-import { GetPostsWithPagingQuery } from '../../posts/application/query-usecases/get-posts-with-paging.query-handler';
 import { BlogQueryRepository } from '../infrastructure/query/blog.query-repository';
-import { UpdatePostCommand } from '../../posts/application/usecases/update-post.usecases';
-import { DeletePostCommand } from '../../posts/application/usecases/delete-post.usecases';
 
 @Controller('sa/blogs')
 @SkipThrottle()
@@ -120,21 +112,21 @@ export class SaBlogController {
    * @param {BlogPostInputDto} inputDto - The input DTO containing the data for the new post.
    * @returns {PostViewDto | HttpStatus.NOT_FOUND} - The view DTO of the newly created post or a NOT_FOUND status if the blog does not exist.
    */
-  @Post(':blogId/posts')
-  async createPost(
-    @Param('blogId', UuidValidationPipe) blogId: string,
-    @Body() inputDto: BlogPostInputDto,
-  ): Promise<PostViewDTO> {
-    const postId = await this.commandBus.execute<CreatePostCommand>(
-      new CreatePostCommand(
-        blogId,
-        inputDto.content,
-        inputDto.shortDescription,
-        inputDto.title,
-      ),
-    );
-    return this.queryBus.execute(new GetPostByIdQuery(postId, null));
-  }
+  // @Post(':blogId/posts')
+  // async createPost(
+  //   @Param('blogId', UuidValidationPipe) blogId: string,
+  //   @Body() inputDto: BlogPostInputDto,
+  // ): Promise<PostViewDTO> {
+  // const postId = await this.commandBus.execute<CreatePostCommand>(
+  //   new CreatePostCommand(
+  //     blogId,
+  //     inputDto.content,
+  //     inputDto.shortDescription,
+  //     inputDto.title,
+  //   ),
+  // );
+  // return this.queryBus.execute(new GetPostByIdQuery(postId, null));
+  // }
 
   /**
    * Get posts for blog with paging and sorting.
@@ -143,16 +135,16 @@ export class SaBlogController {
    * @query {GetPostQueryParams} queryParams - The query params for searching posts .
    * @returns {PaginatedViewDto<PostViewDTO[]> | HttpStatus.NOT_FOUND} -
    */
-  @Get(':blogId/posts')
-  async getPostsWithPaging(
-    @Param('blogId', UuidValidationPipe) blogId: string,
-    @Query() queryParams: GetPostQueryParams,
-  ): Promise<PaginatedViewDto<PostViewDTO[]>> {
-    await this.blogQueryRepository.findOrNotFoundFail(blogId);
-    return this.queryBus.execute(
-      new GetPostsWithPagingQuery(null, queryParams, { blogId: blogId }),
-    );
-  }
+  // @Get(':blogId/posts')
+  // async getPostsWithPaging(
+  //   @Param('blogId', UuidValidationPipe) blogId: string,
+  //   @Query() queryParams: GetPostQueryParams,
+  // ): Promise<PaginatedViewDto<PostViewDTO[]>> {
+  //   await this.blogQueryRepository.findOrNotFoundFail(blogId);
+  //   return this.queryBus.execute(
+  //     new GetPostsWithPagingQuery(null, queryParams, { blogId: blogId }),
+  //   );
+  // }
 
   /**
    * Update existing post by id with InputModel
@@ -162,23 +154,23 @@ export class SaBlogController {
    * @param {BlogPostInputDto} inputDto - The input DTO containing the data for the update post.
    * @returns {HttpStatus.NO_CONTENT | HttpStatus.NOT_FOUND}
    */
-  @Put(':blogId/posts/:postId')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async updatePost(
-    @Param('blogId', UuidValidationPipe) blogId: string,
-    @Param('postId', UuidValidationPipe) postId: string,
-    @Body() inputDto: BlogPostInputDto,
-  ): Promise<void> {
-    return this.commandBus.execute(
-      new UpdatePostCommand({
-        blogId,
-        postId,
-        content: inputDto.content,
-        shortDescription: inputDto.shortDescription,
-        title: inputDto.title,
-      }),
-    );
-  }
+  // @Put(':blogId/posts/:postId')
+  // @HttpCode(HttpStatus.NO_CONTENT)
+  // async updatePost(
+  //   @Param('blogId', UuidValidationPipe) blogId: string,
+  //   @Param('postId', UuidValidationPipe) postId: string,
+  //   @Body() inputDto: BlogPostInputDto,
+  // ): Promise<void> {
+  //   return this.commandBus.execute(
+  //     new UpdatePostCommand({
+  //       blogId,
+  //       postId,
+  //       content: inputDto.content,
+  //       shortDescription: inputDto.shortDescription,
+  //       title: inputDto.title,
+  //     }),
+  //   );
+  // }
 
   /**
    * Delete post specified by id
@@ -187,13 +179,13 @@ export class SaBlogController {
    * @param {string} postId - The unique identifier of the postId.
    * @returns {HttpStatus.NO_CONTENT | HttpStatus.NOT_FOUND}
    */
-  @Delete(':blogId/posts/:postId')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async deletePost(
-    @Param('blogId', UuidValidationPipe) blogId: string,
-    @Param('postId', UuidValidationPipe) postId: string,
-  ): Promise<void> {
-    await this.blogQueryRepository.findOrNotFoundFail(blogId);
-    return this.commandBus.execute(new DeletePostCommand(postId));
-  }
+  // @Delete(':blogId/posts/:postId')
+  // @HttpCode(HttpStatus.NO_CONTENT)
+  // async deletePost(
+  //   @Param('blogId', UuidValidationPipe) blogId: string,
+  //   @Param('postId', UuidValidationPipe) postId: string,
+  // ): Promise<void> {
+  //   await this.blogQueryRepository.findOrNotFoundFail(blogId);
+  //   return this.commandBus.execute(new DeletePostCommand(postId));
+  // }
 }

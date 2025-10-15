@@ -1,5 +1,4 @@
-import { BlogDocument } from '../../domain/blog.odm-entity';
-import { BlogSqlRow } from '../../infrastructure/blog.repository';
+import { Blog } from '../../domain/blog.entity';
 
 export class BlogViewDto {
   id: string;
@@ -14,7 +13,7 @@ export class BlogViewDto {
    * @param {BlogDocument} blog - The blog document from the database.
    * @returns {BlogDocument} - The transformed user DTO.
    */
-  static mapToView(blog: BlogSqlRow): BlogViewDto {
+  static mapToView(blog: Blog): BlogViewDto {
     const dto = new BlogViewDto();
     dto.id = blog.id;
     dto.name = blog.name;

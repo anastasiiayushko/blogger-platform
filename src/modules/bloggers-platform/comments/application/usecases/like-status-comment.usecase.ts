@@ -2,8 +2,8 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { LikeStatusEnum } from '../../../../../core/types/like-status.enum';
 import { CommentReactionRepository } from '../../infrastructure/comment-reaction.repository';
 import { CommentReaction } from '../../domain/comment-reactions.entity';
-import { UsersExternalQuerySqlRepository } from '../../../../user-accounts/infrastructure/sql/external-query/users-external.query-sql-repository';
 import { CommentRepository } from '../../infrastructure/comment.repository';
+import { UserExternalQueryRepository } from '../../../../user-accounts/infrastructure/external-query/user-external.query-repository';
 
 export class LikeStatusCommentCommand {
   constructor(
@@ -19,7 +19,7 @@ export class LikeStatusCommentHandler
 {
   constructor(
     protected commentRepository: CommentRepository,
-    protected userExternalQueryRepository: UsersExternalQuerySqlRepository,
+    protected userExternalQueryRepository: UserExternalQueryRepository,
     protected commentReactionRepository: CommentReactionRepository,
   ) {}
 
@@ -37,10 +37,9 @@ export class LikeStatusCommentHandler
         commentId,
         userId,
       );
-    if (!reaction && (status === LikeStatusEnum.None)) {
+    if (!reaction && status === LikeStatusEnum.None) {
       return;
     }
-
 
     if (reaction) {
       const { changed } = reaction.setStatus(status);
@@ -49,7 +48,6 @@ export class LikeStatusCommentHandler
       }
       return;
     }
-
 
     const newReaction = CommentReaction.createInstance({
       status: status,

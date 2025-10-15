@@ -18,7 +18,7 @@ export class CreateBlogHandler
 
   async execute(command: CreateBlogCommand): Promise<string> {
     const newBlog = Blog.createInstance(command);
-    const blogSaved = await this.blogRepo.save(newBlog);
-    return blogSaved.id;
+    await this.blogRepo.save(newBlog);
+    return newBlog.id;
   }
 }

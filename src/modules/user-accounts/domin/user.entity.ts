@@ -7,10 +7,10 @@ import { IsEmail } from 'class-validator';
 
 @Entity('user')
 export class User extends BaseOrmEntity {
-  @Column({ type: 'varchar', unique: true })
+  @Column({ type: 'varchar', unique: true, collation: 'C' })
   login: string;
 
-  @Column({ type: 'varchar', unique: true })
+  @Column({ type: 'varchar', unique: true, collation: 'C' })
   @IsEmail()
   email: string;
 

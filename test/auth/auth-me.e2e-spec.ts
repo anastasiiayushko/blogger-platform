@@ -5,8 +5,8 @@ import request from 'supertest';
 import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
 import { AccessTokenViewDto } from '../../src/modules/user-accounts/api/view-dto/access-token.view-dto';
 import { JwtService } from '@nestjs/jwt';
-import { UserMeViewModel } from '../../src/modules/user-accounts/infrastructure/view-model/user-me-view-model';
 import { AuthApiManager } from '../helpers/api-manager/auth-api-manager';
+import { UserMeViewDto } from '../../src/modules/user-accounts/infrastructure/mapper/user-me-view-dto';
 
 describe('Auth me ', () => {
   const basicAuth = getAuthHeaderBasicTest();
@@ -48,7 +48,7 @@ describe('Auth me ', () => {
     const meRes = await authApiManager.me(accessToken);
     expect(meRes.status).toBe(HttpStatus.OK);
 
-    expect(meRes.body).toEqual<UserMeViewModel>({
+    expect(meRes.body).toEqual<UserMeViewDto>({
       login: userAuthData.login,
       email: userAuthData.email,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
