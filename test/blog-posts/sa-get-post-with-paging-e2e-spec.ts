@@ -6,6 +6,8 @@ import { BlogViewDto } from '../../src/modules/bloggers-platform/blogs/api/view-
 import { PostViewDTO } from '../../src/modules/bloggers-platform/posts/api/view-dto/post.view-dto';
 import { randomUUID } from 'crypto';
 import { LikeStatusEnum } from '../../src/core/types/like-status.enum';
+import { PostQuerySortByEnum } from '../../src/modules/bloggers-platform/posts/api/input-dto/get-post-query-params.input-dto';
+import { SortDirection } from '../../src/core/dto/base.query-params.input-dto';
 
 describe('Returns posts for blog with paging  and sorting /blogs/:blogId/posts', () => {
   const basicAuth = getAuthHeaderBasicTest();
@@ -87,7 +89,11 @@ describe('Returns posts for blog with paging  and sorting /blogs/:blogId/posts',
 
     const postsResponse = await blogApiManger.getPostsWithPagingByParamBlogId(
       blog2Id,
-      { pageSize: pageSize },
+      {
+        pageSize: pageSize,
+        sortBy: PostQuerySortByEnum.blogName,
+        sortDirection: SortDirection.Desc,
+      },
     );
 
     expect(postsResponse.status).toBe(HttpStatus.OK);

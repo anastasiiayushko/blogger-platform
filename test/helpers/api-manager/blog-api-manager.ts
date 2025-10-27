@@ -149,7 +149,7 @@ export class BlogApiManager {
       .set('Authorization', basicAuth);
   }
 
-  async createPostForBlog<T=PostViewDTO>(
+  async createPostForBlog<T = PostViewDTO>(
     blogId: string,
     inputModel: BlogPostInputDto,
     basicAuth: string = this.basicAuth,

@@ -9,11 +9,13 @@ import { randomUUID } from 'crypto';
 import { BlogInputDto } from '../../src/modules/bloggers-platform/blogs/api/input-dto/blog.input-dto';
 import { PostQueryRepository } from '../../src/modules/bloggers-platform/posts/infrastructure/query-repository/post.query-repository';
 import { DomainException } from '../../src/core/exceptions/domain-exception';
+import { PostApiManager } from '../helpers/api-manager/post-api-manager';
 
 describe('Sa delete post specified by id /blogs/:blogId/posts/:postId', () => {
   const basicAuth = getAuthHeaderBasicTest();
   let app: INestApplication;
   let blogApiManger: BlogApiManager;
+  let postApiManger: PostApiManager;
   let postQueryRepository: PostQueryRepository;
   let mainBlog: BlogViewDto;
   let mainPost: PostViewDTO;
@@ -32,6 +34,7 @@ describe('Sa delete post specified by id /blogs/:blogId/posts/:postId', () => {
     const init = await initSettings();
     app = init.app;
     blogApiManger = new BlogApiManager(app);
+    postApiManger = new PostApiManager(app);
     postQueryRepository = app.get<PostQueryRepository>(PostQueryRepository);
 
     const createdBlogRes = await blogApiManger.create(blogFakeData, basicAuth);
@@ -98,5 +101,25 @@ describe('Sa delete post specified by id /blogs/:blogId/posts/:postId', () => {
     await expect(
       postQueryRepository.getByIdOrNotFoundFail(mainPost.id),
     ).rejects.toBeInstanceOf(DomainException);
+  });
+
+  it('Should be status 404 check soft-delete post', async () => {
+    const createdPostRes = await blogApiManger.createPostForBlog(mainBlog.id, {
+      title: 'bla',
+      content: 'bla',
+      shortDescription: 'bla',
+    });
+
+    expect(createdPostRes.status).toBe(HttpStatus.CREATED);
+
+    const deletePostRes = await blogApiManger.deletePostIdForBlog({
+      blogId: mainBlog.id,
+      postId: createdPostRes.body.id,
+    });
+
+    expect(deletePostRes.status).toBe(HttpStatus.NO_CONTENT);
+
+    const getRemovedPost = await postApiManger.findById(createdPostRes.body.id);
+    expect(getRemovedPost.status).toBe(HttpStatus.NOT_FOUND);
   });
 });

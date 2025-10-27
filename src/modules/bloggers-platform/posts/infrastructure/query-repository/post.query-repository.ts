@@ -21,12 +21,27 @@ export class PostQueryRepository {
     id: string,
     userId: string | null = null,
   ): Promise<PostViewDTO> {
-    const post = await this.postRepository.findOne({
-      where: { id: id },
-      relations: {
-        blog: true,
-      },
-    });
+    const post = await this.postRepository
+      .createQueryBuilder('p')
+      .leftJoin('p.blog', 'b')
+      .where('p.id = :id', { id })
+      .select([
+        'p.id as "id"',
+        'b.id as "blogId"',
+        'b.name as "blogName"',
+        'p.title as "title"',
+        'p.content as "content"',
+        'p.short_description  as "shortDescription"',
+        'p.created_at  as "createdAt"',
+      ])
+      .getRawOne();
+
+    // const post = await this.postRepository.findOne({
+    //   where: { id: id },
+    //   relations: {
+    //     blog: true,
+    //   },
+    // });
     if (!post) {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
@@ -42,17 +57,21 @@ export class PostQueryRepository {
   ): Promise<PaginatedViewDto<PostViewDTO[]>> {
     const snakeNaming = new SnakeNamingStrategy();
 
-    const orderByAttr = `p.${snakeNaming.relationName(query.sortBy)}`;
+    let orderByAttr = `p.${snakeNaming.relationName(query.sortBy)}`;
     const sortDirection = toTypeOrmOrderDir(query.sortDirection);
 
     const queryBuilder = this.postRepository
       .createQueryBuilder('p')
-      .innerJoin('p.blog', 'b');
+      .leftJoin('p.blog', 'b');
 
     if (filterContext?.blogId) {
       queryBuilder.where('p.blogId =:blogId', {
         blogId: filterContext?.blogId,
       });
+    }
+
+    if (['blogName'].includes(query.sortBy)) {
+      orderByAttr = 'b.name';
     }
 
     const items = await queryBuilder

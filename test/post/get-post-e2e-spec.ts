@@ -38,7 +38,6 @@ describe('Returns post by id /posts/:postId', () => {
 
   it('Should be status 200 and query params by default', async () => {
     const targetPost = postsForBlog1[0];
-
     const postRes = await postApiManger.findById(targetPost.id);
 
     expect(postRes.status).toBe(HttpStatus.OK);

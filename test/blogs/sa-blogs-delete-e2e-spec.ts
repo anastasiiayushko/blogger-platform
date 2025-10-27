@@ -57,4 +57,33 @@ describe('SaBlogController DELETE (e2e) ', () => {
 
     expect(getAllBlogsRes.status).toBe(HttpStatus.NOT_FOUND);
   });
+
+  it('Should be status 404 check soft-delete for post if soft-deleted blog', async () => {
+    const createdBlogRes = await blogApiManger.create(
+      {
+        description: 'bla-bla',
+        name: 'bla-bla',
+        websiteUrl: 'https://test-domain.com',
+      },
+      basicAuth,
+    );
+
+    expect(createdBlogRes.status).toBe(HttpStatus.CREATED);
+
+    const createdPosts = await blogApiManger.createServerlPostsForBlog(
+      createdBlogRes.body.id,
+      3,
+    );
+
+    const deletedBlogRes = await blogApiManger.deleteById(
+      createdBlogRes.body.id,
+    );
+    expect(deletedBlogRes.status).toBe(HttpStatus.NO_CONTENT);
+
+    const allPostsByBlogId =
+      await blogApiManger.getPostsWithPagingByParamBlogId(
+        createdBlogRes.body.id,
+      );
+    expect(allPostsByBlogId.status).toBe(HttpStatus.NOT_FOUND);
+  });
 });

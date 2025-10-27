@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { BlogViewDto } from './view-dto/blog.view-dto';
 import { GetBlogsQueryParamsInputDto } from './input-dto/get-blogs-query-params.input-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
@@ -7,6 +7,14 @@ import { GetBlogByIdQuery } from '../application/query-usecases/get-blog-by-id.q
 import { GetBlogsWithPagingQuery } from '../application/query-usecases/get-blogs-with-paging.query-usecase';
 import { SkipThrottle } from '@nestjs/throttler';
 import { UuidValidationPipe } from '../../../../core/pipes/uuid-validation-transform-pipe';
+import { BearerOptionalJwtAuthGuard } from '../../../user-accounts/guards/bearer/bearer-optional-jwt-auth.guard';
+import { GetPostQueryParams } from '../../posts/api/input-dto/get-post-query-params.input-dto';
+import { UserContextDto } from '../../../user-accounts/decorators/param/user-context.dto';
+import {
+  OptionalCurrentUserFormRequest
+} from '../../../user-accounts/decorators/param/options-current-user-from-request.decorator';
+import { PostViewDTO } from '../../posts/api/view-dto/post.view-dto';
+import { PostQueryRepository } from '../../posts/infrastructure/query-repository/post.query-repository';
 
 @Controller('blogs')
 @SkipThrottle()
@@ -14,7 +22,7 @@ export class BlogController {
   constructor(
     protected commandBus: CommandBus,
     protected queryBus: QueryBus,
-    // protected postQueryRepository: PostQueryRepository,
+    protected postQueryRepository: PostQueryRepository,
   ) {}
 
   /**
@@ -52,18 +60,18 @@ export class BlogController {
    * @param {GetPostQueryParams} query - The query parameters to filter and paginate the posts.
    * @returns {PaginatedViewDto<PostViewDTO[]>} - A paginated list of post view DTOs.
    */
-  // @Get(':blogId/posts')
-  // @UseGuards(BearerOptionalJwtAuthGuard)
-  // async getAllPosts(
-  //   @Param('blogId', UuidValidationPipe) blogId: string,
-  //   @Query() query: GetPostQueryParams,
-  //   @OptionalCurrentUserFormRequest() user: UserContextDto | null,
-  // ): Promise<PaginatedViewDto<PostViewDTO[]>> {
-  //   await this.queryBus.execute<GetBlogByIdQuery>(new GetBlogByIdQuery(blogId));
-  //   return this.postQueryRepository.getAll(
-  //     query,
-  //     { blogId: blogId },
-  //     user?.id ?? null,
-  //   );
-  // }
+  @Get(':blogId/posts')
+  @UseGuards(BearerOptionalJwtAuthGuard)
+  async getAllPosts(
+    @Param('blogId', UuidValidationPipe) blogId: string,
+    @Query() query: GetPostQueryParams,
+    @OptionalCurrentUserFormRequest() user: UserContextDto | null,
+  ): Promise<PaginatedViewDto<PostViewDTO[]>> {
+    await this.queryBus.execute<GetBlogByIdQuery>(new GetBlogByIdQuery(blogId));
+    return this.postQueryRepository.getAll(
+      query,
+      { blogId: blogId },
+      user?.id ?? null,
+    );
+  }
 }
