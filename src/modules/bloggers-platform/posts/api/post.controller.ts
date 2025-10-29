@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { PostViewDTO } from './view-dto/post.view-dto';
 import { GetPostQueryParams } from './input-dto/get-post-query-params.input-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
@@ -9,6 +9,12 @@ import { UserContextDto } from '../../../user-accounts/decorators/param/user-con
 import { BearerOptionalJwtAuthGuard } from '../../../user-accounts/guards/bearer/bearer-optional-jwt-auth.guard';
 import { OptionalCurrentUserFormRequest } from '../../../user-accounts/decorators/param/options-current-user-from-request.decorator';
 import { PostQueryRepository } from '../infrastructure/query-repository/post.query-repository';
+import { BearerJwtAuthGuard } from '../../../user-accounts/guards/bearer/bearer-jwt-auth.guard';
+import { CommentInputDto } from '../../comments/api/input-dto/comment.input-dto';
+import { CurrentUserFormRequest } from '../../../user-accounts/decorators/param/current-user-form-request.decorator';
+import { CommentViewDTO } from '../../comments/api/view-dto/comment.view-dto';
+import { CreateCommentCommand } from '../../comments/application/usecases/create-comment.usecases';
+import { CommentsQueryRepository } from '../../comments/infrastructure/query/comments.query-repository';
 
 @Controller('posts')
 @SkipThrottle()
@@ -16,7 +22,7 @@ export class PostController {
   constructor(
     protected commandBus: CommandBus,
     protected queryBus: QueryBus,
-    // protected commentsQueryRepository: CommentsQueryRepository,
+    protected commentsQueryRepository: CommentsQueryRepository,
     protected postQueryRepository: PostQueryRepository,
   ) {}
 
@@ -63,19 +69,20 @@ export class PostController {
   //   );
   // }
   //
-  // @Post(':postId/comments')
-  // @UseGuards(BearerJwtAuthGuard)
-  // async createComment(
-  //   @Param('postId', UuidValidationPipe) postId: string,
-  //   @Body() inputDto: CommentInputDto,
-  //   @CurrentUserFormRequest() user: UserContextDto,
-  // ): Promise<CommentViewDTO> {
-  //   const commentId = await this.commandBus.execute<CreateCommentCommand>(
-  //     new CreateCommentCommand(postId, user.id, inputDto.content),
-  //   );
-  //   return this.commentsQueryRepository.getByIdOrNotFoundFail(
-  //     commentId,
-  //     user.id,
-  //   );
-  // }
+  @Post(':postId/comments')
+  @UseGuards(BearerJwtAuthGuard)
+  async createComment(
+    @Param('postId', UuidValidationPipe) postId: string,
+    @Body() inputDto: CommentInputDto,
+    @CurrentUserFormRequest() user: UserContextDto,
+  ): Promise<CommentViewDTO> {
+    const commentId = await this.commandBus.execute<CreateCommentCommand>(
+      new CreateCommentCommand(postId, user.id, inputDto.content),
+    );
+
+    return this.commentsQueryRepository.getByIdOrNotFoundFail(
+      commentId,
+      user.id,
+    );
+  }
 }

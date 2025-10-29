@@ -15,10 +15,10 @@ import { ACCESS_TOKEN_STRATEGY_INJECT_TOKEN } from '../../src/modules/user-accou
 import { randomUUID } from 'crypto';
 import { CommentViewDTO } from '../../src/modules/bloggers-platform/comments/api/view-dto/comment.view-dto';
 import { CommentInputDto } from '../../src/modules/bloggers-platform/comments/api/input-dto/comment.input-dto';
-import { LikeStatusEnum } from '../../src/modules/bloggers-platform/likes/domain/like-status.enum';
 import { UserAccountConfig } from '../../src/modules/user-accounts/config/user-account.config';
 import { UserSqlViewDto } from '../../src/modules/user-accounts/infrastructure/sql/mapper/users.sql-view-dto';
 import { ApiErrorResultType } from '../type/response-super-test';
+import { LikeStatusEnum } from '../../src/core/types/like-status.enum';
 
 describe('Posts/Comments CREATED (e2e) ', () => {
   const basicAuth = getAuthHeaderBasicTest();

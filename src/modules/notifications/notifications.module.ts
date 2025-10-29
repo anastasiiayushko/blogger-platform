@@ -3,6 +3,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { EmailPasswordRecoveryHandler } from './event-usecases/email-password-recovery.event-usecase';
 import { EmailConfirmRegistrationHandler } from './event-usecases/email-confirm-registration.event-usecase';
 
+//::TODO добавить конфиг
 @Module({
   imports: [
     MailerModule.forRoot({

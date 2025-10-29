@@ -1,5 +1,5 @@
 import { CreateBlogDomainDto } from './dto/create-blog.domain.dto';
-import { Entity, Column, ManyToOne, OneToMany } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
 import { BaseOrmEntity } from '../../../../core/base-orm-entity/base-orm-entity';
 import { Post } from '../../posts/domain/post.entity';
 

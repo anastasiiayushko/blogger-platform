@@ -18,7 +18,6 @@ export class Post extends BaseOrmEntity {
   // Хранит FK (blogId) — владеющая сторона
   @ManyToOne(() => Blog, (b) => b.posts, {
     nullable: false, // пост без блога запрещён
-    // cascade: ['soft-delete'],
   })
   blog: Blog;
 

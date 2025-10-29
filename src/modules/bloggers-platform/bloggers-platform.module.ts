@@ -20,6 +20,11 @@ import { Post } from './posts/domain/post.entity';
 import { PostController } from './posts/api/post.controller';
 import { PostRepository } from './posts/infrastructure/post.repository';
 import { PostQueryRepository } from './posts/infrastructure/query-repository/post.query-repository';
+import { Comment } from './comments/domain/comment.entity';
+import { CommentRepository } from './comments/infrastructure/comment.repository';
+import { CreateCommentHandler } from './comments/application/usecases/create-comment.usecases';
+import { CommentController } from './comments/api/comment.controller';
+import { CommentsQueryRepository } from './comments/infrastructure/query/comments.query-repository';
 
 const cmdBlogHandler = [
   CreateBlogHandler,
@@ -37,19 +42,19 @@ const cmdPostHandler = [
   GetPostByIdQueryHandler,
   GetPostWithPagingQueryHandler,
 ];
-// const cmdCommentHandler = [
-//   CreateCommentHandler,
-//   GetCommentByIdQueryHandler,
-//   GetCommentsByPostWithPagingQueryHandler,
-//   UpdateCommentHandler,
-//   DeleteCommentHandler,
-//   LikeStatusCommentHandler,
-// ];
+const cmdCommentHandler = [
+  CreateCommentHandler,
+  // GetCommentByIdQueryHandler,
+  // GetCommentsByPostWithPagingQueryHandler,
+  // UpdateCommentHandler,
+  // DeleteCommentHandler,
+  // LikeStatusCommentHandler,
+];
 
 @Module({
   imports: [
     // Регистрация сущностей (схем) в модуле
-    TypeOrmModule.forFeature([Blog, Post]),
+    TypeOrmModule.forFeature([Blog, Post, Comment]),
     // MongooseModule.forFeature([
     //   { name: Blog.name, schema: BlogSchema },
     //   { name: Post.name, schema: PostSchema },
@@ -62,7 +67,7 @@ const cmdPostHandler = [
     BlogController,
     SaBlogController,
     PostController,
-    // CommentController,
+    CommentController,
   ],
   providers: [
     BlogRepository,
@@ -70,12 +75,12 @@ const cmdPostHandler = [
     PostRepository,
     PostQueryRepository,
     // PostReactionRepository,
-    // CommentRepository,
-    // CommentsQueryRepository,
+    CommentRepository,
+    CommentsQueryRepository,
     // CommentReactionRepository,
     ...cmdBlogHandler,
     ...cmdPostHandler,
-    // ...cmdCommentHandler,
+    ...cmdCommentHandler,
   ],
 })
 export class BloggersPlatformModule {}

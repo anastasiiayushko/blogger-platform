@@ -1,6 +1,4 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { DomainException } from '../../../../../core/exceptions/domain-exception';
-import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
 import { CommentRepository } from '../../infrastructure/comment.repository';
 import { CommentReactionRepository } from '../../infrastructure/comment-reaction.repository';
 
@@ -21,19 +19,20 @@ export class DeleteCommentHandler
   ) {}
 
   async execute({ commentId, userId }: DeleteCommentCommand): Promise<void> {
-    const comment = await this.commentRepository.findOrNotFoundFail(commentId);
-    const authorId = comment.userId;
-    if (authorId !== userId) {
-      throw new DomainException({
-        code: DomainExceptionCode.Forbidden,
-      });
-    }
-
-    const result = await this.commentRepository.deleteById(commentId);
-    if (result) {
-      await this.commentReactionRepository.deleteAllReactionByCommentId(
-        commentId,
-      );
-    }
+    // const comment = await this.commentRepository.findOrNotFoundFail(commentId);
+    // const authorId = comment.userId;
+    // if (authorId !== userId) {
+    //   throw new DomainException({
+    //     code: DomainExceptionCode.Forbidden,
+    //   });
+    // }
+    //
+    // const result = await this.commentRepository.softDeleteById(commentId);
+    // if (result) {
+    //   await this.commentReactionRepository.deleteAllReactionByCommentId(
+    //     commentId,
+    //   );
+    // }
+    return;
   }
 }

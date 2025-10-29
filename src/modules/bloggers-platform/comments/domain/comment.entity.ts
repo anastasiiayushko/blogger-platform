@@ -1,105 +1,42 @@
 import { UpdateCommentDomainDto } from './dto/update-comment.domain.dto';
 import { CreateCommentDomainDto } from './dto/create-comment.domain.dto';
-import {
-  BaseEntityNewType,
-  BaseEntityPersistedType,
-} from '../../../../core/types/base-entity.type';
+import { BaseOrmEntity } from '../../../../core/base-orm-entity/base-orm-entity';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Post } from '../../posts/domain/post.entity';
+import { User } from '../../../user-accounts/domin/user.entity';
 
-type BaseComment = {
+@Entity()
+export class Comment extends BaseOrmEntity {
+  @ManyToOne(() => Post, (post) => post.id, {
+    nullable: false, // комментарий без поста запрещён
+    onDelete: 'CASCADE', // на случай hard-purge
+  })
+  @JoinColumn()
+  post: Post;
+  @Column({ type: 'uuid', nullable: false })
   postId: string;
+
+  @ManyToOne(() => User, (user) => user.id, {
+    nullable: false, // комментарий без автора запрещён
+    onDelete: 'CASCADE', // на случай hard-purge
+  })
+  @JoinColumn()
+  user: User;
+  @Column({ type: 'uuid', nullable: false })
   userId: string;
+
+  @Column({ type: 'text', nullable: false })
   content: string;
-};
 
-export type CommentNewType = Comment<BaseEntityNewType>;
-export type CommentPersistedType = Comment<BaseEntityPersistedType>;
-export type CommentUnionType = CommentNewType | CommentPersistedType;
-
-export class Comment<S extends BaseEntityNewType | BaseEntityPersistedType> {
-  private _id: null | string; //PK
-  private _postId: string; //FK
-  private _userId: string; //FK
-  private _content: string;
-  private _createdAt: null | Date;
-  private _updatedAt: null | Date;
-
-  constructor(public state: BaseComment & S) {
-    this._id = state.id;
-    this._postId = state.postId;
-    this._userId = state.userId;
-    this._content = state.content;
-    this._createdAt = state.createdAt;
-    this._updatedAt = state.updatedAt;
-  }
-
-  isNew(): this is CommentNewType {
-    return this._id === null;
-  }
-
-  static createInstance(dto: CreateCommentDomainDto): CommentNewType {
-    return new Comment<BaseEntityNewType>({
-      id: null,
-      postId: dto.postId,
-      userId: dto.userId,
-      content: dto.content,
-      createdAt: null,
-      updatedAt: null,
-    });
+  static createInstance(dto: CreateCommentDomainDto): Comment {
+    const comment: Comment = new Comment();
+    comment.postId = dto.postId;
+    comment.userId = dto.userId;
+    comment.content = dto.content;
+    return comment;
   }
 
   updateContent(dto: UpdateCommentDomainDto): void {
-    this._content = dto.content;
-  }
-
-  static toDomain(dtoRow: {
-    id: string;
-    postId: string;
-    userId: string;
-    content: string;
-    createdAt: Date;
-    updatedAt: Date;
-  }): CommentPersistedType {
-    return new Comment(dtoRow);
-  }
-
-  // 🔑 Единственная дженерик-перегрузка, видимая снаружи
-  static toPrimitive<C extends BaseEntityPersistedType | BaseEntityNewType>(
-    c: Comment<C>,
-  ): BaseComment & C;
-
-  // ==== Простой метод без перегрузок: вернёт BaseComment & S ====
-  static toPrimitive(comment: CommentUnionType) {
-    return {
-      id: comment._id,
-      postId: comment._postId,
-      userId: comment._userId,
-      content: comment._content,
-      createdAt: comment._createdAt,
-      updatedAt: comment._updatedAt,
-    };
-  }
-
-  get id() {
-    return this._id;
-  }
-
-  get postId() {
-    return this._postId;
-  }
-
-  get userId() {
-    return this._userId;
-  }
-
-  get content() {
-    return this._content;
-  }
-
-  get createdAt() {
-    return this._createdAt;
-  }
-
-  get updatedAt() {
-    return this._updatedAt;
+    this.content = dto.content;
   }
 }

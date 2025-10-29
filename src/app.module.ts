@@ -35,7 +35,8 @@ import { BloggersPlatformModule } from './modules/bloggers-platform/bloggers-pla
           username: databaseConfig.username,
           password: databaseConfig.password,
           database: databaseConfig.database,
-          synchronize: databaseConfig.synchronize, // Указывает, следует ли автоматически создавать схему базы данных при каждом запуске приложения. Рекомендуется отключить в продакшене
+          synchronize: false, // Указывает, следует ли автоматически создавать схему базы данных при каждом запуске приложения. Рекомендуется отключить в продакшене
+          // synchronize: databaseConfig.synchronize, // Указывает, следует ли автоматически создавать схему базы данных при каждом запуске приложения. Рекомендуется отключить в продакшене
           autoLoadEntities: databaseConfig.autoLoadEntities, // for dev
           logging: databaseConfig.logging, //Включает или выключает логирование запросов к базе данных
           namingStrategy: new SnakeNamingStrategy(),

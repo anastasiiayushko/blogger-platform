@@ -26,16 +26,15 @@ export class CreateCommentHandler
     userId,
     content,
   }: CreateCommentCommand): Promise<string> {
-    //::TODO нужно ли проверять на юзера
+    //::TODO нужно ли проверять на юзера так как у нас проверка только на валидность токина
     await this.postQueryRepository.getByIdOrNotFoundFail(postId);
-    // const user = await this.userExternalQRepo.findById(userId);
     const comment = Comment.createInstance({
       content: content.trim(),
       postId: postId,
       userId: userId,
     });
 
-    const commentSaved = await this.commentRepository.save(comment);
-    return commentSaved.id as string;
+    await this.commentRepository.save(comment);
+    return comment.id;
   }
 }

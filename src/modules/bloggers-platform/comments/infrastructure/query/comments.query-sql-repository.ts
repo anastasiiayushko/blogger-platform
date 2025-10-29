@@ -7,7 +7,6 @@ import { DomainExceptionCode } from '../../../../../core/exceptions/domain-excep
 import { GetCommentsQueryParams } from '../../api/input-dto/get-comments-query-params.input-dto';
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated.view-dto';
 import { LikeStatusEnum } from '../../../../../core/types/like-status.enum';
-import { Comment } from '../../domain/comment.entity';
 
 export type CommentWithReactionSqlRow = {
   id: string;
@@ -28,26 +27,37 @@ export class CommentsQueryRepository {
     commentId: string,
     userId: string | null = null,
   ): Promise<CommentViewDTO> {
-    const comment = await this.dataSource
-      .getRepository(Comment)
-      .createQueryBuilder('c')
-      .select([
-        'c.id as "id"',
-        'c.content as "content"',
-        'c.user_id as "commentatorId"',
-        'u.login as "commentatorLogin"',
-      ])
-      .leftJoin('c.user_id', 'u')
-      .where('c.id = :id', { id: commentId })
-      .andWhere('c.user_id = :user_id', { user_id: userId })
-      .getRawOne();
-    if (!comment) {
+    const SQL_QUERY = `
+        SELECT c.id,
+               c.content,
+               c."createdAt",
+               c."userId"                     as "commentatorId",
+               u."login"                      AS "commentatorLogin",
+               COALESCE(r."likesCount", 0)    as "likesCount",
+               COALESCE(r."dislikesCount", 0) as "dislikesCount",
+               COALESCE(my.status, 'None')    as "myStatus"
+
+        FROM "Comments" AS c
+                 JOIN "Users" AS u ON u.id = c."userId"
+                 LEFT JOIN (SELECT "commentId",
+                                   COUNT(*) FILTER (WHERE status = '${LikeStatusEnum.Like}') AS "likesCount", COUNT(*) FILTER (WHERE status = '${LikeStatusEnum.Dislike}') AS "dislikesCount"
+                            FROM "CommentReactions"
+                            GROUP BY "commentId") AS r ON r."commentId" = c."id"
+                 LEFT JOIN "CommentReactions" AS my ON my."commentId" = $1 AND my."userId" = $2
+        WHERE c.id = $1;
+    `;
+    const result = await this.dataSource.query<CommentWithReactionSqlRow[]>(
+      SQL_QUERY,
+      [commentId, userId],
+    );
+    if (!Array.isArray(result) || result.length === 0) {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
+        message: 'Comment not found',
       });
     }
 
-    return CommentViewDTO.mapToView(comment);
+    return CommentViewDTO.mapToView(result[0]);
   }
 
   async getAll(
@@ -63,11 +73,12 @@ export class CommentsQueryRepository {
                u."login"                      AS "commentatorLogin",
                COALESCE(r."likesCount", 0)    AS "likesCount",
                COALESCE(r."dislikesCount", 0) AS "dislikesCount",
-               COALESCE(my."status", 'None')  AS "myStatus"
+               COALESCE(my."status", 'None')    AS "myStatus"
         FROM "Comments" AS c
                  JOIN "Users" AS u ON u.id = c."userId"
                  LEFT JOIN (SELECT "commentId",
-                                   COUNT(*) FILTER(WHERE status='${LikeStatusEnum.Like}') AS "likesCount", COUNT(*) FILTER(WHERE status='${LikeStatusEnum.Dislike}') AS "dislikesCount"
+                                   COUNT(*) FILTER(WHERE status='${LikeStatusEnum.Like}') AS "likesCount", 
+                                   COUNT(*) FILTER(WHERE status='${LikeStatusEnum.Dislike}') AS "dislikesCount"
                             FROM "CommentReactions"
                             GROUP BY "commentId") AS r ON r."commentId" = c."id"
                  LEFT JOIN "CommentReactions" my

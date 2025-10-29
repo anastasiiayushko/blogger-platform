@@ -1,4 +1,5 @@
 import { CommentWithReactionSqlRow } from '../query/comments.query-repository';
+import { LikeStatusEnum } from '../../../../../core/types/like-status.enum';
 
 class CommentatorInfoDTO {
   userId: string;
@@ -28,9 +29,9 @@ export class CommentViewDTO {
       userLogin: item.commentatorLogin,
     };
     comment.likesInfo = {
-      likesCount: +item.likesCount,
-      dislikesCount: +item.dislikesCount,
-      myStatus: item.myStatus,
+      likesCount: 0,
+      dislikesCount: 0,
+      myStatus: LikeStatusEnum.None,
     };
     comment.createdAt = item.createdAt.toISOString();
 
