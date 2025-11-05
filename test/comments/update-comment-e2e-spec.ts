@@ -185,6 +185,7 @@ describe('Comments UPDATE (e2e) ', () => {
       commentFirstUser[0].id,
       secondUserAToken,
     );
+    console.log('findComment', commentRes);
 
     expect(commentRes.status).toBe(HttpStatus.OK);
     expect(commentRes.body.content).toBe(commentFirstUser[0].content);

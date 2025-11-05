@@ -23,9 +23,9 @@ export class UpdateCommentHandler
     content,
   }: UpdateCommentCommand): Promise<void> {
     const comment = await this.commentRepository.findOrNotFoundFail(commentId);
-    const authorId = comment.userId;
+    const isNotMyComment = !comment.isMyComment(userId)
 
-    if (userId !== authorId) {
+    if (isNotMyComment) {
       throw new DomainException({
         code: DomainExceptionCode.Forbidden,
       });

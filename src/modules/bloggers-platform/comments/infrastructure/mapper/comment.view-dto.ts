@@ -33,7 +33,7 @@ export class CommentViewDTO {
       dislikesCount: 0,
       myStatus: LikeStatusEnum.None,
     };
-    comment.createdAt = item.createdAt.toISOString();
+    comment.createdAt = item.createdAt;
 
     return comment;
   }

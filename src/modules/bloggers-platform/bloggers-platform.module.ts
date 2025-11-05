@@ -25,6 +25,9 @@ import { CommentRepository } from './comments/infrastructure/comment.repository'
 import { CreateCommentHandler } from './comments/application/usecases/create-comment.usecases';
 import { CommentController } from './comments/api/comment.controller';
 import { CommentsQueryRepository } from './comments/infrastructure/query/comments.query-repository';
+import { UpdateCommentHandler } from './comments/application/usecases/update-comment.usecases';
+import { DeleteCommentHandler } from './comments/application/usecases/delete-comment.usecases';
+import { CommentReaction } from './comments/domain/comment-reactions.entity';
 
 const cmdBlogHandler = [
   CreateBlogHandler,
@@ -46,15 +49,15 @@ const cmdCommentHandler = [
   CreateCommentHandler,
   // GetCommentByIdQueryHandler,
   // GetCommentsByPostWithPagingQueryHandler,
-  // UpdateCommentHandler,
-  // DeleteCommentHandler,
+  UpdateCommentHandler,
+  DeleteCommentHandler,
   // LikeStatusCommentHandler,
 ];
 
 @Module({
   imports: [
     // Регистрация сущностей (схем) в модуле
-    TypeOrmModule.forFeature([Blog, Post, Comment]),
+    TypeOrmModule.forFeature([Blog, Post, Comment, CommentReaction]),
     // MongooseModule.forFeature([
     //   { name: Blog.name, schema: BlogSchema },
     //   { name: Post.name, schema: PostSchema },

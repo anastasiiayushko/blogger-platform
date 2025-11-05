@@ -2,12 +2,12 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import { config } from 'dotenv';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import * as process from 'node:process';
+import { envFilePaths } from './src/dynamic-config-module';
 
-config({ path: `./.env.development` });
-// config();
+console.log(envFilePaths, 'envFilePaths');
+config({ path: envFilePaths });
+
 // нужен как “едининый источник правды” для подключения к БД, который понимает и ваше приложение
-
-console.log(process.env.NODE_ENV);
 export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
   host: process.env.PG_DATABASE_HOST,
@@ -18,7 +18,7 @@ export const dataSourceOptions: DataSourceOptions = {
   database: process.env.PG_DATABASE_NAME,
   // entities: [User],
   entities: ['src/**/*.entity.ts'],
-  migrations: ['migrations/*.ts'],
+  migrations: ['migrations/**/*.ts'],
   logging: ['query', 'error'],
   namingStrategy: new SnakeNamingStrategy(),
   synchronize: false, // в проде всегда false

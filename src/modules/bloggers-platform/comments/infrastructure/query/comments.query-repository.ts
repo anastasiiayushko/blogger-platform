@@ -17,7 +17,7 @@ export type CommentWithReactionSqlRow = {
   likesCount: number;
   dislikesCount: number;
   myStatus: LikeStatusEnum;
-  createdAt: Date;
+  createdAt: string;
 };
 
 @Injectable()
@@ -31,15 +31,16 @@ export class CommentsQueryRepository {
     const comment = await this.dataSource
       .getRepository(Comment)
       .createQueryBuilder('c')
+      .leftJoin('c.user', 'u')
+      .where('c.id = :id ', { id: commentId })
+      // .where("c.id = :id AND c.user_id = :user_id", { id: commentId, user_id: userId })
       .select([
         'c.id as "id"',
         'c.content as "content"',
         'c.user_id as "commentatorId"',
+        'c.created_at as "createdAt"',
         'u.login as "commentatorLogin"',
       ])
-      .leftJoin('c.user_id', 'u')
-      .where('c.id = :id', { id: commentId })
-      .andWhere('c.user_id = :user_id', { user_id: userId })
       .getRawOne();
     if (!comment) {
       throw new DomainException({

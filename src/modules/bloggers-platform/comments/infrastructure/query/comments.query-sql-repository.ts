@@ -56,7 +56,7 @@ export class CommentsQueryRepository {
         message: 'Comment not found',
       });
     }
-
+    //@ts-expect-error
     return CommentViewDTO.mapToView(result[0]);
   }
 
@@ -73,12 +73,11 @@ export class CommentsQueryRepository {
                u."login"                      AS "commentatorLogin",
                COALESCE(r."likesCount", 0)    AS "likesCount",
                COALESCE(r."dislikesCount", 0) AS "dislikesCount",
-               COALESCE(my."status", 'None')    AS "myStatus"
+               COALESCE(my."status", 'None')  AS "myStatus"
         FROM "Comments" AS c
                  JOIN "Users" AS u ON u.id = c."userId"
                  LEFT JOIN (SELECT "commentId",
-                                   COUNT(*) FILTER(WHERE status='${LikeStatusEnum.Like}') AS "likesCount", 
-                                   COUNT(*) FILTER(WHERE status='${LikeStatusEnum.Dislike}') AS "dislikesCount"
+                                   COUNT(*) FILTER(WHERE status='${LikeStatusEnum.Like}') AS "likesCount", COUNT(*) FILTER(WHERE status='${LikeStatusEnum.Dislike}') AS "dislikesCount"
                             FROM "CommentReactions"
                             GROUP BY "commentId") AS r ON r."commentId" = c."id"
                  LEFT JOIN "CommentReactions" my
@@ -108,7 +107,8 @@ export class CommentsQueryRepository {
     );
 
     const commentsView = commentRows.map((comment) =>
-      CommentViewDTO.mapToView(comment),
+      //@ts-expect-error
+        CommentViewDTO.mapToView(comment),
     );
     return PaginatedViewDto.mapToView({
       items: commentsView,

@@ -1,6 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CommentRepository } from '../../infrastructure/comment.repository';
-import { CommentReactionRepository } from '../../infrastructure/comment-reaction.repository';
+import { DomainException } from '../../../../../core/exceptions/domain-exception';
+import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
 
 export class DeleteCommentCommand {
   constructor(
@@ -15,19 +16,20 @@ export class DeleteCommentHandler
 {
   constructor(
     protected commentRepository: CommentRepository,
-    protected commentReactionRepository: CommentReactionRepository,
+    // protected commentReactionRepository: CommentReactionRepository,
   ) {}
 
   async execute({ commentId, userId }: DeleteCommentCommand): Promise<void> {
-    // const comment = await this.commentRepository.findOrNotFoundFail(commentId);
-    // const authorId = comment.userId;
-    // if (authorId !== userId) {
-    //   throw new DomainException({
-    //     code: DomainExceptionCode.Forbidden,
-    //   });
-    // }
-    //
-    // const result = await this.commentRepository.softDeleteById(commentId);
+    const comment = await this.commentRepository.findOrNotFoundFail(commentId);
+    const isNotMyComment = !comment.isMyComment(userId);
+    if (isNotMyComment) {
+      throw new DomainException({
+        code: DomainExceptionCode.Forbidden,
+      });
+    }
+    //::TODO в каком слои нужно создавать транзакцию
+
+    await this.commentRepository.softDeleteById(commentId);
     // if (result) {
     //   await this.commentReactionRepository.deleteAllReactionByCommentId(
     //     commentId,

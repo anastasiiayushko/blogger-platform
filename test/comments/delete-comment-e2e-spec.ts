@@ -1,14 +1,6 @@
-import {
-  generateRandomStringForTest,
-  getAuthHeaderBasicTest,
-} from '../helpers/common-helpers';
-import { PostViewDTO } from '../../src/modules/bloggers-platform/posts/api/view-dto/post.view-dto';
-import { UserSqlViewDto } from '../../src/modules/user-accounts/infrastructure/sql/mapper/users.sql-view-dto';
-import { CommentInputDto } from '../../src/modules/bloggers-platform/comments/api/input-dto/comment.input-dto';
-import { commentContentConstraints } from '../../src/modules/bloggers-platform/comments/domain/comment.constraints';
+import { getAuthHeaderBasicTest } from '../helpers/common-helpers';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { UsersApiManagerHelper } from '../helpers/api-manager/users-api-manager-helper';
-import { AuthApiManager } from '../helpers/api-manager/auth-api-manager';
 import { BlogApiManager } from '../helpers/api-manager/blog-api-manager';
 import { PostApiManager } from '../helpers/api-manager/post-api-manager';
 import { JwtService } from '@nestjs/jwt';
@@ -17,9 +9,6 @@ import { ACCESS_TOKEN_STRATEGY_INJECT_TOKEN } from '../../src/modules/user-accou
 import { UserAccountConfig } from '../../src/modules/user-accounts/config/user-account.config';
 import { CommentApiManager } from '../helpers/api-manager/comment-api-manager';
 import { randomUUID } from 'crypto';
-import { CommentViewDTO } from '../../src/modules/bloggers-platform/comments/infrastructure/mapper/comment.view-dto';
-import { LikeStatusEnum } from '../../src/modules/bloggers-platform/likes/domain/like-status.enum';
-import { ApiErrorResultType } from '../type/response-super-test';
 
 describe('Comments DELETE (e2e) ', () => {
   const basicAuth = getAuthHeaderBasicTest();
