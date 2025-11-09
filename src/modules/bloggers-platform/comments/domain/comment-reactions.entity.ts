@@ -12,13 +12,13 @@ type BaseCommentReaction = {
 
 @Entity('comment_reaction')
 export class CommentReaction extends BaseOrmEntity {
-  @ManyToOne(() => Comment, (c) => c.reactions, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Comment, (c) => c.reactions, {})
   @JoinColumn()
   comment: Comment;
   @Column({ type: 'uuid', nullable: false })
   commentId: string;
 
-  @ManyToOne(() => User, (u) => u.reactions, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, (u) => u.reactions, {})
   @JoinColumn()
   user: User;
   @Column({ type: 'uuid', nullable: false })
