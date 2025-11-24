@@ -6,8 +6,8 @@ import { PostApiManager } from '../helpers/api-manager/post-api-manager';
 import { initSettings } from '../helpers/init-setting';
 import { CommentApiManager } from '../helpers/api-manager/comment-api-manager';
 import { randomUUID } from 'crypto';
-import { CommentViewDTO } from '../../src/modules/bloggers-platform/comments/infrastructure/mapper/comment.view-dto';
-import { LikeStatusEnum } from '../../src/modules/bloggers-platform/likes/domain/like-status.enum';
+import { LikeStatusEnum } from '../../src/core/types/like-status.enum';
+import { CommentViewDTO } from '../../src/modules/bloggers-platform/comments/api/view-dto/comment.view-dto';
 
 describe('Comments GET (e2e) ', () => {
   const basicAuth = getAuthHeaderBasicTest();

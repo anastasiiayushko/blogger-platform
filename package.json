@@ -22,7 +22,7 @@
     "typeorm": "typeorm-ts-node-commonjs",
     "migration:create": "typeorm-ts-node-commonjs migration:create",
     "migration:generate": "cross-env NODE_ENV=testing typeorm-ts-node-commonjs migration:generate -d ./typeorm.config.ts",
-    "migration:run": "cross-env  NODE_ENT=testing typeorm-ts-node-commonjs migration:run -d typeorm.config.ts",
+    "migration:run": "cross-env  NODE_ENV=testing typeorm-ts-node-commonjs migration:run -d typeorm.config.ts",
     "migration:revert": "typeorm-ts-node-commonjs migration:revert -d typeorm.config.ts"
   },
   "dependencies": {

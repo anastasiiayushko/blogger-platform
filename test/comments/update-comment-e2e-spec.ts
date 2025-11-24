@@ -13,7 +13,7 @@ import { ACCESS_TOKEN_STRATEGY_INJECT_TOKEN } from '../../src/modules/user-accou
 import { UserAccountConfig } from '../../src/modules/user-accounts/config/user-account.config';
 import { CommentApiManager } from '../helpers/api-manager/comment-api-manager';
 import { randomUUID } from 'crypto';
-import { CommentViewDTO } from '../../src/modules/bloggers-platform/comments/infrastructure/mapper/comment.view-dto';
+import { CommentViewDTO } from '../../src/modules/bloggers-platform/comments/api/view-dto/comment.view-dto';
 import { ApiErrorResultType } from '../type/response-super-test';
 import { LikeStatusEnum } from '../../src/core/types/like-status.enum';
 
@@ -185,7 +185,6 @@ describe('Comments UPDATE (e2e) ', () => {
       commentFirstUser[0].id,
       secondUserAToken,
     );
-    console.log('findComment', commentRes);
 
     expect(commentRes.status).toBe(HttpStatus.OK);
     expect(commentRes.body.content).toBe(commentFirstUser[0].content);

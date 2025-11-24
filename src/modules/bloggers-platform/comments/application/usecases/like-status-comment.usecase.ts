@@ -32,30 +32,31 @@ export class LikeStatusCommentHandler
 
     await this.userExternalQueryRepository.findOrNotFoundFail(userId);
 
-    const reaction =
+    const targetReaction =
       await this.commentReactionRepository.findByCommentAndUserId(
         commentId,
         userId,
       );
-    if (!reaction && status === LikeStatusEnum.None) {
-      return;
-    }
 
-    if (reaction) {
-      const { changed } = reaction.setStatus(status);
-      if (changed) {
-        await this.commentReactionRepository.save(reaction);
+    if (!targetReaction) {
+      if (status === LikeStatusEnum.None) {
+        return;
       }
+      const newReaction = CommentReaction.createInstance({
+        status: status,
+        userId: userId,
+        commentId: commentId,
+      });
+
+      await this.commentReactionRepository.save(newReaction);
       return;
     }
 
-    const newReaction = CommentReaction.createInstance({
-      status: status,
-      userId: userId,
-      commentId: commentId,
-    });
+    const { changed } = targetReaction.setStatus(status);
+    if (changed) {
+      await this.commentReactionRepository.save(targetReaction);
+    }
 
-    await this.commentReactionRepository.save(newReaction);
     return;
   }
 }

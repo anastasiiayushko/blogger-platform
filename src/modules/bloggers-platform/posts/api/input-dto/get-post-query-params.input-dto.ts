@@ -7,8 +7,7 @@ export enum PostQuerySortByEnum {
   blogName = 'blogName',
   content = 'content',
   shortDescription = 'shortDescription',
-  title = 'title',
-
+  title = 'title'
 
 }
 

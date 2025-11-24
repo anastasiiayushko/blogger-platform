@@ -1,8 +1,9 @@
 import { CreatePostDomainDto } from './dto/create-post.domain.dto';
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { BaseOrmEntity } from '../../../../core/base-orm-entity/base-orm-entity';
 import { Blog } from '../../blogs/domain/blog.entity';
 import { UpdatePostDomainDto } from './dto/update-post.domain.dto';
+import { PostReaction } from './post-reactions.entity';
 
 @Entity()
 export class Post extends BaseOrmEntity {
@@ -23,6 +24,9 @@ export class Post extends BaseOrmEntity {
 
   @Column({ type: 'uuid', nullable: false })
   blogId: string; // синхронен с FK колонкой
+
+  @OneToMany(() => PostReaction, (cr) => cr.post)
+  reactions: PostReaction[];
 
   static createInstance(dto: CreatePostDomainDto): Post {
     const post = new Post();

@@ -6,7 +6,7 @@ import { PostApiManager } from '../helpers/api-manager/post-api-manager';
 import { initSettings } from '../helpers/init-setting';
 import { CommentApiManager } from '../helpers/api-manager/comment-api-manager';
 import { randomUUID } from 'crypto';
-import { CommentViewDTO } from '../../src/modules/bloggers-platform/comments/infrastructure/mapper/comment.view-dto';
+import { CommentViewDTO } from '../../src/modules/bloggers-platform/comments/api/view-dto/comment.view-dto';
 import { SortDirection } from '../../src/core/dto/base.query-params.input-dto';
 import { SortByComment } from '../../src/modules/bloggers-platform/comments/api/input-dto/get-comments-query-params.input-dto';
 

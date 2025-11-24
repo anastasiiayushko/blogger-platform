@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { CommentViewDTO } from '../mapper/comment.view-dto';
+import { CommentViewDTO } from '../../api/view-dto/comment.view-dto';
 import { DomainException } from '../../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
 import { GetCommentsQueryParams } from '../../api/input-dto/get-comments-query-params.input-dto';

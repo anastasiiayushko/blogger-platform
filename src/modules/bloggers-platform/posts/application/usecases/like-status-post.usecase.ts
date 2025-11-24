@@ -3,7 +3,9 @@ import { PostRepository } from '../../infrastructure/post.repository';
 import { PostReactionRepository } from '../../infrastructure/post-reaction.repository';
 import { PostReaction } from '../../domain/post-reactions.entity';
 import { LikeStatusEnum } from '../../../../../core/types/like-status.enum';
-import { UserExternalQueryRepository } from '../../../../user-accounts/infrastructure/external-query/user-external.query-repository';
+import {
+  UserExternalQueryRepository,
+} from '../../../../user-accounts/infrastructure/external-query/user-external.query-repository';
 
 export class LikeStatusPostCommand {
   constructor(
@@ -31,26 +33,24 @@ export class LikeStatusPostHandler
       postId,
       userId,
     );
+    if(!reaction) {
+      if(status === LikeStatusEnum.None) return
 
-    if (!reaction && status === LikeStatusEnum.None) {
+      const newReaction = PostReaction.createInstance({
+        status: status,
+        userId: userId,
+        postId: postId,
+      });
+
+      await this.postReactionRepository.save(newReaction);
       return;
     }
 
-    if (reaction) {
+
       const { changed } = reaction.setStatus(status);
       if (changed) {
         await this.postReactionRepository.save(reaction);
       }
       return;
-    }
-
-    const newReaction = PostReaction.createInstance({
-      status: status,
-      userId: userId,
-      postId: postId,
-    });
-
-    await this.postReactionRepository.save(newReaction);
-    return;
   }
 }

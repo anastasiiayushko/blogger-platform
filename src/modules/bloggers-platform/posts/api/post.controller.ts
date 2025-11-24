@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { PostViewDTO } from './view-dto/post.view-dto';
 import { GetPostQueryParams } from './input-dto/get-post-query-params.input-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
@@ -15,6 +15,12 @@ import { CurrentUserFormRequest } from '../../../user-accounts/decorators/param/
 import { CommentViewDTO } from '../../comments/api/view-dto/comment.view-dto';
 import { CreateCommentCommand } from '../../comments/application/usecases/create-comment.usecases';
 import { CommentsQueryRepository } from '../../comments/infrastructure/query/comments.query-repository';
+import {
+  GetCommentsByPostWithPagingQuery
+} from '../../comments/application/queries-usecases/get-comments-by-post-with-paging.query';
+import { GetCommentsQueryParams } from '../../comments/api/input-dto/get-comments-query-params.input-dto';
+import { LikeStatusInputDto } from '../../../../core/dto/list-status-input-dto';
+import { LikeStatusPostCommand } from '../application/usecases/like-status-post.usecase';
 
 @Controller('posts')
 @SkipThrottle()
@@ -44,31 +50,33 @@ export class PostController {
     return this.postQueryRepository.getByIdOrNotFoundFail(id, user?.id ?? null);
   }
 
-  // @Put(':postId/like-status')
-  // @UseGuards(BearerJwtAuthGuard)
-  // @HttpCode(HttpStatus.NO_CONTENT)
-  // async likeStatus(
-  //   @Param('postId', UuidValidationPipe) postId: string,
-  //   @Body() inputDto: LikeStatusInputDto,
-  //   @CurrentUserFormRequest() user: UserContextDto,
-  // ) {
-  //   return this.commandBus.execute<LikeStatusPostCommand>(
-  //     new LikeStatusPostCommand(postId, user.id, inputDto.likeStatus),
-  //   );
-  // }
+  @Put(':postId/like-status')
+  @UseGuards(BearerJwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async likeStatus(
+    @Param('postId', UuidValidationPipe) postId: string,
+    @Body() inputDto: LikeStatusInputDto,
+    @CurrentUserFormRequest() user: UserContextDto,
+  ) {
+    return this.commandBus.execute<LikeStatusPostCommand>(
+      new LikeStatusPostCommand(postId, user.id, inputDto.likeStatus),
+    );
+  }
 
-  // @Get(':postId/comments')
-  // @UseGuards(BearerOptionalJwtAuthGuard)
-  // async getAllComment(
-  //   @Param('postId') postId: string,
-  //   @Query() query: GetCommentsQueryParams,
-  //   @OptionalCurrentUserFormRequest() user: UserContextDto | null,
-  // ): Promise<PaginatedViewDto<CommentViewDTO[]>> {
-  //   return await this.queryBus.execute<GetCommentsByPostWithPagingQuery>(
-  //     new GetCommentsByPostWithPagingQuery(postId, query, user?.id),
-  //   );
-  // }
-  //
+  @Get(':postId/comments')
+  @UseGuards(BearerOptionalJwtAuthGuard)
+  async getAllComment(
+    @Param('postId') postId: string,
+    @Query() query: GetCommentsQueryParams,
+    @OptionalCurrentUserFormRequest() user: UserContextDto | null,
+  ): Promise<PaginatedViewDto<CommentViewDTO[]>> {
+    return await this.queryBus.execute<GetCommentsByPostWithPagingQuery>(
+      new GetCommentsByPostWithPagingQuery(postId, query, user?.id),
+    );
+  }
+
+
+
   @Post(':postId/comments')
   @UseGuards(BearerJwtAuthGuard)
   async createComment(
@@ -76,6 +84,7 @@ export class PostController {
     @Body() inputDto: CommentInputDto,
     @CurrentUserFormRequest() user: UserContextDto,
   ): Promise<CommentViewDTO> {
+    //::TODO можем ли в команду вынести селект поста что бы не дублировать код в двух местах
     const commentId = await this.commandBus.execute<CreateCommentCommand>(
       new CreateCommentCommand(postId, user.id, inputDto.content),
     );

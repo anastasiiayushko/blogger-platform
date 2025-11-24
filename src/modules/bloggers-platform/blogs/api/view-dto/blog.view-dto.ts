@@ -9,9 +9,9 @@ export class BlogViewDto {
   isMembership: boolean;
 
   /**
-   * Converts a Mongoose BlogDocument into a BlogDocument.
-   * @param {BlogDocument} blog - The blog document from the database.
-   * @returns {BlogDocument} - The transformed user DTO.
+   * Converts a Model BlogD into a BlogViewDto.
+   * @param {Blog} blog - The blog model from the database.
+   * @returns {BlogViewDto} - The transformed user DTO.
    */
   static mapToView(blog: Blog): BlogViewDto {
     const dto = new BlogViewDto();

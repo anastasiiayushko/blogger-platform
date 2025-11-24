@@ -10,7 +10,7 @@ import { CommentReaction } from './comment-reactions.entity';
 export class Comment extends BaseOrmEntity {
   @ManyToOne(() => Post, (post) => post.id, {
     nullable: false, // комментарий без поста запрещён
-    onDelete: 'CASCADE', // на случай hard-purge если удалят пост
+    // onDelete: 'CASCADE', // на случай hard-purge если удалят пост
   })
   @JoinColumn()
   post: Post;
@@ -19,7 +19,7 @@ export class Comment extends BaseOrmEntity {
 
   @ManyToOne(() => User, (user) => user.id, {
     nullable: false, // комментарий без автора запрещён
-    onDelete: 'CASCADE', // на случай hard-purge если удалят юзера
+    // onDelete: 'CASCADE', // на случай hard-purge если удалят юзера
   })
   @JoinColumn()
   user: User;

@@ -5,6 +5,7 @@ import { SessionDevice } from './session-device.entity';
 import { PasswordRecovery } from './password-recovery.entity';
 import { IsEmail } from 'class-validator';
 import { CommentReaction } from '../../bloggers-platform/comments/domain/comment-reactions.entity';
+import { PostReaction } from '../../bloggers-platform/posts/domain/post-reactions.entity';
 
 @Entity('user')
 export class User extends BaseOrmEntity {
@@ -29,6 +30,9 @@ export class User extends BaseOrmEntity {
 
   @OneToMany(() => CommentReaction, (cr) => cr.user, {})
   reactions: CommentReaction[];
+
+  @OneToMany(() => PostReaction, (cr) => cr.user, {})
+  postReactions: CommentReaction[];
 
 
   static createInstance(userInput: {

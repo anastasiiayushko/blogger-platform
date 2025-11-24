@@ -8,7 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { initSettings } from '../helpers/init-setting';
 import { ACCESS_TOKEN_STRATEGY_INJECT_TOKEN } from '../../src/modules/user-accounts/constants/auth-tokens.inject-constants';
 import { UserAccountConfig } from '../../src/modules/user-accounts/config/user-account.config';
-import { CommentViewDTO } from '../../src/modules/bloggers-platform/comments/infrastructure/mapper/comment.view-dto';
+import { CommentViewDTO } from '../../src/modules/bloggers-platform/comments/api/view-dto/comment.view-dto';
 import { LikeStatusEnum } from '../../src/core/types/like-status.enum';
 import { ApiErrorResultType } from '../type/response-super-test';
 import { randomUUID } from 'crypto';

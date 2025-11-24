@@ -14,6 +14,8 @@ import {
 } from '../../../user-accounts/decorators/param/options-current-user-from-request.decorator';
 import { CommentViewDTO } from './view-dto/comment.view-dto';
 import { CommentsQueryRepository } from '../infrastructure/query/comments.query-repository';
+import { LikeStatusInputDto } from '../../../../core/dto/list-status-input-dto';
+import { LikeStatusCommentCommand } from '../application/usecases/like-status-comment.usecase';
 
 @Controller('comments')
 @SkipThrottle()
@@ -36,18 +38,18 @@ export class CommentController {
     );
   }
 
-  // @Put(':commentId/like-status')
-  // @UseGuards(BearerJwtAuthGuard)
-  // @HttpCode(HttpStatus.NO_CONTENT)
-  // async likeStatus(
-  //   @Param('commentId', UuidValidationPipe) commentId: string,
-  //   @Body() inputDto: LikeStatusInputDto,
-  //   @CurrentUserFormRequest() user: UserContextDto,
-  // ) {
-  //   return this.commandBus.execute<LikeStatusCommentCommand>(
-  //     new LikeStatusCommentCommand(commentId, user.id, inputDto.likeStatus),
-  //   );
-  // }
+  @Put(':commentId/like-status')
+  @UseGuards(BearerJwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async likeStatus(
+    @Param('commentId', UuidValidationPipe) commentId: string,
+    @Body() inputDto: LikeStatusInputDto,
+    @CurrentUserFormRequest() user: UserContextDto,
+  ) {
+    return this.commandBus.execute<LikeStatusCommentCommand>(
+      new LikeStatusCommentCommand(commentId, user.id, inputDto.likeStatus),
+    );
+  }
 
   @Put(':commentId')
   @UseGuards(BearerJwtAuthGuard)

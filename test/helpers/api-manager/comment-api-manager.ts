@@ -1,5 +1,5 @@
 import { INestApplication } from '@nestjs/common';
-import { CommentViewDTO } from '../../../src/modules/bloggers-platform/comments/infrastructure/mapper/comment.view-dto';
+import { CommentViewDTO } from '../../../src/modules/bloggers-platform/comments/api/view-dto/comment.view-dto';
 import request from 'supertest';
 import { ResponseBodySuperTest } from '../../type/response-super-test';
 import { CommentInputDto } from '../../../src/modules/bloggers-platform/comments/api/input-dto/comment.input-dto';

@@ -31,13 +31,19 @@ export class CommentReaction extends BaseOrmEntity {
   })
   status: LikeStatusEnum;
 
-  // static createInstance(dto: BaseCommentReaction): CommentReaction {}
-  //
-  // setStatus(toStatus: LikeStatusEnum): { changed: boolean } {
-  //   if (this.status !== toStatus) {
-  //     this.status = toStatus;
-  //     return { changed: true };
-  //   }
-  //   return { changed: false };
-  // }
+  static createInstance(dto: BaseCommentReaction): CommentReaction {
+    const comment = new CommentReaction();
+    comment.commentId = dto.commentId;
+    comment.userId = dto.userId;
+    comment.status = dto.status;
+    return comment;
+  }
+
+  setStatus(toStatus: LikeStatusEnum): { changed: boolean } {
+    if (this.status !== toStatus) {
+      this.status = toStatus;
+      return { changed: true };
+    }
+    return { changed: false };
+  }
 }

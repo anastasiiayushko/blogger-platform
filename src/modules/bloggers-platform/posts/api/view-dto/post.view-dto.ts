@@ -1,13 +1,7 @@
-import { Post } from '../../domain/post.entity';
 import { LikeStatusEnum } from '../../../../../core/types/like-status.enum';
+import { PostWithNewestLikesRaw } from '../../infrastructure/query-repository/post.query-repository';
 
-type NewestLikeView = {
-  addedAt: string;
-  userId: string;
-  login: string;
-};
-
-export class PostNewestLikeViewDto {
+class PostNewestLikeViewDto {
   addedAt: string;
   userId: string;
   login: string;
@@ -28,21 +22,22 @@ export class PostViewDTO {
     newestLikes: PostNewestLikeViewDto[];
   };
 
-  static mapToView(item: any): PostViewDTO {
+  static mapToView(item: PostWithNewestLikesRaw): PostViewDTO {
     const post = new PostViewDTO();
     post.id = item.id;
     post.title = item.title;
-    post.shortDescription = item.shortDescription;
+    post.shortDescription = item.short_description;
     post.content = item.content;
-    post.blogId = item.blogId;
-    post.blogName = item.blogName;
-    post.createdAt = item.createdAt.toISOString();
+    post.blogId = item.blog_id;
+    post.blogName = item.blog_name;
+    post.createdAt = item.created_at;
     post.extendedLikesInfo = {
-      likesCount: 0,
-      dislikesCount: 0,
-      myStatus: LikeStatusEnum.None,
-      newestLikes: [],
+      likesCount: item.likes_count,
+      dislikesCount: item.dislikes_count,
+      myStatus: item.my_status,
+      newestLikes: item.newest_likes,
     };
+
     return post;
   }
 }

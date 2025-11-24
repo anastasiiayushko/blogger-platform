@@ -28,6 +28,12 @@ import { CommentsQueryRepository } from './comments/infrastructure/query/comment
 import { UpdateCommentHandler } from './comments/application/usecases/update-comment.usecases';
 import { DeleteCommentHandler } from './comments/application/usecases/delete-comment.usecases';
 import { CommentReaction } from './comments/domain/comment-reactions.entity';
+import { LikeStatusCommentHandler } from './comments/application/usecases/like-status-comment.usecase';
+import { CommentReactionRepository } from './comments/infrastructure/comment-reaction.repository';
+import { GetCommentsByPostWithPagingQueryHandler } from './comments/application/queries-usecases/get-comments-by-post-with-paging.query';
+import { PostReaction } from './posts/domain/post-reactions.entity';
+import { PostReactionRepository } from './posts/infrastructure/post-reaction.repository';
+import { LikeStatusPostHandler } from './posts/application/usecases/like-status-post.usecase';
 
 const cmdBlogHandler = [
   CreateBlogHandler,
@@ -41,9 +47,10 @@ const cmdPostHandler = [
   CreatePostHandler,
   UpdatePostHandler,
   DeletePostHandler,
-  // LikeStatusPostHandler,
+  LikeStatusPostHandler,
   GetPostByIdQueryHandler,
   GetPostWithPagingQueryHandler,
+  GetCommentsByPostWithPagingQueryHandler,
 ];
 const cmdCommentHandler = [
   CreateCommentHandler,
@@ -51,13 +58,13 @@ const cmdCommentHandler = [
   // GetCommentsByPostWithPagingQueryHandler,
   UpdateCommentHandler,
   DeleteCommentHandler,
-  // LikeStatusCommentHandler,
+  LikeStatusCommentHandler,
 ];
 
 @Module({
   imports: [
     // Регистрация сущностей (схем) в модуле
-    TypeOrmModule.forFeature([Blog, Post, Comment, CommentReaction]),
+    TypeOrmModule.forFeature([Blog, Post, Comment, CommentReaction, PostReaction]),
     // MongooseModule.forFeature([
     //   { name: Blog.name, schema: BlogSchema },
     //   { name: Post.name, schema: PostSchema },
@@ -77,10 +84,10 @@ const cmdCommentHandler = [
     BlogQueryRepository,
     PostRepository,
     PostQueryRepository,
-    // PostReactionRepository,
+    PostReactionRepository,
     CommentRepository,
     CommentsQueryRepository,
-    // CommentReactionRepository,
+    CommentReactionRepository,
     ...cmdBlogHandler,
     ...cmdPostHandler,
     ...cmdCommentHandler,

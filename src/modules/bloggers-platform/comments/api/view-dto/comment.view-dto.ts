@@ -1,40 +1,34 @@
-import { CommentDocument } from '../../domain/comment.odm-entity';
-
-class CommentatorInfoDTO  {
-  userId: string;
-  userLogin: string;
-}
-
-class LikesInfoDTO {
-  likesCount: number;
-  dislikesCount: number;
-  myStatus: string;
-}
+import { CommentWithReactionSqlRow } from '../../infrastructure/query/comments.query-repository';
+import { LikeStatusEnum } from '../../../../../core/types/like-status.enum';
 
 export class CommentViewDTO {
   id: string;
   content: string;
-  commentatorInfo: CommentatorInfoDTO;
-  // postId: string;
-  likesInfo: LikesInfoDTO;
+  commentatorInfo: {
+    userId: string;
+    userLogin: string;
+  };
+  likesInfo: {
+    likesCount: number;
+    dislikesCount: number;
+    myStatus: LikeStatusEnum;
+  };
   createdAt: string;
 
-//::TODO setStatus adding enum type
-  static mapToView(item: CommentDocument, setStatus: string): CommentViewDTO {
+  static mapToView(item: CommentWithReactionSqlRow): CommentViewDTO {
     const comment = new CommentViewDTO();
-    comment.id = item._id.toString();
+    comment.id = item.id;
     comment.content = item.content;
-    // comment.postId = item.postId.toString();
     comment.commentatorInfo = {
-      userId: item.commentatorInfo.userId.toString(),
-      userLogin: item.commentatorInfo.userLogin,
+      userId: item.userId,
+      userLogin: item.userLogin,
     };
     comment.likesInfo = {
-      likesCount: item.likesInfo.likesCount,
-      dislikesCount: item.likesInfo.dislikesCount,
-      myStatus: setStatus,
+      likesCount: item.likesCount,
+      dislikesCount: item.dislikesCount,
+      myStatus: item.myStatus,
     };
-    comment.createdAt = item.createdAt.toISOString();
+    comment.createdAt = item.createdAt;
 
     return comment;
   }

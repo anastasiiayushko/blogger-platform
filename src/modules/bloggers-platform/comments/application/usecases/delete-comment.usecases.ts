@@ -2,6 +2,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CommentRepository } from '../../infrastructure/comment.repository';
 import { DomainException } from '../../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
+import { CommentReactionRepository } from '../../infrastructure/comment-reaction.repository';
 
 export class DeleteCommentCommand {
   constructor(
@@ -16,7 +17,7 @@ export class DeleteCommentHandler
 {
   constructor(
     protected commentRepository: CommentRepository,
-    // protected commentReactionRepository: CommentReactionRepository,
+    protected commentReactionRepository: CommentReactionRepository,
   ) {}
 
   async execute({ commentId, userId }: DeleteCommentCommand): Promise<void> {
@@ -30,11 +31,8 @@ export class DeleteCommentHandler
     //::TODO в каком слои нужно создавать транзакцию
 
     await this.commentRepository.softDeleteById(commentId);
-    // if (result) {
-    //   await this.commentReactionRepository.deleteAllReactionByCommentId(
-    //     commentId,
-    //   );
-    // }
+    await this.commentReactionRepository.softDeleteAllReactionByCommentId(commentId);
+
     return;
   }
 }

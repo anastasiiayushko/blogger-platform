@@ -20,12 +20,13 @@ export class TestingController {
     // await this.dataSource.query(`TRUNCATE TABLE public."Blogs" CASCADE;`);
     // await this.dataSource.query(`TRUNCATE TABLE public."Posts" CASCADE;`);
     // await this.dataSource.query(`TRUNCATE TABLE public."Comments" CASCADE;`);
-    // await this.dataSource.query(
-    //   `TRUNCATE TABLE public."CommentReactions" CASCADE;`,
-    // );
+    await this.dataSource.query(
+      `TRUNCATE TABLE public."comment_reaction" CASCADE;`,
+    );
     // await this.dataSource.query(
     //   `TRUNCATE TABLE public."PostReactions" CASCADE;`,
     // );
+
     await this.dataSource.query(
       `TRUNCATE TABLE public.post CASCADE;`,
     );

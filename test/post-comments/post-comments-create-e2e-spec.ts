@@ -113,7 +113,6 @@ describe('Posts/Comments CREATED (e2e) ', () => {
       commentInputDto,
       accessToken,
     );
-    console.log('created comment', createdCommentRes.body);
 
     expect(createdCommentRes.status).toBe(HttpStatus.CREATED);
 
