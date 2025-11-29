@@ -11,9 +11,7 @@ export class CommentRepository {
     @InjectRepository(Comment) protected commentRepository: Repository<Comment>,
   ) {}
 
-  async findById(id: string): Promise<Comment | null> {
-    return this.commentRepository.findOneBy({ id: id });
-  }
+
 
   async save(comment: Comment): Promise<Comment> {
     return await this.commentRepository.save(comment);

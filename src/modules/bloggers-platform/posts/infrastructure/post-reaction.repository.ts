@@ -3,9 +3,7 @@ import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { DomainException } from '../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
-import { LikeStatusEnum } from '../../../../core/types/like-status.enum';
 import { PostReaction } from '../domain/post-reactions.entity';
-
 
 @Injectable()
 export class PostReactionRepository {

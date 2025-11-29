@@ -6,7 +6,6 @@ import { envFilePaths } from './src/dynamic-config-module';
 import { snakeCase } from 'typeorm/util/StringUtils';
 import { Table } from 'typeorm/schema-builder/table/Table';
 
-console.log(envFilePaths, 'envFilePaths');
 config({ path: envFilePaths });
 
 /**
@@ -46,5 +45,5 @@ export const dataSourceOptions: DataSourceOptions = {
   namingStrategy: new CustomSnakeNamingStrategy(),
   synchronize: false, // в проде всегда false
 };
-console.log(dataSourceOptions);
+
 export default new DataSource(dataSourceOptions);

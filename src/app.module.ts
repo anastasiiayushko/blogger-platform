@@ -16,8 +16,7 @@ import { ThrottlerConfig } from './core/config/throttler.config';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { DatabaseConfig } from './core/config/database-config';
 import { BloggersPlatformModule } from './modules/bloggers-platform/bloggers-platform.module';
-
-
+import { QuizGameModule } from './modules/quiz/quiz-game.module';
 
 @Module({
   imports: [
@@ -40,13 +39,14 @@ import { BloggersPlatformModule } from './modules/bloggers-platform/bloggers-pla
           autoLoadEntities: databaseConfig.autoLoadEntities, // for dev
           logging: databaseConfig.logging, //Включает или выключает логирование запросов к базе данных
           namingStrategy: new SnakeNamingStrategy(),
-          ssl:false
+          ssl: false,
         };
       },
     }),
     UserAccountsModule,
     BloggersPlatformModule,
     TestingModule,
+    QuizGameModule,
     ThrottlerModule.forRootAsync({
       inject: [ThrottlerConfig],
       useFactory: (config: ThrottlerConfig) => {
