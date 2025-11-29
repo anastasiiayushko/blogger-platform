@@ -27,12 +27,7 @@ export class SaCreateUserHandler
 
   async execute(cmd: SaCreateUserCommand): Promise<string> {
     const result = await this.createUserService.createUserEntity(cmd, true);
-    // const emailConfirmation = EmailConfirmation.createInstance(userId, {
-    //   hours: this.userConfirmationConfig.emailExpiresInHours,
-    //   min: this.userConfirmationConfig.emailExpiresInMin,
-    // });
-    // emailConfirmation.confirm();
-    // await this.emailConfirmationRepository.save(emailConfirmation);
+
     return result.userId;
   }
 }

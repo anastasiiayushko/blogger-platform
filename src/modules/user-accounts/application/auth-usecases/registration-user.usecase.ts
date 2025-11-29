@@ -26,12 +26,6 @@ export class RegistrationUserHandler
 
   async execute(cmd: RegistrationUserCommand): Promise<void> {
     const result = await this.createUserService.createUserEntity(cmd, false);
-    // const emailConfirmation = EmailConfirmation.createInstance(userId, {
-    //   hours: this.userConfirmationConfig.emailExpiresInHours,
-    //   min: this.userConfirmationConfig.emailExpiresInMin,
-    // });
-    //
-    // await this.emailConfirmationRepository.save(emailConfirmation);
 
     this.eventBus.publish(
       new EmailConfirmRegistrationEvent(cmd.email, result.confirmationCode),
