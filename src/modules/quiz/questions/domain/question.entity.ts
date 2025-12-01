@@ -1,12 +1,10 @@
-import { Column, Entity, UpdateDateColumn } from 'typeorm';
+import { Column, Entity } from 'typeorm';
 import { BaseOrmEntity } from '../../../../core/base-orm-entity/base-orm-entity';
 import { UpSertQuestionInputDto } from './dto/up-sert-question-input.dto';
 
 @Entity('questions')
 //::TODO нужно ли нормализировать таблицу? Создав отдельную сущность answer и создать покрывающий индекс
 export class Question extends BaseOrmEntity {
-
-
   @Column({
     type: 'text',
     nullable: false,
@@ -25,19 +23,26 @@ export class Question extends BaseOrmEntity {
 
   static createInstance(inputDto: UpSertQuestionInputDto): Question {
     const question = new Question();
+    question.validateBody(inputDto.body);
     question.body = inputDto.body;
     question.published = false;
     question.addAnswers(inputDto.correctAnswers);
     return question;
   }
 
+  private validateBody(body: string) {
+    if (!body.trim().length) {
+      throw new Error('Body questions must be empty');
+    }
+  }
+
   updateQuestion(inputDto: UpSertQuestionInputDto) {
+    this.validateBody(inputDto.body);
     this.body = inputDto.body;
     this.addAnswers(inputDto.correctAnswers);
   }
 
   addAnswers(answers: string[]) {
-    console.log(answers);
     if (!Array.isArray(answers) || !answers?.length) {
       throw new Error(`Answers must be an array strings`);
     }

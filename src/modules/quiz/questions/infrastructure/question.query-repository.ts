@@ -24,7 +24,7 @@ export class QuestionQueryRepository {
       .select([
         'q.id as id',
         'q.body as body',
-        'q.answers as "correctAnswers"',
+        'q.answers as answers',
         'q.published as published',
         'q.created_at as "createdAt"',
         'q.updated_at as "updatedAt"',
@@ -53,7 +53,7 @@ export class QuestionQueryRepository {
     if (!question) {
       throw new DomainException({ code: DomainExceptionCode.NotFound });
     }
-    return question;
+    return QuestionViewDto.mapToView(question);
   }
 
   async filterQuestionWithPaging(

@@ -1,9 +1,4 @@
-export interface IUpSertQuestionPayload {
-  body: string;
-  correctAnswers: string[];
-}
-
-export class UpSertQuestionInputDto implements IUpSertQuestionPayload {
+export class UpSertQuestionInputDto {
   body: string;
   correctAnswers: string[];
 }

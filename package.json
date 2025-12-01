@@ -13,13 +13,14 @@
     "start:debug": "cross-env NODE_ENV=development nest start --debug --watch",
     "start:prod": "cross-env NODE_ENV=production node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "jest",
-    "test-unit:watch": "cross-env NODE_ENV=testing jest --watch",
+    "test": "cross-env NODE_ENV=testing jest",
     "test:watch": "cross-env NODE_ENV=testing jest --watch",
+    "test-unit:watch": "cross-env NODE_ENV=testing jest --watch --testPathPattern=src",
     "test:cov": "cross-env NODE_ENV=testing jest --coverage",
     "test:debug": "cross-env NODE_ENV=testing node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "cross-env NODE_ENV=testing jest --config ./test/jest-e2e.json --runInBand",
-    "test:integration": "cross-env NODE_ENV=testing jest --config ./test/jest-integration.json --runInBand --detectOpenHandles --forceExit",
+    "test:unit": "cross-env NODE_ENV=testing jest --testPathPattern=src --runInBand",
+    "test:integration": "cross-env NODE_ENV=testing jest --testPathPattern=test/integration --runInBand --detectOpenHandles --forceExit",
+    "test:e2e": "cross-env NODE_ENV=testing jest --testPathPattern=test/e2e --runInBand --detectOpenHandles --forceExit",
     "typeorm": "typeorm-ts-node-commonjs",
     "migration:create": "typeorm-ts-node-commonjs migration:create",
     "migration:generate": "cross-env NODE_ENV=testing typeorm-ts-node-commonjs migration:generate -d ./typeorm.config.ts",
@@ -87,22 +88,5 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"
-  },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
-    },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s"
-    ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
   }
 }

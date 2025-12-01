@@ -1,6 +1,5 @@
 import { CoreModule } from './core/core.module';
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserAccountsModule } from './modules/user-accounts/user-accounts.module';
 import { TestingModule } from './modules/testing/testing.module';
@@ -11,38 +10,16 @@ import { configModule } from './dynamic-config-module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { DomainException } from './core/exceptions/domain-exception';
 import { DomainExceptionCode } from './core/exceptions/domain-exception-codes';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerConfig } from './core/config/throttler.config';
-import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
-import { DatabaseConfig } from './core/config/database-config';
 import { BloggersPlatformModule } from './modules/bloggers-platform/bloggers-platform.module';
 import { QuizGameModule } from './modules/quiz/quiz-game.module';
+import { DatabaseModule } from './core/database/database.module';
 
 @Module({
   imports: [
     CoreModule,
     configModule, //  инициализация конфигурации
-    TypeOrmModule.forRootAsync({
-      // явно подтягиваем модуль, который экспортирует DatabaseConfig
-      imports: [CoreModule],
-      inject: [DatabaseConfig],
-      useFactory(databaseConfig: DatabaseConfig) {
-        return {
-          type: 'postgres',
-          host: databaseConfig.host,
-          port: databaseConfig.port,
-          username: databaseConfig.username,
-          password: databaseConfig.password,
-          database: databaseConfig.database,
-          synchronize: false, // Указывает, следует ли автоматически создавать схему базы данных при каждом запуске приложения. Рекомендуется отключить в продакшене
-          // synchronize: databaseConfig.synchronize, // Указывает, следует ли автоматически создавать схему базы данных при каждом запуске приложения. Рекомендуется отключить в продакшене
-          autoLoadEntities: databaseConfig.autoLoadEntities, // for dev
-          logging: databaseConfig.logging, //Включает или выключает логирование запросов к базе данных
-          namingStrategy: new SnakeNamingStrategy(),
-          ssl: false,
-        };
-      },
-    }),
+    DatabaseModule,
     UserAccountsModule,
     BloggersPlatformModule,
     TestingModule,
@@ -63,7 +40,7 @@ import { QuizGameModule } from './modules/quiz/quiz-game.module';
       },
     }),
   ],
-  controllers: [AppController],
+  controllers: [],
   providers: [
     AppService,
     {
