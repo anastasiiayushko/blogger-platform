@@ -19,10 +19,11 @@
     "test:cov": "cross-env NODE_ENV=testing jest --coverage",
     "test:debug": "cross-env NODE_ENV=testing node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "cross-env NODE_ENV=testing jest --config ./test/jest-e2e.json --runInBand",
+    "test:integration": "cross-env NODE_ENV=testing jest --config ./test/jest-integration.json --runInBand --detectOpenHandles --forceExit",
     "typeorm": "typeorm-ts-node-commonjs",
     "migration:create": "typeorm-ts-node-commonjs migration:create",
     "migration:generate": "cross-env NODE_ENV=testing typeorm-ts-node-commonjs migration:generate -d ./typeorm.config.ts",
-    "migration:run": "cross-env  NODE_ENV=testing typeorm-ts-node-commonjs migration:run -d typeorm.config.ts",
+    "migration:run": "cross-env  NODE_ENV=development typeorm-ts-node-commonjs migration:run -d typeorm.config.ts",
     "migration:revert": "typeorm-ts-node-commonjs migration:revert -d typeorm.config.ts"
   },
   "dependencies": {

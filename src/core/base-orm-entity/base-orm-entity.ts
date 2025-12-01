@@ -13,7 +13,7 @@ export class BaseOrmEntity {
   @CreateDateColumn()
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({default: null})
   updatedAt: Date;
 
   @DeleteDateColumn()

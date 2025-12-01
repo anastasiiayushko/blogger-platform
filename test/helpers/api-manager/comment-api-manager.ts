@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { CommentViewDTO } from '../../../src/modules/bloggers-platform/comments/api/view-dto/comment.view-dto';
 import request from 'supertest';
-import { ResponseBodySuperTest } from '../../type/response-super-test';
+import { ResponseBodySuperTest } from '../../e2e/type/response-super-test';
 import { CommentInputDto } from '../../../src/modules/bloggers-platform/comments/api/input-dto/comment.input-dto';
 import { LikeStatusEnum } from '../../../src/core/types/like-status.enum';
 

@@ -7,11 +7,13 @@ import { CreateQuestionHandler } from './questions/application/usecases/create-q
 import { QuestionQueryRepository } from './questions/infrastructure/question.query-repository';
 import { TogglePublishQuestionHandler } from './questions/application/usecases/toggle-publish-question.usecase';
 import { UpdateQuestionHandler } from './questions/application/usecases/update-question.usecase';
+import { DeleteQuestionHandler } from './questions/application/usecases/delete-question.usecase';
 
 const questionsHandler = [
   CreateQuestionHandler,
   TogglePublishQuestionHandler,
   UpdateQuestionHandler,
+  DeleteQuestionHandler
 ];
 
 @Module({

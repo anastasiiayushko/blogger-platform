@@ -1,5 +1,5 @@
 import { INestApplication } from '@nestjs/common';
-import { ResponseBodySuperTest } from '../../type/response-super-test';
+import { ResponseBodySuperTest } from '../../e2e/type/response-super-test';
 import request from 'supertest';
 import { SecurityDeviceViewDto } from '../../../src/modules/user-accounts/infrastructure/mapper/security-device.view-dto';
 

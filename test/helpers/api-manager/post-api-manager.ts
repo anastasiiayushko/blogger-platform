@@ -1,7 +1,7 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { getAuthHeaderBasicTest } from '../common-helpers';
-import { ResponseBodySuperTest } from '../../type/response-super-test';
+import { ResponseBodySuperTest } from '../../e2e/type/response-super-test';
 import { PaginatedViewDto } from '../../../src/core/dto/base.paginated.view-dto';
 import { PostInputDTO } from '../../../src/modules/bloggers-platform/posts/api/input-dto/post.input-dto';
 import { GetPostQueryParams } from '../../../src/modules/bloggers-platform/posts/api/input-dto/get-post-query-params.input-dto';

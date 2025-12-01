@@ -2,7 +2,7 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import request from 'supertest';
 
 import { CreateUsersInputDto } from '../../../src/modules/user-accounts/api/input-dto/create-users.input-dto';
-import { ResponseBodySuperTest } from '../../type/response-super-test';
+import { ResponseBodySuperTest } from '../../e2e/type/response-super-test';
 import { LoginInputDto } from '../../../src/modules/user-accounts/api/input-dto/login.input-dto';
 import { AccessTokenViewDto } from '../../../src/modules/user-accounts/api/view-dto/access-token.view-dto';
 import { delay } from '../common-helpers';

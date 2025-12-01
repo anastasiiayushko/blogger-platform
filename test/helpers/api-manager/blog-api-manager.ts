@@ -7,7 +7,7 @@ import {
   ApiErrorResultType,
   ResponseBodySuperTest,
   toTypedResponseSupperTest,
-} from '../../type/response-super-test';
+} from '../../e2e/type/response-super-test';
 import { GetBlogsQueryParamsInputDto } from '../../../src/modules/bloggers-platform/blogs/api/input-dto/get-blogs-query-params.input-dto';
 import { PaginatedViewDto } from '../../../src/core/dto/base.paginated.view-dto';
 import { PostInputDTO } from '../../../src/modules/bloggers-platform/posts/api/input-dto/post.input-dto';

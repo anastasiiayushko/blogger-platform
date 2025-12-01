@@ -1,10 +1,12 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, UpdateDateColumn } from 'typeorm';
 import { BaseOrmEntity } from '../../../../core/base-orm-entity/base-orm-entity';
 import { UpSertQuestionInputDto } from './dto/up-sert-question-input.dto';
 
 @Entity('questions')
 //::TODO нужно ли нормализировать таблицу? Создав отдельную сущность answer и создать покрывающий индекс
 export class Question extends BaseOrmEntity {
+
+
   @Column({
     type: 'text',
     nullable: false,

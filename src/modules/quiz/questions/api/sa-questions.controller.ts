@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -21,6 +22,7 @@ import { UuidValidationPipe } from '../../../../core/pipes/uuid-validation-trans
 import { TogglePublishQuestionCommand } from '../application/usecases/toggle-publish-question.usecase';
 import { PublishInputDto } from './input-dto/publish.input-dto';
 import { UpdateQuestionCommand } from '../application/usecases/update-question.usecase';
+import { DeleteQuestionCommand } from '../application/usecases/delete-question.usecase';
 
 @ApiTags('QuizQuestions')
 @Controller('sa/quiz/questions')
@@ -74,6 +76,15 @@ export class SaQuestionsController {
     await this.commandBus.execute(
       new TogglePublishQuestionCommand(id, inputDto.published),
     );
+    return;
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteQuestion(
+    @Param('id', UuidValidationPipe) id: string,
+  ): Promise<void> {
+    await this.commandBus.execute(new DeleteQuestionCommand(id));
     return;
   }
 }
