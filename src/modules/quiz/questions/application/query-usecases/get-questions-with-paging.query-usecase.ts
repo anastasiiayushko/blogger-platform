@@ -3,9 +3,7 @@ import { PaginatedViewDto } from '../../../../../core/dto/base.paginated.view-dt
 import { QuestionViewDto } from '../../api/input-dto/question.view-dto';
 import { QuestionQueryParams } from '../../api/input-dto/question-query-params.input-dto';
 import { QuestionQueryRepository } from '../../infrastructure/question.query-repository';
-import { validateOrReject } from 'class-validator';
-
-// Пример реализации с помощью функции-миксина
+import { validateDtoOrFail } from '../../../../../core/validate/validate-dto-or-fail';
 
 export class GetQuestionsWithPagingQuery extends Query<
   PaginatedViewDto<QuestionViewDto[]>
@@ -23,8 +21,10 @@ export class GetQuestionsWithPagingHandler
 
   async execute({
     queryParams,
-  }: GetQuestionsWithPagingQuery): Promise<PaginatedViewDto<QuestionViewDto[]>> {
-    await validateOrReject(queryParams);
+  }: GetQuestionsWithPagingQuery): Promise<
+    PaginatedViewDto<QuestionViewDto[]>
+  > {
+    await validateDtoOrFail(queryParams);
     return await this.questionQueryRepository.filterQuestionWithPaging(
       queryParams,
     );

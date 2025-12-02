@@ -127,8 +127,8 @@ const configs = [UserAccountConfig, UserConfirmationConfig];
   exports: [
     BearerJwtStrategy,
     UserExternalQueryRepository,
-    // ...sqlExternalQueryRepository,
-    /** при использование  guard через @UseGuard(nameGard), можно не экспортирована поставщиков которые инжектируются в через конструктор
+    /** при использование  guard через @UseGuard(nameGard),
+     * можно не экспортировать поставщиков которые инжектируются в через конструктор
      *  Nest автоматически видит зависимости guard’а через импорт модуля
      * */
     // REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,

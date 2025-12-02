@@ -2,18 +2,16 @@ import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { QuestionRepository } from '../../infrastructure/question.repository';
 import { Question } from '../../domain/question.entity';
 import { questionBodyConstraints } from '../../domain/question.constrains';
-import { Trim } from '../../../../../core/decorators/transform/trim';
 import {
   ArrayMinSize,
   IsArray,
   IsString,
   MaxLength,
   MinLength,
-  validateOrReject,
 } from 'class-validator';
+import { validateDtoOrFail } from '../../../../../core/validate/validate-dto-or-fail';
 
 export class CreateQuestionCommand extends Command<{ questionId: string }> {
-  @Trim()
   @MinLength(questionBodyConstraints.minLength)
   @MaxLength(questionBodyConstraints.maxLength)
   body: string;
@@ -37,7 +35,7 @@ export class CreateQuestionHandler
   constructor(protected questionRepository: QuestionRepository) {}
 
   async execute(cmd: CreateQuestionCommand) {
-    await validateOrReject(cmd);
+    await validateDtoOrFail(cmd);
 
     const question = Question.createInstance(cmd);
     await this.questionRepository.save(question);

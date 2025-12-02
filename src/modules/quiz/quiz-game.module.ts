@@ -9,6 +9,7 @@ import { TogglePublishQuestionHandler } from './questions/application/usecases/t
 import { UpdateQuestionHandler } from './questions/application/usecases/update-question.usecase';
 import { DeleteQuestionHandler } from './questions/application/usecases/delete-question.usecase';
 import { GetQuestionsWithPagingHandler } from './questions/application/query-usecases/get-questions-with-paging.query-usecase';
+import { UserAccountsModule } from '../user-accounts/user-accounts.module';
 
 const questionsHandler = [
   CreateQuestionHandler,
@@ -19,7 +20,7 @@ const questionsHandler = [
 const questionQueryHandler = [GetQuestionsWithPagingHandler];
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Question])],
+  imports: [TypeOrmModule.forFeature([Question]), UserAccountsModule],
   controllers: [SaQuestionsController],
 
   providers: [

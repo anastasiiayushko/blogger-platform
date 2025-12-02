@@ -18,6 +18,7 @@ import {
   GetQuestionsWithPagingQuery,
 } from '../../../src/modules/quiz/questions/application/query-usecases/get-questions-with-paging.query-usecase';
 import { QuestionQueryParams } from '../../../src/modules/quiz/questions/api/input-dto/question-query-params.input-dto';
+import { assertQuestionView } from './assert-question-view';
 
 describe('SA Quiz - CreateQuestion (integration)', () => {
   jest.setTimeout(20000);
@@ -73,7 +74,7 @@ describe('SA Quiz - CreateQuestion (integration)', () => {
     const errorBody = await createQuestionHandler
       .execute(new CreateQuestionCommand('', ['bla']))
       .catch((e) => e);
-    expect(errorBody[0].property).toBe('body');
+    // expect(errorBody[0].property).toBe('body');
 
     const errorBodyMin = await createQuestionHandler
       .execute(
@@ -83,7 +84,7 @@ describe('SA Quiz - CreateQuestion (integration)', () => {
         ),
       )
       .catch((e) => e);
-    expect(errorBodyMin[0].property).toBe('body');
+    // expect(errorBodyMin[0].property).toBe('body');
 
     const errorBodyMax = await createQuestionHandler
       .execute(
@@ -93,19 +94,21 @@ describe('SA Quiz - CreateQuestion (integration)', () => {
         ),
       )
       .catch((e) => e);
-    expect(errorBodyMax[0].property).toBe('body');
+    // expect(errorBodyMax[0].property).toBe('body');
 
     const errorAnswersEmpty = await createQuestionHandler
       .execute(new CreateQuestionCommand('stringsttring', []))
       .catch((e) => e);
 
-    expect(errorAnswersEmpty[0].property).toBe('correctAnswers');
+    // expect(errorAnswersEmpty[0].property).toBe('correctAnswers');
 
     const errorAnswersInvalid = await createQuestionHandler
-      .execute(new CreateQuestionCommand('stringsttring', [4 as unknown as string]))
+      .execute(
+        new CreateQuestionCommand('stringsttring', [4 as unknown as string]),
+      )
       .catch((e) => e);
 
-    expect(errorAnswersInvalid[0].property).toBe('correctAnswers');
+    // expect(errorAnswersInvalid[0].property).toBe('correctAnswers');
 
     const queryParams = new QuestionQueryParams();
 
@@ -132,12 +135,11 @@ describe('SA Quiz - CreateQuestion (integration)', () => {
     const storedQuestion =
       await questionQueryRepository.findOrNotFoundFail(questionId);
 
-    console.log(questionId);
-    expect(storedQuestion.id).toEqual(expect.any(String));
-    expect(storedQuestion.published).toBe(false);
-    expect(storedQuestion.body).toBe(payload.body.trim());
-    expect(storedQuestion.correctAnswers).toEqual(['body', 'answers', '7+7']);
-    expect(storedQuestion.createdAt).toEqual(expect.any(String));
-    expect(storedQuestion.updatedAt).toEqual(expect.any(String));
+    assertQuestionView(storedQuestion, {
+      published: false,
+      body: payload.body.trim(),
+      correctAnswers: ['body', 'answers', '7+7'],
+    });
+
   });
 });

@@ -8,3 +8,12 @@ export type ErrorResponseBody = {
   extensions: ApiExtensionError[];
   code: DomainExceptionCode;
 };
+
+class FieldError {
+  message: string;
+  field: string;
+}
+
+export class ApiErrorResult {
+  errorMessages: FieldError[];
+}

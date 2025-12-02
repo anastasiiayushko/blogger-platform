@@ -1,11 +1,7 @@
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { QuestionRepository } from '../../infrastructure/question.repository';
-import {
-  IsBoolean,
-  IsDefined,
-  IsUUID,
-  validateOrReject,
-} from 'class-validator';
+import { IsBoolean, IsDefined, IsUUID } from 'class-validator';
+import { validateDtoOrFail } from '../../../../../core/validate/validate-dto-or-fail';
 
 export class TogglePublishQuestionCommand extends Command<void> {
   @IsUUID()
@@ -32,7 +28,7 @@ export class TogglePublishQuestionHandler
     questionId: string;
     published: boolean;
   }): Promise<void> {
-    await validateOrReject(cmd);
+    await validateDtoOrFail(cmd);
 
     const question = await this.questionRepository.findOrNotFoundFail(
       cmd.questionId,

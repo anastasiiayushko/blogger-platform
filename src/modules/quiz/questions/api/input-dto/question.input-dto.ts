@@ -1,6 +1,7 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { questionBodyConstraints } from '../../domain/question.constrains';
 import { CreateQuestionCommand } from '../../application/usecases/create-question.usecase';
+import { Trim } from '../../../../../core/decorators/transform/trim';
 
 export class QuestionInputDto extends OmitType(CreateQuestionCommand, [
   'body',
@@ -13,6 +14,9 @@ export class QuestionInputDto extends OmitType(CreateQuestionCommand, [
     type: 'string',
     required: true,
   })
+  // трансформация работает только если объект прошёл через class-transformer
+  // (plainToInstance / ValidationPipe с transform: true)
+  @Trim()
   body: string;
 
   @ApiProperty({

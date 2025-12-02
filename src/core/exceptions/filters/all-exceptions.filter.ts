@@ -9,6 +9,8 @@ import { ErrorResponseBody } from './error-response-body.type';
 import { DomainExceptionCode } from '../domain-exception-codes';
 import { ConfigService } from '@nestjs/config';
 import * as process from 'node:process';
+import { ValidationError } from 'class-validator';
+import { ApiExtensionError } from '../domain-exception';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -19,6 +21,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
     let message = 'Unknown exception occurred.';
+
     if (exception instanceof Error) {
       message = exception.message + exception.stack;
       if (process.env.NODE_ENV !== 'production') {

@@ -1,9 +1,15 @@
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { QuestionRepository } from '../../infrastructure/question.repository';
+import { IsUUID } from 'class-validator';
+import { validateDtoOrFail } from '../../../../../core/validate/validate-dto-or-fail';
 
 export class DeleteQuestionCommand extends Command<void> {
-  constructor(public readonly questionId: string) {
+  @IsUUID()
+  questionId: string;
+
+  constructor(questionId: string) {
     super();
+    this.questionId = questionId;
   }
 }
 
@@ -14,6 +20,8 @@ export class DeleteQuestionHandler
   constructor(protected questionRepository: QuestionRepository) {}
 
   async execute(cmd: DeleteQuestionCommand): Promise<void> {
+    await validateDtoOrFail(cmd);
+
     const question = await this.questionRepository.findOrNotFoundFail(
       cmd.questionId,
     );

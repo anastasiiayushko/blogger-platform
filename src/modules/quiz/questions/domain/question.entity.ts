@@ -24,7 +24,7 @@ export class Question extends BaseOrmEntity {
   static createInstance(inputDto: UpSertQuestionInputDto): Question {
     const question = new Question();
     question.validateBody(inputDto.body);
-    question.body = inputDto.body;
+    question.body = inputDto.body.trim();
     question.published = false;
     question.addAnswers(inputDto.correctAnswers);
     return question;
@@ -38,7 +38,7 @@ export class Question extends BaseOrmEntity {
 
   updateQuestion(inputDto: UpSertQuestionInputDto) {
     this.validateBody(inputDto.body);
-    this.body = inputDto.body;
+    this.body = inputDto.body.trim();
     this.addAnswers(inputDto.correctAnswers);
   }
 

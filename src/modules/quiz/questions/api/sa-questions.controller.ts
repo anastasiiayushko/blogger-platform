@@ -9,13 +9,14 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { QuestionInputDto } from './input-dto/question.input-dto';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateQuestionCommand } from '../application/usecases/create-question.usecase';
 import { QuestionQueryRepository } from '../infrastructure/question.query-repository';
 import { QuestionViewDto } from './input-dto/question.view-dto';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBasicAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { QuestionQueryParams } from './input-dto/question-query-params.input-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { UuidValidationPipe } from '../../../../core/pipes/uuid-validation-transform-pipe';
@@ -24,8 +25,13 @@ import { PublishInputDto } from './input-dto/publish.input-dto';
 import { UpdateQuestionCommand } from '../application/usecases/update-question.usecase';
 import { DeleteQuestionCommand } from '../application/usecases/delete-question.usecase';
 import { GetQuestionsWithPagingQuery } from '../application/query-usecases/get-questions-with-paging.query-usecase';
+import { BasicAuthGuard } from '../../../user-accounts/guards/basic/basic-auth.guard';
+import { ApiErrorResult } from '../../../../core/exceptions/filters/error-response-body.type';
 
+// Apply to the entire controller
 @ApiTags('QuizQuestions')
+@ApiBasicAuth('basicAuth')
+@UseGuards(BasicAuthGuard)
 @Controller('sa/quiz/questions')
 export class SaQuestionsController {
   constructor(
@@ -46,6 +52,16 @@ export class SaQuestionsController {
   }
 
   @Post()
+  @ApiResponse({
+    status: 201,
+    description: 'The record has been successfully created.',
+  })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  @ApiResponse({
+    status: 404,
+    description: 'Bad Request.',
+    example: ApiErrorResult,
+  })
   async createQuestion(
     @Body() inputDto: QuestionInputDto,
   ): Promise<QuestionViewDto> {
