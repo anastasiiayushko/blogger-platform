@@ -7,7 +7,6 @@ import { isUUID } from 'class-validator';
 @Injectable()
 export class UuidValidationPipe implements PipeTransform {
   transform(value: any, metadata: ArgumentMetadata): string {
-    console.log(value)
     if (!isUUID(value)) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,

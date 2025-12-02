@@ -13,6 +13,15 @@ import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { DomainException } from '../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 
+export type QuestionRowRaw = {
+  id: string;
+  body: string;
+  answers: string[];
+  published: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 @Injectable()
 export class QuestionQueryRepository {
   constructor(@InjectDataSource() protected dataSource: DataSource) {}
@@ -36,11 +45,11 @@ export class QuestionQueryRepository {
       .where('q.id=:id', {
         id: id,
       })
-      .getRawOne();
+      .getRawOne<QuestionRowRaw>();
     if (!question) {
       return null;
     }
-    return question;
+    return QuestionViewDto.mapToView(question);
   }
 
   //
@@ -49,7 +58,7 @@ export class QuestionQueryRepository {
       .where('q.id=:id', {
         id: id,
       })
-      .getRawOne();
+      .getRawOne<QuestionRowRaw>();
     if (!question) {
       throw new DomainException({ code: DomainExceptionCode.NotFound });
     }
@@ -59,48 +68,40 @@ export class QuestionQueryRepository {
   async filterQuestionWithPaging(
     queryParams: QuestionQueryParams,
   ): Promise<PaginatedViewDto<QuestionViewDto[]>> {
+    type PublishedStatusKeys =
+      | QuestionPublishStatusEnum.notPublished
+      | QuestionPublishStatusEnum.published;
+    const PUBLISHED_STATUS_CONDITION_MAP: Record<PublishedStatusKeys, string> =
+      {
+        ['published']: 'published IS TRUE',
+        ['notPublished']: 'published IS FALSE',
+      };
+
     const SORT_BY_FIELD_MAP: Record<QuestionSortByEnum, string> = {
       ['createdAt']: 'created_at',
       ['updatedAt']: 'updated_at',
     };
+
     const whereCondition: string[] = [];
     const filterParam: any = {};
     if (queryParams.bodySearchTerm) {
       whereCondition.push('body ILIKE :bodySearchTerm');
       filterParam.bodySearchTerm = `%${queryParams?.bodySearchTerm ?? ''}%`;
     }
-    if (queryParams.publishedStatus === QuestionPublishStatusEnum.published) {
-      whereCondition.push('published IS TRUE');
+    if (PUBLISHED_STATUS_CONDITION_MAP[queryParams.publishedStatus]) {
+      whereCondition.push(
+        PUBLISHED_STATUS_CONDITION_MAP[queryParams.publishedStatus],
+      );
     }
-    if (
-      queryParams.publishedStatus === QuestionPublishStatusEnum.notPublished
-    ) {
-      whereCondition.push('published IS FALSE');
-    }
+
     const orderDir = toTypeOrmOrderDir(queryParams.sortDirection);
     const orderName = SORT_BY_FIELD_MAP[queryParams?.sortBy];
 
     const qrBuilder = this.commonSelectQuestionBuilder();
 
     qrBuilder.where(whereCondition.join(' AND '), filterParam);
-    // if (queryParams.bodySearchTerm) {
-    //   qrBuilder.where('body ILIKE  :bodySearchTerm', {
-    //     bodySearchTerm: `%${queryParams.bodySearchTerm}%`,
-    //   });
-    // }
 
-    // if (queryParams.publishedStatus !== QuestionPublishStatusEnum.all) {
-    //   const condition = 'published =:isPublished';
-    //   const isPublished =
-    //     queryParams.publishedStatus === QuestionPublishStatusEnum.published;
-    //   const param = { isPublished: isPublished };
-    //
-    //   if (queryParams.bodySearchTerm) {
-    //     qrBuilder.andWhere(condition, param);
-    //   } else {
-    //     qrBuilder.where(condition, param);
-    //   }
-    // }
+    const totalCount = await qrBuilder.getCount();
 
     const questions = await qrBuilder
       .orderBy({
@@ -108,13 +109,13 @@ export class QuestionQueryRepository {
       })
       .limit(queryParams.pageSize)
       .offset(queryParams.calculateSkip())
-      .getRawMany<QuestionViewDto>();
+      .getRawMany<QuestionRowRaw>();
 
     return PaginatedViewDto.mapToView({
       page: queryParams.pageNumber,
       size: queryParams.pageSize,
-      items: questions,
-      totalCount: 10,
+      items: questions.map((i) => QuestionViewDto.mapToView(i)),
+      totalCount: totalCount,
     });
   }
 }

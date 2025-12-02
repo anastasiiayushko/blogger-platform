@@ -42,4 +42,5 @@ export class QuestionQueryParams extends BaseQueryParams {
   @IsEnum(QuestionSortByEnum)
   @IsOptional()
   sortBy: QuestionSortByEnum = QuestionSortByEnum.createdAt;
+
 }

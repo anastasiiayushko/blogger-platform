@@ -1,3 +1,6 @@
+import { QuestionRowRaw } from '../../infrastructure/question.query-repository';
+import { Question } from '../../domain/question.entity';
+
 export class QuestionViewDto {
   id: string;
   body: string;
@@ -6,21 +9,14 @@ export class QuestionViewDto {
   createdAt: string;
   updatedAt: string;
 
-  static mapToView(domainEntity: {
-    id: string;
-    body: string;
-    answers: string[];
-    published: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-  }): QuestionViewDto {
+  static mapToView(raw: QuestionRowRaw | Question): QuestionViewDto {
     const view = new QuestionViewDto();
-    view.id = domainEntity.id;
-    view.body = domainEntity.body;
-    view.correctAnswers = domainEntity.answers;
-    view.published = domainEntity.published;
-    view.createdAt = domainEntity.createdAt.toISOString();
-    view.updatedAt = domainEntity.updatedAt.toISOString();
+    view.id = raw.id;
+    view.body = raw.body;
+    view.correctAnswers = raw.answers;
+    view.published = raw.published;
+    view.createdAt = raw.createdAt.toISOString();
+    view.updatedAt = raw.updatedAt.toISOString();
     return view;
   }
 }

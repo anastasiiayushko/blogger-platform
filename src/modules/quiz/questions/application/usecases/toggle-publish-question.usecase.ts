@@ -1,12 +1,24 @@
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { QuestionRepository } from '../../infrastructure/question.repository';
+import {
+  IsBoolean,
+  IsDefined,
+  IsUUID,
+  validateOrReject,
+} from 'class-validator';
 
 export class TogglePublishQuestionCommand extends Command<void> {
-  constructor(
-    public questionId: string,
-    public published: boolean,
-  ) {
+  @IsUUID()
+  questionId: string;
+
+  @IsDefined() // Ensures the property is not undefined or null
+  @IsBoolean() // Ensures the property is a boolean
+  published: boolean;
+
+  constructor(questionId: string, published: boolean) {
     super();
+    this.questionId = questionId;
+    this.published = published;
   }
 }
 
@@ -20,6 +32,8 @@ export class TogglePublishQuestionHandler
     questionId: string;
     published: boolean;
   }): Promise<void> {
+    await validateOrReject(cmd);
+
     const question = await this.questionRepository.findOrNotFoundFail(
       cmd.questionId,
     );

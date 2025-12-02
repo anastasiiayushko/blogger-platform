@@ -11,7 +11,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { QuestionInputDto } from './input-dto/question.input-dto';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateQuestionCommand } from '../application/usecases/create-question.usecase';
 import { QuestionQueryRepository } from '../infrastructure/question.query-repository';
 import { QuestionViewDto } from './input-dto/question.view-dto';
@@ -23,12 +23,14 @@ import { TogglePublishQuestionCommand } from '../application/usecases/toggle-pub
 import { PublishInputDto } from './input-dto/publish.input-dto';
 import { UpdateQuestionCommand } from '../application/usecases/update-question.usecase';
 import { DeleteQuestionCommand } from '../application/usecases/delete-question.usecase';
+import { GetQuestionsWithPagingQuery } from '../application/query-usecases/get-questions-with-paging.query-usecase';
 
 @ApiTags('QuizQuestions')
 @Controller('sa/quiz/questions')
 export class SaQuestionsController {
   constructor(
     protected readonly commandBus: CommandBus,
+    protected readonly queryBus: QueryBus,
     protected questionQueryRepository: QuestionQueryRepository,
   ) {}
 
@@ -37,9 +39,9 @@ export class SaQuestionsController {
     status: HttpStatus.OK,
   })
   @Get()
-  async questionsWithPaging(@Query() queryReq: QuestionQueryParams) {
-    return await this.questionQueryRepository.filterQuestionWithPaging(
-      queryReq,
+  async questionsWithPaging(@Query() queryParams: QuestionQueryParams) {
+    return await this.queryBus.execute(
+      new GetQuestionsWithPagingQuery(queryParams),
     );
   }
 
