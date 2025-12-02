@@ -58,7 +58,7 @@ export class SaQuestionsController {
   })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiResponse({
-    status: 404,
+    status: HttpStatus.BAD_REQUEST,
     description: 'Bad Request.',
     example: ApiErrorResult,
   })
