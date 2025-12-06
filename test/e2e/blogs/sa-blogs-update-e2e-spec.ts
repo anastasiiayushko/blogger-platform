@@ -1,10 +1,8 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { initSettings } from '../../helpers/init-setting';
-import {
-  generateRandomStringForTest,
-  getAuthHeaderBasicTest,
-} from '../../helpers/common-helpers';
-import { BlogApiManager } from '../../helpers/api-manager/blog-api-manager';
+import { setupNextAppHttp } from '../../setup-app/setup-next-app-http';
+import { getAuthHeaderBasicTest } from '../../helpers/auth/basic-auth.helper';
+import { generateRandomStringForTest } from '../../util/random/generate-random-text';
+import { BlogApiManager } from '../../api-manager/blog-api-manager';
 import { BlogInputDto } from '../../../src/modules/bloggers-platform/blogs/api/input-dto/blog.input-dto';
 import { randomUUID } from 'crypto';
 import { blogNameConstraints } from '../../../src/modules/bloggers-platform/blogs/domain/blog-constraints';
@@ -24,7 +22,7 @@ describe('SaBlogController UPDATE (e2e) ', () => {
   let blogApiManger: BlogApiManager;
 
   beforeAll(async () => {
-    const init = await initSettings();
+    const init = await setupNextAppHttp();
     app = init.app;
     blogApiManger = new BlogApiManager(app);
     const createdBlogRes = await blogApiManger.create(blogInputDto, basicAuth);

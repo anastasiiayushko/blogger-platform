@@ -1,7 +1,7 @@
-import { getAuthHeaderBasicTest } from '../../helpers/common-helpers';
+import { getAuthHeaderBasicTest } from '../../helpers/auth/basic-auth.helper';
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { BlogApiManager } from '../../helpers/api-manager/blog-api-manager';
-import { initSettings } from '../../helpers/init-setting';
+import { BlogApiManager } from '../../api-manager/blog-api-manager';
+import { setupNextAppHttp } from '../../setup-app/setup-next-app-http';
 import { BlogViewDto } from '../../../src/modules/bloggers-platform/blogs/api/view-dto/blog.view-dto';
 import { BlogPostInputDto } from '../../../src/modules/bloggers-platform/blogs/api/input-dto/blog-post.input-dto';
 import { PostViewDTO } from '../../../src/modules/bloggers-platform/posts/api/view-dto/post.view-dto';
@@ -9,7 +9,7 @@ import { randomUUID } from 'crypto';
 import { BlogInputDto } from '../../../src/modules/bloggers-platform/blogs/api/input-dto/blog.input-dto';
 import { PostQueryRepository } from '../../../src/modules/bloggers-platform/posts/infrastructure/query-repository/post.query-repository';
 import { DomainException } from '../../../src/core/exceptions/domain-exception';
-import { PostApiManager } from '../../helpers/api-manager/post-api-manager';
+import { PostApiManager } from '../../api-manager/post-api-manager';
 
 describe('Sa delete post specified by id /blogs/:blogId/posts/:postId', () => {
   const basicAuth = getAuthHeaderBasicTest();
@@ -31,7 +31,7 @@ describe('Sa delete post specified by id /blogs/:blogId/posts/:postId', () => {
   };
 
   beforeAll(async () => {
-    const init = await initSettings();
+    const init = await setupNextAppHttp();
     app = init.app;
     blogApiManger = new BlogApiManager(app);
     postApiManger = new PostApiManager(app);

@@ -1,7 +1,7 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { initSettings } from '../../helpers/init-setting';
+import { setupNextAppHttp } from '../../setup-app/setup-next-app-http';
 import request from 'supertest';
-import { UsersApiManagerHelper } from '../../helpers/api-manager/users-api-manager-helper';
+import { UsersApiManagerHelper } from '../../api-manager/users-api-manager-helper';
 import { ApiErrorResultType } from '../type/response-super-test';
 import { ThrottlerConfig } from '../../../src/core/config/throttler.config';
 import { EmailConfirmationRepository } from '../../../src/modules/user-accounts/infrastructure/email-confirmation.repository';
@@ -21,7 +21,7 @@ describe('Auth /registration-email-resending', () => {
   };
 
   beforeAll(async () => {
-    const init = await initSettings();
+    const init = await setupNextAppHttp();
     app = init.app;
     userTestManager = init.userTestManger;
     throttlerConfig = app.get<ThrottlerConfig>(ThrottlerConfig);

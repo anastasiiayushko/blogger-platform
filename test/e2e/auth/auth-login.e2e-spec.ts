@@ -1,10 +1,8 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { initSettings } from '../../helpers/init-setting';
-import {
-  excludeCookiesFromHeaders,
-  getAuthHeaderBasicTest,
-} from '../../helpers/common-helpers';
-import { UsersApiManagerHelper } from '../../helpers/api-manager/users-api-manager-helper';
+import { setupNextAppHttp } from '../../setup-app/setup-next-app-http';
+import { getAuthHeaderBasicTest } from '../../helpers/auth/basic-auth.helper';
+import { excludeCookiesFromHeaders } from '../../helpers/cookies/cookie.helpers';
+import { UsersApiManagerHelper } from '../../api-manager/users-api-manager-helper';
 import {
   findAndValidateTokenCookie,
   validateJwtTokenRegex,
@@ -24,7 +22,7 @@ describe('Auth /login', () => {
   };
 
   beforeAll(async () => {
-    const init = await initSettings();
+    const init = await setupNextAppHttp();
     app = init.app;
     userTestManger = init.userTestManger;
     throttlerConfig = app.get<ThrottlerConfig>(ThrottlerConfig);

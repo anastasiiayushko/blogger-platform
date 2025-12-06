@@ -1,10 +1,9 @@
-import { DataSource, DataSourceOptions } from 'typeorm';
+import { DataSource, DataSourceOptions, Table } from 'typeorm';
 import { config } from 'dotenv';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import * as process from 'node:process';
 import { envFilePaths } from './src/dynamic-config-module';
 import { snakeCase } from 'typeorm/util/StringUtils';
-import { Table } from 'typeorm/schema-builder/table/Table';
 
 config({ path: envFilePaths });
 
@@ -15,19 +14,24 @@ config({ path: envFilePaths });
  * */
 class CustomSnakeNamingStrategy extends SnakeNamingStrategy {
   foreignKeyName(tableOrName: Table | string, columnNames: string[]): string {
-    const table = typeof tableOrName === 'string' ? tableOrName : tableOrName.name;
+    const table =
+      typeof tableOrName === 'string' ? tableOrName : tableOrName.name;
     const columns = columnNames.map((column) => snakeCase(column)).join('_');
     return `FK_${snakeCase(table)}_${columns}`;
   }
+  // uniqueConstraintName(
+  //   tableOrName: Table | string,
+  //   columnNames: string[],
+  // ): string {
+  //   return super.uniqueConstraintName(tableOrName, columnNames);
+  // }
 
   // uniqueConstraintName(tableOrName: Table | string, columnNames: string[]): string {
   //   const sortedColumns = [...columnNames].sort();
   //   const baseName = `UQ_${this.formatTableName(tableOrName)}_${this.formatColumnSegment(sortedColumns)}`;
   //   return this.clampName(baseName);
   // }
-
 }
-
 
 // нужен как “едининый источник правды” для подключения к БД, который понимает и ваше приложение
 export const dataSourceOptions: DataSourceOptions = {

@@ -1,7 +1,7 @@
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, Min } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { QuestionPublishStatusEnum } from '../../modules/quiz/questions/api/input-dto/question-query-params.input-dto';
+import { QuestionPublishStatusEnum } from '../../modules/quiz/sa-question/api/input-dto/question-query-params.input-dto';
 
 export enum SortDirection {
   Asc = 'asc',

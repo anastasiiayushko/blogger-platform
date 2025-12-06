@@ -1,16 +1,16 @@
-import { getAuthHeaderBasicTest } from '../../helpers/common-helpers';
+import { getAuthHeaderBasicTest } from '../../helpers/auth/basic-auth.helper';
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { BlogApiManager } from '../../helpers/api-manager/blog-api-manager';
-import { initSettings } from '../../helpers/init-setting';
+import { BlogApiManager } from '../../api-manager/blog-api-manager';
+import { setupNextAppHttp } from '../../setup-app/setup-next-app-http';
 import { BlogViewDto } from '../../../src/modules/bloggers-platform/blogs/api/view-dto/blog.view-dto';
 import { PostViewDTO } from '../../../src/modules/bloggers-platform/posts/api/view-dto/post.view-dto';
-import { PostApiManager } from '../../helpers/api-manager/post-api-manager';
+import { PostApiManager } from '../../api-manager/post-api-manager';
 import { PostQuerySortByEnum } from '../../../src/modules/bloggers-platform/posts/api/input-dto/get-post-query-params.input-dto';
 import { SortDirection } from '../../../src/core/dto/base.query-params.input-dto';
-import { AuthApiManager } from '../../helpers/api-manager/auth-api-manager';
+import { AuthApiManager } from '../../api-manager/auth-api-manager';
 import { CreateUsersInputDto } from '../../../src/modules/user-accounts/api/input-dto/create-users.input-dto';
 import { LikeStatusEnum } from '../../../src/core/types/like-status.enum';
-import { UsersApiManagerHelper } from '../../helpers/api-manager/users-api-manager-helper';
+import { UsersApiManagerHelper } from '../../api-manager/users-api-manager-helper';
 
 describe('Returns post with paging /posts/:postId', () => {
   const basicAuth = getAuthHeaderBasicTest();
@@ -29,7 +29,7 @@ describe('Returns post with paging /posts/:postId', () => {
   };
 
   beforeAll(async () => {
-    const init = await initSettings();
+    const init = await setupNextAppHttp();
     app = init.app;
     blogApiManger = new BlogApiManager(app);
     postApiManger = new PostApiManager(app);

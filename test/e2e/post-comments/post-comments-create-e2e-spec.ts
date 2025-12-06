@@ -1,15 +1,13 @@
-import {
-  generateRandomStringForTest,
-  getAuthHeaderBasicTest,
-} from '../../helpers/common-helpers';
+import { getAuthHeaderBasicTest } from '../../helpers/auth/basic-auth.helper';
+import { generateRandomStringForTest } from '../../util/random/generate-random-text';
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { BlogApiManager } from '../../helpers/api-manager/blog-api-manager';
-import { initSettings } from '../../helpers/init-setting';
+import { BlogApiManager } from '../../api-manager/blog-api-manager';
+import { setupNextAppHttp } from '../../setup-app/setup-next-app-http';
 import { PostViewDTO } from '../../../src/modules/bloggers-platform/posts/api/view-dto/post.view-dto';
-import { PostApiManager } from '../../helpers/api-manager/post-api-manager';
+import { PostApiManager } from '../../api-manager/post-api-manager';
 import { commentContentConstraints } from '../../../src/modules/bloggers-platform/comments/domain/comment.constraints';
-import { AuthApiManager } from '../../helpers/api-manager/auth-api-manager';
-import { UsersApiManagerHelper } from '../../helpers/api-manager/users-api-manager-helper';
+import { AuthApiManager } from '../../api-manager/auth-api-manager';
+import { UsersApiManagerHelper } from '../../api-manager/users-api-manager-helper';
 import { JwtService } from '@nestjs/jwt';
 import { ACCESS_TOKEN_STRATEGY_INJECT_TOKEN } from '../../../src/modules/user-accounts/constants/auth-tokens.inject-constants';
 import { randomUUID } from 'crypto';
@@ -44,7 +42,7 @@ describe('Posts/Comments CREATED (e2e) ', () => {
   let accessTokenContext: JwtService;
 
   beforeAll(async () => {
-    const init = await initSettings((moduleBuilder) =>
+    const init = await setupNextAppHttp((moduleBuilder) =>
       moduleBuilder
         .overrideProvider(ACCESS_TOKEN_STRATEGY_INJECT_TOKEN)
         .useFactory({

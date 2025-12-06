@@ -1,8 +1,8 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { initSettings } from '../../helpers/init-setting';
+import { setupNextAppHttp } from '../../setup-app/setup-next-app-http';
 import { ApiErrorResultType } from '../type/response-super-test';
-import { getAuthHeaderBasicTest } from '../../helpers/common-helpers';
-import { UsersApiManagerHelper } from '../../helpers/api-manager/users-api-manager-helper';
+import { getAuthHeaderBasicTest } from '../../helpers/auth/basic-auth.helper';
+import { UsersApiManagerHelper } from '../../api-manager/users-api-manager-helper';
 import { UserRepository } from '../../../src/modules/user-accounts/infrastructure/user-repository';
 import { UserViewDto } from '../../../src/modules/user-accounts/infrastructure/mapper/user-view-dto';
 import { EmailConfirmationRepository } from '../../../src/modules/user-accounts/infrastructure/email-confirmation.repository';
@@ -16,7 +16,7 @@ describe('SaUserController  CREATED (e2e) ', () => {
   let userTestManger: UsersApiManagerHelper;
 
   beforeEach(async () => {
-    const init = await initSettings();
+    const init = await setupNextAppHttp();
     app = init.app;
     userTestManger = init.userTestManger;
     userRepository = app.get<UserRepository>(UserRepository);

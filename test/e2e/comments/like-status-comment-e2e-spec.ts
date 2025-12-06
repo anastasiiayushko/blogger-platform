@@ -1,11 +1,11 @@
-import { getAuthHeaderBasicTest } from '../../helpers/common-helpers';
+import { getAuthHeaderBasicTest } from '../../helpers/auth/basic-auth.helper';
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { UsersApiManagerHelper } from '../../helpers/api-manager/users-api-manager-helper';
-import { CommentApiManager } from '../../helpers/api-manager/comment-api-manager';
-import { BlogApiManager } from '../../helpers/api-manager/blog-api-manager';
-import { PostApiManager } from '../../helpers/api-manager/post-api-manager';
+import { UsersApiManagerHelper } from '../../api-manager/users-api-manager-helper';
+import { CommentApiManager } from '../../api-manager/comment-api-manager';
+import { BlogApiManager } from '../../api-manager/blog-api-manager';
+import { PostApiManager } from '../../api-manager/post-api-manager';
 import { JwtService } from '@nestjs/jwt';
-import { initSettings } from '../../helpers/init-setting';
+import { setupNextAppHttp } from '../../setup-app/setup-next-app-http';
 import { ACCESS_TOKEN_STRATEGY_INJECT_TOKEN } from '../../../src/modules/user-accounts/constants/auth-tokens.inject-constants';
 import { UserAccountConfig } from '../../../src/modules/user-accounts/config/user-account.config';
 import { CommentViewDTO } from '../../../src/modules/bloggers-platform/comments/api/view-dto/comment.view-dto';
@@ -28,7 +28,7 @@ describe('Comments/LIKE-STATUS UPDATE (e2e) ', () => {
   let accessTokenContext: JwtService;
 
   beforeAll(async () => {
-    const init = await initSettings((moduleBuilder) =>
+    const init = await setupNextAppHttp((moduleBuilder) =>
       moduleBuilder
         .overrideProvider(ACCESS_TOKEN_STRATEGY_INJECT_TOKEN)
         .useFactory({

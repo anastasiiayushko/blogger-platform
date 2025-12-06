@@ -1,7 +1,7 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { initSettings } from '../../helpers/init-setting';
-import { getAuthHeaderBasicTest } from '../../helpers/common-helpers';
-import { UsersApiManagerHelper } from '../../helpers/api-manager/users-api-manager-helper';
+import { setupNextAppHttp } from '../../setup-app/setup-next-app-http';
+import { getAuthHeaderBasicTest } from '../../helpers/auth/basic-auth.helper';
+import { UsersApiManagerHelper } from '../../api-manager/users-api-manager-helper';
 import { ThrottlerConfig } from '../../../src/core/config/throttler.config';
 import { UserRepository } from '../../../src/modules/user-accounts/infrastructure/user-repository';
 import { delay } from '../../helpers/delay-helper';
@@ -15,7 +15,7 @@ describe('Auth /registration with rate limiting', () => {
   let userRepository: UserRepository;
 
   beforeAll(async () => {
-    const init = await initSettings();
+    const init = await setupNextAppHttp();
     app = init.app;
     throttlerConfig = app.get<ThrottlerConfig>(ThrottlerConfig);
     userTestManger = init.userTestManger;

@@ -11,19 +11,22 @@ import { DatabaseConfig } from './database-config';
       imports: [ConfigModule],
       extraProviders: [DatabaseConfig],
       inject: [DatabaseConfig],
-      useFactory: (databaseConfig: DatabaseConfig) => ({
-        type: 'postgres',
-        host: databaseConfig.host,
-        port: databaseConfig.port,
-        username: databaseConfig.username,
-        password: databaseConfig.password,
-        database: databaseConfig.database,
-        synchronize: false,
-        autoLoadEntities: databaseConfig.autoLoadEntities,
-        logging: databaseConfig.logging,
-        namingStrategy: new SnakeNamingStrategy(),
-        ssl: false,
-      }),
+      useFactory: (databaseConfig: DatabaseConfig) => {
+        // console.log('database config', databaseConfig);
+        return {
+          type: 'postgres',
+          host: databaseConfig.host,
+          port: databaseConfig.port,
+          username: databaseConfig.username,
+          password: databaseConfig.password,
+          database: databaseConfig.database,
+          synchronize: false,
+          autoLoadEntities: databaseConfig.autoLoadEntities,
+          logging: databaseConfig.logging,
+          namingStrategy: new SnakeNamingStrategy(),
+          ssl: false,
+        }
+      },
     }),
   ],
 })

@@ -1,15 +1,12 @@
-import {
-  excludeCookiesFromHeaders,
-  getAuthHeaderBasicTest,
-  getCookieValueByName,
-} from '../../helpers/common-helpers';
+import { getAuthHeaderBasicTest } from '../../helpers/auth/basic-auth.helper';
+import { excludeCookiesFromHeaders, getCookieValueByName } from '../../helpers/cookies/cookie.helpers';
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { UsersApiManagerHelper } from '../../helpers/api-manager/users-api-manager-helper';
-import { initSettings } from '../../helpers/init-setting';
+import { UsersApiManagerHelper } from '../../api-manager/users-api-manager-helper';
+import { setupNextAppHttp } from '../../setup-app/setup-next-app-http';
 import { JwtService } from '@nestjs/jwt';
 import { REFRESH_TOKEN_STRATEGY_INJECT_TOKEN } from '../../../src/modules/user-accounts/constants/auth-tokens.inject-constants';
 import { DateUtil } from '../../../src/core/utils/DateUtil';
-import { SecurityDevicesApiManager } from '../../helpers/api-manager/security-devices-api-manager';
+import { SecurityDevicesApiManager } from '../../api-manager/security-devices-api-manager';
 import { ThrottlerConfig } from '../../../src/core/config/throttler.config';
 import { randomUUID } from 'crypto';
 import { SessionDeviceRepository } from '../../../src/modules/user-accounts/infrastructure/session-device.repository';
@@ -29,7 +26,7 @@ describe('Security devices', () => {
   };
 
   beforeAll(async () => {
-    const init = await initSettings((moduleBuilder) =>
+    const init = await setupNextAppHttp((moduleBuilder) =>
       moduleBuilder.overrideProvider(ThrottlerConfig).useFactory({
         factory: (cfg: ThrottlerConfig) => ({
           ...cfg,

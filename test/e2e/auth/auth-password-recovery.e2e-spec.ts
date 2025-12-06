@@ -1,8 +1,8 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { initSettings } from '../../helpers/init-setting';
-import { getAuthHeaderBasicTest } from '../../helpers/common-helpers';
+import { setupNextAppHttp } from '../../setup-app/setup-next-app-http';
+import { getAuthHeaderBasicTest } from '../../helpers/auth/basic-auth.helper';
 import request from 'supertest';
-import { UsersApiManagerHelper } from '../../helpers/api-manager/users-api-manager-helper';
+import { UsersApiManagerHelper } from '../../api-manager/users-api-manager-helper';
 import { EmailPasswordRecoveryHandler } from '../../../src/modules/notifications/event-usecases/email-password-recovery.event-usecase';
 import { ThrottlerConfig } from '../../../src/core/config/throttler.config';
 import { PasswordRecoveryRepository } from '../../../src/modules/user-accounts/infrastructure/password-recovery.repository';
@@ -24,7 +24,7 @@ describe('Auth /password-recovery', () => {
   };
 
   beforeAll(async () => {
-    const init = await initSettings();
+    const init = await setupNextAppHttp();
     app = init.app;
     throttlerConfig = app.get<ThrottlerConfig>(ThrottlerConfig);
 

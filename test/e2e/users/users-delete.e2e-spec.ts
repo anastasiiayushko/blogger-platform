@@ -1,7 +1,7 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { initSettings } from '../../helpers/init-setting';
-import { getAuthHeaderBasicTest } from '../../helpers/common-helpers';
-import { UsersApiManagerHelper } from '../../helpers/api-manager/users-api-manager-helper';
+import { setupNextAppHttp } from '../../setup-app/setup-next-app-http';
+import { getAuthHeaderBasicTest } from '../../helpers/auth/basic-auth.helper';
+import { UsersApiManagerHelper } from '../../api-manager/users-api-manager-helper';
 import { UserSqlViewDto } from '../../../src/modules/user-accounts/infrastructure/sql/mapper/users.sql-view-dto';
 import { randomUUID } from 'crypto';
 import { UserRepository } from '../../../src/modules/user-accounts/infrastructure/user-repository';
@@ -15,7 +15,7 @@ describe('SaUserController DELETE (e2e) ', () => {
   let createdUser: UserSqlViewDto;
 
   beforeAll(async () => {
-    const init = await initSettings();
+    const init = await setupNextAppHttp();
     app = init.app;
     userTestManger = init.userTestManger;
     userRepository = app.get<UserRepository>(UserRepository);

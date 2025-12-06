@@ -6,6 +6,7 @@ import { PasswordRecovery } from './password-recovery.entity';
 import { IsEmail } from 'class-validator';
 import { CommentReaction } from '../../bloggers-platform/comments/domain/comment-reactions.entity';
 import { PostReaction } from '../../bloggers-platform/posts/domain/post-reactions.entity';
+import { Player } from '../../quiz/quiz-game/domain/player/player.entity';
 
 @Entity('user')
 export class User extends BaseOrmEntity {
@@ -34,6 +35,8 @@ export class User extends BaseOrmEntity {
   @OneToMany(() => PostReaction, (cr) => cr.user, {})
   postReactions: CommentReaction[];
 
+  @OneToMany(() => Player, (p) => p.user, {})
+  players: Player[];
 
   static createInstance(userInput: {
     login: string;

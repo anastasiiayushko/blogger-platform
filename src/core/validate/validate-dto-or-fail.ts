@@ -39,9 +39,8 @@ function formatterError(errors: ValidationError[]): ApiExtensionError[] {
 
 //::TODO насколько это валидное решение
 export async function validateDtoOrFail(plain: object): Promise<void> {
-  console.log('plain', plain);
   const errors = await validate(plain);
-  console.log('validateDtoOrFail', errors);
+
   if (!errors.length) {
     return;
   }

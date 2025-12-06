@@ -1,10 +1,10 @@
-import { getAuthHeaderBasicTest } from '../../helpers/common-helpers';
+import { getAuthHeaderBasicTest } from '../../helpers/auth/basic-auth.helper';
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { UsersApiManagerHelper } from '../../helpers/api-manager/users-api-manager-helper';
-import { BlogApiManager } from '../../helpers/api-manager/blog-api-manager';
-import { PostApiManager } from '../../helpers/api-manager/post-api-manager';
-import { initSettings } from '../../helpers/init-setting';
-import { CommentApiManager } from '../../helpers/api-manager/comment-api-manager';
+import { UsersApiManagerHelper } from '../../api-manager/users-api-manager-helper';
+import { BlogApiManager } from '../../api-manager/blog-api-manager';
+import { PostApiManager } from '../../api-manager/post-api-manager';
+import { setupNextAppHttp } from '../../setup-app/setup-next-app-http';
+import { CommentApiManager } from '../../api-manager/comment-api-manager';
 import { randomUUID } from 'crypto';
 import { LikeStatusEnum } from '../../../src/core/types/like-status.enum';
 import { CommentViewDTO } from '../../../src/modules/bloggers-platform/comments/api/view-dto/comment.view-dto';
@@ -20,7 +20,7 @@ describe('Comments GET (e2e) ', () => {
   let postApiManager: PostApiManager;
 
   beforeAll(async () => {
-    const init = await initSettings();
+    const init = await setupNextAppHttp();
     app = init.app;
     userApiManager = new UsersApiManagerHelper(app);
     blogApiManger = new BlogApiManager(app);

@@ -1,7 +1,7 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { initSettings } from '../../helpers/init-setting';
-import { getAuthHeaderBasicTest } from '../../helpers/common-helpers';
-import { BlogApiManager } from '../../helpers/api-manager/blog-api-manager';
+import { setupNextAppHttp } from '../../setup-app/setup-next-app-http';
+import { getAuthHeaderBasicTest } from '../../helpers/auth/basic-auth.helper';
+import { BlogApiManager } from '../../api-manager/blog-api-manager';
 import { BlogInputDto } from '../../../src/modules/bloggers-platform/blogs/api/input-dto/blog.input-dto';
 import { PaginatedViewDto } from '../../../src/core/dto/base.paginated.view-dto';
 import { BlogViewDto } from '../../../src/modules/bloggers-platform/blogs/api/view-dto/blog.view-dto';
@@ -15,7 +15,7 @@ describe('SaBlogController PAGING (e2e) ', () => {
   let blogApiManger: BlogApiManager;
 
   beforeAll(async () => {
-    const init = await initSettings();
+    const init = await setupNextAppHttp();
     app = init.app;
     blogApiManger = new BlogApiManager(app);
 

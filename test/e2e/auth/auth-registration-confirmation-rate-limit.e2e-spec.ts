@@ -1,8 +1,8 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { initSettings } from '../../helpers/init-setting';
+import { setupNextAppHttp } from '../../setup-app/setup-next-app-http';
 import request from 'supertest';
 import { randomUUID } from 'crypto';
-import { UsersApiManagerHelper } from '../../helpers/api-manager/users-api-manager-helper';
+import { UsersApiManagerHelper } from '../../api-manager/users-api-manager-helper';
 import { UserConfirmationConfig } from '../../../src/modules/user-accounts/config/user-confirmation.config';
 import { ApiErrorResultType } from '../type/response-super-test';
 import { ThrottlerConfig } from '../../../src/core/config/throttler.config';
@@ -26,7 +26,7 @@ describe('Auth /registration-confirmation', () => {
   };
 
   beforeAll(async () => {
-    const init = await initSettings();
+    const init = await setupNextAppHttp();
     app = init.app;
     userTestManager = init.userTestManger;
     throttlerConfig = app.get<ThrottlerConfig>(ThrottlerConfig);

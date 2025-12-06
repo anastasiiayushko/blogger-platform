@@ -1,10 +1,7 @@
-import {
-  generateRandomStringForTest,
-  getAuthHeaderBasicTest,
-} from '../../helpers/common-helpers';
+import { getAuthHeaderBasicTest } from '../../helpers/auth/basic-auth.helper';
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { BlogApiManager } from '../../helpers/api-manager/blog-api-manager';
-import { initSettings } from '../../helpers/init-setting';
+import { BlogApiManager } from '../../api-manager/blog-api-manager';
+import { setupNextAppHttp } from '../../setup-app/setup-next-app-http';
 import { BlogViewDto } from '../../../src/modules/bloggers-platform/blogs/api/view-dto/blog.view-dto';
 import { BlogPostInputDto } from '../../../src/modules/bloggers-platform/blogs/api/input-dto/blog-post.input-dto';
 import {
@@ -17,6 +14,7 @@ import { randomUUID } from 'crypto';
 import { BlogInputDto } from '../../../src/modules/bloggers-platform/blogs/api/input-dto/blog.input-dto';
 import { ApiErrorResultType } from '../type/response-super-test';
 import { LikeStatusEnum } from '../../../src/core/types/like-status.enum';
+import { generateRandomStringForTest } from '../../util/random/generate-random-text';
 
 describe('Create new post for specific blog /blogs/:blogId/posts', () => {
   const basicAuth = getAuthHeaderBasicTest();
@@ -35,7 +33,7 @@ describe('Create new post for specific blog /blogs/:blogId/posts', () => {
   };
 
   beforeAll(async () => {
-    const init = await initSettings();
+    const init = await setupNextAppHttp();
     app = init.app;
     blogApiManger = new BlogApiManager(app);
     const createdBlogRes = await blogApiManger.create(blogFakeData, basicAuth);

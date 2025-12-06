@@ -1,11 +1,11 @@
-import { getAuthHeaderBasicTest } from '../../helpers/common-helpers';
+import { getAuthHeaderBasicTest } from '../../helpers/auth/basic-auth.helper';
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { BlogApiManager } from '../../helpers/api-manager/blog-api-manager';
-import { initSettings } from '../../helpers/init-setting';
+import { BlogApiManager } from '../../api-manager/blog-api-manager';
+import { setupNextAppHttp } from '../../setup-app/setup-next-app-http';
 import { BlogViewDto } from '../../../src/modules/bloggers-platform/blogs/api/view-dto/blog.view-dto';
 import { PostViewDTO } from '../../../src/modules/bloggers-platform/posts/api/view-dto/post.view-dto';
 import { randomUUID } from 'crypto';
-import { PostApiManager } from '../../helpers/api-manager/post-api-manager';
+import { PostApiManager } from '../../api-manager/post-api-manager';
 import { LikeStatusEnum } from '../../../src/core/types/like-status.enum';
 
 describe('Returns post by id /posts/:postId', () => {
@@ -18,7 +18,7 @@ describe('Returns post by id /posts/:postId', () => {
   let postsForBlog1: PostViewDTO[];
 
   beforeAll(async () => {
-    const init = await initSettings();
+    const init = await setupNextAppHttp();
     app = init.app;
     blogApiManger = new BlogApiManager(app);
     postApiManger = new PostApiManager(app);

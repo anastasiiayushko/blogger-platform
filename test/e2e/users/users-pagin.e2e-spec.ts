@@ -1,9 +1,9 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { initSettings } from '../../helpers/init-setting';
-import { getAuthHeaderBasicTest } from '../../helpers/common-helpers';
+import { setupNextAppHttp } from '../../setup-app/setup-next-app-http';
+import { getAuthHeaderBasicTest } from '../../helpers/auth/basic-auth.helper';
 import request from 'supertest';
 import { PaginatedViewDto } from '../../../src/core/dto/base.paginated.view-dto';
-import { UsersApiManagerHelper } from '../../helpers/api-manager/users-api-manager-helper';
+import { UsersApiManagerHelper } from '../../api-manager/users-api-manager-helper';
 import { UserViewDto } from '../../../src/modules/user-accounts/infrastructure/mapper/user-view-dto';
 
 describe('UserController PAGINATION (e2e) ', () => {
@@ -15,7 +15,7 @@ describe('UserController PAGINATION (e2e) ', () => {
   let createdUsers: UserViewDto[] = [];
 
   beforeAll(async () => {
-    const init = await initSettings();
+    const init = await setupNextAppHttp();
     app = init.app;
     userTestManger = init.userTestManger;
     createdUsers = await userTestManger.createSeveralUsers(10, basicAuth);

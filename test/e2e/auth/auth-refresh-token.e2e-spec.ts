@@ -1,15 +1,10 @@
-import {
-  delay,
-  excludeCookiesFromHeaders,
-  findCookieByName,
-  getAuthHeaderBasicTest,
-  getCookieValueByName,
-} from '../../helpers/common-helpers';
+import { getAuthHeaderBasicTest } from '../../helpers/auth/basic-auth.helper';
+import { excludeCookiesFromHeaders, findCookieByName, getCookieValueByName } from '../../helpers/cookies/cookie.helpers';
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { initSettings } from '../../helpers/init-setting';
-import { UsersApiManagerHelper } from '../../helpers/api-manager/users-api-manager-helper';
-import { SecurityDevicesApiManager } from '../../helpers/api-manager/security-devices-api-manager';
-import { AuthApiManager } from '../../helpers/api-manager/auth-api-manager';
+import { setupNextAppHttp } from '../../setup-app/setup-next-app-http';
+import { UsersApiManagerHelper } from '../../api-manager/users-api-manager-helper';
+import { SecurityDevicesApiManager } from '../../api-manager/security-devices-api-manager';
+import { AuthApiManager } from '../../api-manager/auth-api-manager';
 import { REFRESH_TOKEN_STRATEGY_INJECT_TOKEN } from '../../../src/modules/user-accounts/constants/auth-tokens.inject-constants';
 import { JwtService } from '@nestjs/jwt';
 import {
@@ -19,6 +14,7 @@ import {
 } from '../../util/token-util';
 import { UserViewDto } from '../../../src/modules/user-accounts/infrastructure/mapper/user-view-dto';
 import { SecurityDeviceViewDto } from '../../../src/modules/user-accounts/infrastructure/mapper/security-device.view-dto';
+import { delay } from '../../helpers/delay-helper';
 
 describe('Auth /refresh-token', () => {
   const basicAuth = getAuthHeaderBasicTest();
@@ -35,7 +31,7 @@ describe('Auth /refresh-token', () => {
   };
 
   beforeEach(async () => {
-    const init = await initSettings();
+    const init = await setupNextAppHttp();
     app = init.app;
     userApiManager = init.userTestManger;
     securityDevicesApiManger = new SecurityDevicesApiManager(app);

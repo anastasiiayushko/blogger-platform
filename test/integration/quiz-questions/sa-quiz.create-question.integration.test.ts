@@ -2,23 +2,28 @@ import { INestApplication } from '@nestjs/common';
 import {
   CreateQuestionCommand,
   CreateQuestionHandler,
-} from '../../../src/modules/quiz/questions/application/usecases/create-question.usecase';
-import { QuestionQueryRepository } from '../../../src/modules/quiz/questions/infrastructure/question.query-repository';
+} from '../../../src/modules/quiz/sa-question/application/usecases/create-question.usecase';
+import { QuestionQueryRepository } from '../../../src/modules/quiz/sa-question/infrastructure/question.query-repository';
 import { CoreModule } from '../../../src/core/core.module';
 import { configModule } from '../../../src/dynamic-config-module';
-import { QuizGameModule } from '../../../src/modules/quiz/quiz-game.module';
 import { DatabaseModule } from '../../../src/core/database/database.module';
-import { setupTestApp } from '../../helpers/setup-test-app';
+import { setupTestApp } from '../../setup-app/setup-test-app';
 import { DataSource } from 'typeorm';
 import { ormClearDatabase } from '../../util/orm-db-cleaner';
-import { questionBodyConstraints } from '../../../src/modules/quiz/questions/domain/question.constrains';
-import { generateRandomStringForTest } from '../../helpers/common-helpers';
+import { questionBodyConstraints } from '../../../src/modules/quiz/sa-question/domain/question.constrains';
+import { generateRandomStringForTest } from '../../util/random/generate-random-text';
 import {
   GetQuestionsWithPagingHandler,
   GetQuestionsWithPagingQuery,
-} from '../../../src/modules/quiz/questions/application/query-usecases/get-questions-with-paging.query-usecase';
-import { QuestionQueryParams } from '../../../src/modules/quiz/questions/api/input-dto/question-query-params.input-dto';
-import { assertQuestionView } from './assert-question-view';
+} from '../../../src/modules/quiz/sa-question/application/query-usecases/get-questions-with-paging.query-usecase';
+import { QuestionQueryParams } from '../../../src/modules/quiz/sa-question/api/input-dto/question-query-params.input-dto';
+import { assertQuestionView } from '../../util/assert-view/assert-question-view';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Question } from '../../../src/modules/quiz/sa-question/domain/question.entity';
+import { QuestionRepository } from '../../../src/modules/quiz/sa-question/infrastructure/question.repository';
+import { DomainException } from '../../../src/core/exceptions/domain-exception';
+import { DomainExceptionCode } from '../../../src/core/exceptions/domain-exception-codes';
+import { assertValidateErrorDto } from '../../util/assert-error/assert-validate-error-dto';
 
 describe('SA Quiz - CreateQuestion (integration)', () => {
   jest.setTimeout(20000);
@@ -35,7 +40,13 @@ describe('SA Quiz - CreateQuestion (integration)', () => {
         CoreModule,
         configModule, //  инициализация конфигурации
         DatabaseModule,
-        QuizGameModule,
+        TypeOrmModule.forFeature([Question]),
+      ],
+      providers: [
+        QuestionRepository,
+        CreateQuestionHandler,
+        GetQuestionsWithPagingHandler,
+        QuestionQueryRepository,
       ],
     });
     app = appNest;
@@ -45,7 +56,11 @@ describe('SA Quiz - CreateQuestion (integration)', () => {
     questionQueryRepository = app.get(QuestionQueryRepository);
     await ormClearDatabase(dataSource);
   });
-  afterEach(async () => {
+  // afterEach(async () => {
+  //   //   if (dataSource.isInitialized) await ormClearDatabase(dataSource);
+  //   // });
+  afterAll(async () => {
+    await app.close();
     await ormClearDatabase(dataSource);
   });
 
@@ -63,52 +78,62 @@ describe('SA Quiz - CreateQuestion (integration)', () => {
     const storedQuestion =
       await questionQueryRepository.findOrNotFoundFail(questionId);
 
-    expect(storedQuestion.body).toBe(payload.body);
-    expect(storedQuestion.correctAnswers).toEqual(['seven', '7']);
-    expect(storedQuestion.published).toBe(false);
-    expect(typeof storedQuestion.createdAt).toBe('string');
-    expect(typeof storedQuestion.updatedAt).toBe('string');
+    assertQuestionView(storedQuestion, {
+      published: false,
+      body: payload.body,
+      correctAnswers: ['seven', '7'],
+    });
   });
 
-  it('Checking for incorrect input values in DTO', async () => {
-    const errorBody = await createQuestionHandler
-      .execute(new CreateQuestionCommand('', ['bla']))
-      .catch((e) => e);
-    // expect(errorBody[0].property).toBe('body');
+  it('validate input command', async () => {
+    const passedBody = [
+      ' ',
+      '',
+      generateRandomStringForTest(questionBodyConstraints.minLength - 1),
+      generateRandomStringForTest(questionBodyConstraints.maxLength + 1),
+    ];
+    const reqInvalidBodyPay = passedBody.map((body) => {
+      return createQuestionHandler.execute(
+        new CreateQuestionCommand(body, ['bla']),
+      );
+    });
 
-    const errorBodyMin = await createQuestionHandler
-      .execute(
-        new CreateQuestionCommand(
-          generateRandomStringForTest(questionBodyConstraints.minLength - 1),
-          ['bla'],
-        ),
-      )
-      .catch((e) => e);
-    // expect(errorBodyMin[0].property).toBe('body');
+    const results = await Promise.allSettled(reqInvalidBodyPay);
 
-    const errorBodyMax = await createQuestionHandler
-      .execute(
-        new CreateQuestionCommand(
-          generateRandomStringForTest(questionBodyConstraints.maxLength + 1),
-          ['bla'],
-        ),
-      )
-      .catch((e) => e);
-    // expect(errorBodyMax[0].property).toBe('body');
+    results.forEach((result) => {
+      expect(result.status).toBe('rejected');
+      if (result.status === 'rejected') {
+        assertValidateErrorDto(result.reason, {
+          statusCode: DomainExceptionCode.BadRequest,
+          firstFieldName: 'body',
+        });
+      }
+    });
 
-    const errorAnswersEmpty = await createQuestionHandler
-      .execute(new CreateQuestionCommand('stringsttring', []))
-      .catch((e) => e);
+    const passedAnswersVariants = [
+      [],
+      //::TODO пропускает валидатор, так как правилом что это строка соблюденны (падает ограничение в сущности)
+      // [' '],
+      ['bla', 8],
+      [' Tr', '09', 5],
+    ];
+    const reqInvalidAnswersPay = passedAnswersVariants.map((ans) => {
+      return createQuestionHandler.execute(
+        new CreateQuestionCommand('stringstring', ans as string[]),
+      );
+    });
 
-    // expect(errorAnswersEmpty[0].property).toBe('correctAnswers');
+    const resultsAns = await Promise.allSettled(reqInvalidAnswersPay);
 
-    const errorAnswersInvalid = await createQuestionHandler
-      .execute(
-        new CreateQuestionCommand('stringsttring', [4 as unknown as string]),
-      )
-      .catch((e) => e);
-
-    // expect(errorAnswersInvalid[0].property).toBe('correctAnswers');
+    resultsAns.forEach((result) => {
+      expect(result.status).toBe('rejected');
+      if (result.status === 'rejected') {
+        assertValidateErrorDto(result.reason, {
+          statusCode: DomainExceptionCode.BadRequest,
+          firstFieldName: 'correctAnswers',
+        });
+      }
+    });
 
     const queryParams = new QuestionQueryParams();
 
@@ -121,7 +146,7 @@ describe('SA Quiz - CreateQuestion (integration)', () => {
     expect(result.items.length).toBe(0);
   });
 
-  it('Check view dto', async () => {
+  it('Check public view dto after created', async () => {
     const payload = {
       body: ' Check view dto ',
       answers: ['Body', ' body ', 'answers ', '   aNswErs ', '7+7'],
@@ -140,6 +165,5 @@ describe('SA Quiz - CreateQuestion (integration)', () => {
       body: payload.body.trim(),
       correctAnswers: ['body', 'answers', '7+7'],
     });
-
   });
 });

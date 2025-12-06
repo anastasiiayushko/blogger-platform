@@ -1,11 +1,8 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { initSettings } from '../../helpers/init-setting';
-import {
-  generateRandomStringForTest,
-  getAuthHeaderBasicTest,
-} from '../../helpers/common-helpers';
+import { setupNextAppHttp } from '../../setup-app/setup-next-app-http';
+import { getAuthHeaderBasicTest } from '../../helpers/auth/basic-auth.helper';
 import request from 'supertest';
-import { UsersApiManagerHelper } from '../../helpers/api-manager/users-api-manager-helper';
+import { UsersApiManagerHelper } from '../../api-manager/users-api-manager-helper';
 import { User } from '../../../src/modules/user-accounts/domin/sql-entity/user.sql-entity';
 import { ThrottlerConfig } from '../../../src/core/config/throttler.config';
 import { UserRepository } from '../../../src/modules/user-accounts/infrastructure/user-repository';
@@ -14,6 +11,7 @@ import {
 } from '../../../src/modules/user-accounts/infrastructure/email-confirmation.repository';
 import { EmailConfirmation } from '../../../src/modules/user-accounts/domin/email-confirmation.entity';
 import { loginConstraints } from '../../../src/modules/user-accounts/domin/user.constraints';
+import { generateRandomStringForTest } from '../../util/random/generate-random-text';
 
 //::TODO rewrite test
 describe('Auth /registration', () => {
@@ -37,7 +35,7 @@ describe('Auth /registration', () => {
   };
 
   beforeAll(async () => {
-    const init = await initSettings();
+    const init = await setupNextAppHttp();
     app = init.app;
     throttlerConfig = app.get<ThrottlerConfig>(ThrottlerConfig);
     userTestManger = init.userTestManger;

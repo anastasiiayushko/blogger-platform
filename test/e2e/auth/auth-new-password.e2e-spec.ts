@@ -1,11 +1,8 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { initSettings } from '../../helpers/init-setting';
-import {
-  generateRandomStringForTest,
-  getAuthHeaderBasicTest,
-} from '../../helpers/common-helpers';
+import { setupNextAppHttp } from '../../setup-app/setup-next-app-http';
+import { getAuthHeaderBasicTest } from '../../helpers/auth/basic-auth.helper';
 import request from 'supertest';
-import { UsersApiManagerHelper } from '../../helpers/api-manager/users-api-manager-helper';
+import { UsersApiManagerHelper } from '../../api-manager/users-api-manager-helper';
 import { randomUUID } from 'crypto';
 import { ApiErrorResultType } from '../type/response-super-test';
 import { UserConfirmationConfig } from '../../../src/modules/user-accounts/config/user-confirmation.config';
@@ -13,6 +10,7 @@ import { ThrottlerConfig } from '../../../src/core/config/throttler.config';
 import { passwordConstraints } from '../../../src/modules/user-accounts/domin/user.constraints';
 import { UserRepository } from '../../../src/modules/user-accounts/infrastructure/user-repository';
 import { PasswordRecoveryRepository } from '../../../src/modules/user-accounts/infrastructure/password-recovery.repository';
+import { generateRandomStringForTest } from '../../util/random/generate-random-text';
 
 describe('Auth /new-password', () => {
   const basicAuth = getAuthHeaderBasicTest();
@@ -33,7 +31,7 @@ describe('Auth /new-password', () => {
   };
 
   beforeAll(async () => {
-    const init = await initSettings();
+    const init = await setupNextAppHttp();
     app = init.app;
     throttlerConfig = app.get<ThrottlerConfig>(ThrottlerConfig);
 

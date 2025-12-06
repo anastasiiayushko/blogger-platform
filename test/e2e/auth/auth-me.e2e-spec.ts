@@ -1,11 +1,11 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { initSettings } from '../../helpers/init-setting';
-import { getAuthHeaderBasicTest } from '../../helpers/common-helpers';
+import { setupNextAppHttp } from '../../setup-app/setup-next-app-http';
+import { getAuthHeaderBasicTest } from '../../helpers/auth/basic-auth.helper';
 import request from 'supertest';
-import { UsersApiManagerHelper } from '../../helpers/api-manager/users-api-manager-helper';
+import { UsersApiManagerHelper } from '../../api-manager/users-api-manager-helper';
 import { AccessTokenViewDto } from '../../../src/modules/user-accounts/api/view-dto/access-token.view-dto';
 import { JwtService } from '@nestjs/jwt';
-import { AuthApiManager } from '../../helpers/api-manager/auth-api-manager';
+import { AuthApiManager } from '../../api-manager/auth-api-manager';
 import { UserMeViewDto } from '../../../src/modules/user-accounts/infrastructure/mapper/user-me-view-dto';
 
 describe('Auth me ', () => {
@@ -22,7 +22,7 @@ describe('Auth me ', () => {
   };
 
   beforeAll(async () => {
-    const init = await initSettings();
+    const init = await setupNextAppHttp();
     app = init.app;
     userTestManger = init.userTestManger;
     authApiManager = new AuthApiManager(app);
