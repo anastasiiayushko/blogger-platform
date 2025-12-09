@@ -1,17 +1,19 @@
-import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { QuestionRepository } from '../../infrastructure/question.repository';
 import { Question } from '../../domain/question.entity';
 import { questionBodyConstraints } from '../../domain/question.constrains';
 import {
   ArrayMinSize,
-  IsArray, IsNotEmpty,
-  IsString, Length,
+  IsArray,
+  IsNotEmpty,
+  IsString,
   MaxLength,
   MinLength,
 } from 'class-validator';
 import { validateDtoOrFail } from '../../../../../core/validate/validate-dto-or-fail';
+import { ValidatableCommand } from '../../../../../core/validate/validatable-command';
 
-export class CreateQuestionCommand extends Command<{ questionId: string }> {
+export class CreateQuestionCommand extends ValidatableCommand {
   @MinLength(questionBodyConstraints.minLength)
   @MaxLength(questionBodyConstraints.maxLength)
   body: string;
@@ -34,6 +36,7 @@ export class CreateQuestionCommand extends Command<{ questionId: string }> {
   }
 }
 
+//вынести в абстракцию базовою валидацию
 @CommandHandler(CreateQuestionCommand)
 export class CreateQuestionHandler
   implements ICommandHandler<CreateQuestionCommand>
@@ -41,7 +44,7 @@ export class CreateQuestionHandler
   constructor(protected questionRepository: QuestionRepository) {}
 
   async execute(cmd: CreateQuestionCommand) {
-    await validateDtoOrFail(cmd);
+    await cmd.validateOrFail();
 
     const question = Question.createInstance(cmd);
     await this.questionRepository.save(question);

@@ -2,6 +2,8 @@ import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { BaseOrmEntity } from '../../../../../core/base-orm-entity/base-orm-entity';
 import { Player } from '../player/player.entity';
 import { GameStatusesEnum } from './game-statuses.enum';
+import { CreateGameDomainDto } from './dto/create-game.domain-dto';
+import { Question } from '../../../sa-question/domain/question.entity';
 
 @Entity('game')
 export class Game extends BaseOrmEntity {
@@ -30,7 +32,7 @@ export class Game extends BaseOrmEntity {
   @Column({
     type: 'timestamp with time zone',
     nullable: false,
-    default: ()=> 'NOW()',
+    default: () => 'NOW()',
   })
   pairCreatedDate: Date;
 
@@ -39,4 +41,39 @@ export class Game extends BaseOrmEntity {
 
   @Column({ type: 'timestamp with time zone', nullable: true, default: null })
   finishGameDate: Date | null;
+
+  static createPending(dto: CreateGameDomainDto): Game {
+    const game = new this();
+    game.firstPlayerId = dto.firstPlayerId;
+    game.secondPlayerId = null;
+    game.status = GameStatusesEnum.pending;
+    game.startGameDate = null;
+    game.finishGameDate = null;
+    return game;
+  }
+
+  joinSecondPlayer(playerId: string) {
+    if (this.secondPlayerId) {
+      throw new Error(`Second Player is already joined`);
+    }
+    if (this.status !== GameStatusesEnum.pending) {
+      throw new Error('Game is not pending');
+    }
+    this.secondPlayerId = playerId;
+  }
+
+  assignQuestions(questions: Question[]) {
+    // this.questions = questions;
+  }
+
+  startGame() {
+    if (this.status !== GameStatusesEnum.pending) {
+      throw new Error('Game is already in progress');
+    }
+    if (!this.secondPlayerId) {
+      throw new Error('Second player not joined yet');
+    }
+    this.startGameDate = new Date();
+    this.status = GameStatusesEnum.active;
+  }
 }
