@@ -1,9 +1,16 @@
-import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+} from 'typeorm';
 import { BaseOrmEntity } from '../../../../../core/base-orm-entity/base-orm-entity';
 import { Player } from '../player/player.entity';
 import { GameStatusesEnum } from './game-statuses.enum';
 import { CreateGameDomainDto } from './dto/create-game.domain-dto';
-import { Question } from '../../../sa-question/domain/question.entity';
+import { GameQuestion } from '../game-question/game-question.entity';
 
 @Entity('game')
 export class Game extends BaseOrmEntity {
@@ -42,6 +49,13 @@ export class Game extends BaseOrmEntity {
   @Column({ type: 'timestamp with time zone', nullable: true, default: null })
   finishGameDate: Date | null;
 
+  //::TODO насколько примемлимые опции в cascade.
+  @OneToMany(() => GameQuestion, (gq) => gq.game, {
+    nullable: true,
+    // cascade: ['insert', 'update', 'recover', 'soft-remove'],
+  })
+  questions: GameQuestion[];
+
   static createPending(dto: CreateGameDomainDto): Game {
     const game = new this();
     game.firstPlayerId = dto.firstPlayerId;
@@ -62,8 +76,13 @@ export class Game extends BaseOrmEntity {
     this.secondPlayerId = playerId;
   }
 
-  assignQuestions(questions: Question[]) {
-    // this.questions = questions;
+  assignQuestions(questions: GameQuestion[]) {
+    if (!Array.isArray(questions) || questions.length !== 5) {
+      throw new Error(
+        'Questions must be an array and not empty. Count questions must be equal 5.',
+      );
+    }
+    this.questions = questions;
   }
 
   startGame() {

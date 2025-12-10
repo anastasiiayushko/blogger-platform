@@ -1,6 +1,7 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { BaseOrmEntity } from '../../../../core/base-orm-entity/base-orm-entity';
 import { UpSertQuestionInputDto } from './dto/up-sert-question-input.dto';
+import { GameQuestion } from '../../quiz-game/domain/game-question/game-question.entity';
 
 @Entity('questions')
 //::TODO нужно ли нормализировать таблицу? Создав отдельную сущность answer и создать покрывающий индекс
@@ -20,6 +21,9 @@ export class Question extends BaseOrmEntity {
     default: false,
   })
   published: boolean;
+
+  @OneToMany(() => GameQuestion, (gq) => gq.question)
+  gameQuestions: GameQuestion[];
 
   static createInstance(inputDto: UpSertQuestionInputDto): Question {
     const question = new Question();

@@ -11,7 +11,9 @@ import { DeleteQuestionHandler } from './sa-question/application/usecases/delete
 import { GetQuestionsWithPagingHandler } from './sa-question/application/query-usecases/get-questions-with-paging.query-usecase';
 import { UserAccountsModule } from '../user-accounts/user-accounts.module';
 import { Player } from './quiz-game/domain/player/player.entity';
-import { Game } from './quiz-game/domain/game/game-entity';
+import { Game } from './quiz-game/domain/game/game.entity';
+import { GameQuestion } from './quiz-game/domain/game-question/game-question.entity';
+import { Answer } from './quiz-game/domain/answer/answer.entity';
 
 const questionsHandler = [
   CreateQuestionHandler,
@@ -22,7 +24,10 @@ const questionsHandler = [
 const questionQueryHandler = [GetQuestionsWithPagingHandler];
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Question, Player, Game]), UserAccountsModule],
+  imports: [
+    TypeOrmModule.forFeature([Question, Player, Game, GameQuestion, Answer]),
+    UserAccountsModule,
+  ],
   controllers: [SaQuestionsController],
 
   providers: [
