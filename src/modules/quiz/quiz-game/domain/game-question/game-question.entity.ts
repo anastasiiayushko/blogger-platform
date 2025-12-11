@@ -18,4 +18,24 @@ export class GameQuestion extends BaseOrmEntity {
 
   @Generated('increment') // в новых версиях создаёт IDENTITY
   order: number;
+
+  static createQuestion(questionId, gameId: string): GameQuestion {
+    const gQuestion = new GameQuestion();
+    gQuestion.gameId = gameId;
+    gQuestion.questionId = questionId;
+    return gQuestion;
+  }
+
+  static createMany(questions: Question[], gameId: string): GameQuestion[] {
+    if (!Array.isArray(questions)) {
+      throw new Error('Questions must be an array');
+    }
+    return questions.map((q, index) => {
+      const item = new GameQuestion();
+      item.questionId = q.id;
+      item.gameId = gameId;
+      item.order = index + 1;
+      return item;
+    });
+  }
 }

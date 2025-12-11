@@ -1,6 +1,6 @@
 import { DataSource } from 'typeorm';
 
-export async function ormClearDatabase(dataSource: DataSource) {
+export async function ormDBCleaner(dataSource: DataSource) {
   const entities = dataSource.entityMetadatas;
 
   const tableNames = entities

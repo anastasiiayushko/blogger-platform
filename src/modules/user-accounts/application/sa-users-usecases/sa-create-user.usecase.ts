@@ -22,7 +22,6 @@ export class SaCreateUserHandler
   constructor(
     protected createUserService: CreateUserService,
     protected userConfirmationConfig: UserConfirmationConfig,
-    // protected emailConfirmationRepository: EmailConfirmationSqlRepository,
   ) {}
 
   async execute(cmd: SaCreateUserCommand): Promise<string> {

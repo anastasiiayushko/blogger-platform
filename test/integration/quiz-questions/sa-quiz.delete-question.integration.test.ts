@@ -9,7 +9,7 @@ import { configModule } from '../../../src/dynamic-config-module';
 import { DatabaseModule } from '../../../src/core/database/database.module';
 import { setupTestApp } from '../../setup-app/setup-test-app';
 import { DataSource } from 'typeorm';
-import { ormClearDatabase } from '../../util/orm-db-cleaner';
+import { ormDBCleaner } from '../../util/orm-db-cleaner';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Question } from '../../../src/modules/quiz/sa-question/domain/question.entity';
 import { QuestionRepository } from '../../../src/modules/quiz/sa-question/infrastructure/question.repository';
@@ -51,12 +51,12 @@ describe('SA Quiz - DeleteQuestion (integration)', () => {
     deleteQuestionHandler = app.get(DeleteQuestionHandler);
     createQuestionHandler = app.get(CreateQuestionHandler);
     questionRepository = app.get(QuestionRepository);
-    await ormClearDatabase(dataSource);
+    await ormDBCleaner(dataSource);
   });
 
   afterAll(async () => {
     await app.close();
-    await ormClearDatabase(dataSource);
+    await ormDBCleaner(dataSource);
   });
 
   it('should be delete question by id ', async () => {

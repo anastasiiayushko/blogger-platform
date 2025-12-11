@@ -11,6 +11,7 @@ import { Player } from '../player/player.entity';
 import { GameStatusesEnum } from './game-statuses.enum';
 import { CreateGameDomainDto } from './dto/create-game.domain-dto';
 import { GameQuestion } from '../game-question/game-question.entity';
+import { randomUUID } from 'crypto';
 
 @Entity('game')
 export class Game extends BaseOrmEntity {
@@ -52,17 +53,21 @@ export class Game extends BaseOrmEntity {
   //::TODO насколько примемлимые опции в cascade.
   @OneToMany(() => GameQuestion, (gq) => gq.game, {
     nullable: true,
+    cascade: true,
+    eager: true,
     // cascade: ['insert', 'update', 'recover', 'soft-remove'],
   })
-  questions: GameQuestion[];
+  questions: GameQuestion[] | null;
 
   static createPending(dto: CreateGameDomainDto): Game {
     const game = new this();
+    game.id = randomUUID();
     game.firstPlayerId = dto.firstPlayerId;
     game.secondPlayerId = null;
     game.status = GameStatusesEnum.pending;
     game.startGameDate = null;
     game.finishGameDate = null;
+    game.questions = null;
     return game;
   }
 
@@ -91,6 +96,9 @@ export class Game extends BaseOrmEntity {
     }
     if (!this.secondPlayerId) {
       throw new Error('Second player not joined yet');
+    }
+    if (!this.questions?.length || !this.questions) {
+      throw new Error('Questions must be empty, before starting game');
     }
     this.startGameDate = new Date();
     this.status = GameStatusesEnum.active;

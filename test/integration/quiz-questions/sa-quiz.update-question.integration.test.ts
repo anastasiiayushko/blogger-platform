@@ -9,7 +9,7 @@ import { configModule } from '../../../src/dynamic-config-module';
 import { DatabaseModule } from '../../../src/core/database/database.module';
 import { setupTestApp } from '../../setup-app/setup-test-app';
 import { DataSource } from 'typeorm';
-import { ormClearDatabase } from '../../util/orm-db-cleaner';
+import { ormDBCleaner } from '../../util/orm-db-cleaner';
 import {
   UpdateQuestionCommand,
   UpdateQuestionHandler,
@@ -55,11 +55,11 @@ describe('SA Quiz - UpdateQuestion (integration)', () => {
     createQuestionHandler = app.get(CreateQuestionHandler);
     updateQuestionHandler = app.get(UpdateQuestionHandler);
     questionQueryRepository = app.get(QuestionQueryRepository);
-    await ormClearDatabase(dataSource);
+    await ormDBCleaner(dataSource);
   });
 
   afterAll(async () => {
-    await ormClearDatabase(dataSource);
+    await ormDBCleaner(dataSource);
   });
 
   it('should be update question. Check question to View', async () => {

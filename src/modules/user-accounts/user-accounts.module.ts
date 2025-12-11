@@ -71,16 +71,6 @@ const configs = [UserAccountConfig, UserConfirmationConfig];
       SessionDevice,
       PasswordRecovery,
     ]),
-    // MongooseModule.forFeature([
-    //   {
-    //     name: User_root.name,
-    //     schema: UserSchema,
-    //   },
-    //   {
-    //     name: SecurityDevice.name,
-    //     schema: SecurityDeviceSchema,
-    //   },
-    // ]), // локально подключаем сущности
   ],
   controllers: [AuthController, SecurityDevicesController, SaUsersController],
   providers: [

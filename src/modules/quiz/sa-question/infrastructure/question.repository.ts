@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Question } from '../domain/question.entity';
 import { DomainException } from '../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
@@ -10,6 +10,8 @@ export class QuestionRepository {
   constructor(
     @InjectRepository(Question)
     private readonly questionRepository: Repository<Question>,
+    @InjectDataSource()
+    private readonly dataSource: DataSource,
   ) {}
 
   async save(question: Question) {
@@ -33,5 +35,15 @@ export class QuestionRepository {
   async softDelete(id: string): Promise<boolean> {
     const result = await this.questionRepository.softDelete({ id: id });
     return !!result.affected;
+  }
+
+  async getRandomQuestion(limit = 5): Promise<Question[]> {
+    const result = await this.dataSource
+      .getRepository(Question)
+      .createQueryBuilder('question')
+      .orderBy('RANDOM()')
+      .limit(limit)
+      .getMany();
+    return result;
   }
 }

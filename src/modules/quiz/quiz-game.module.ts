@@ -14,6 +14,12 @@ import { Player } from './quiz-game/domain/player/player.entity';
 import { Game } from './quiz-game/domain/game/game.entity';
 import { GameQuestion } from './quiz-game/domain/game-question/game-question.entity';
 import { Answer } from './quiz-game/domain/answer/answer.entity';
+import { PlayerRepository } from './quiz-game/infrastructure/player.repository';
+import { GameRepository } from './quiz-game/infrastructure/game.repository';
+import {
+  GamePairConnectionCmd,
+  GamePairConnectionHandler,
+} from './quiz-game/features/pair-game/application/usecases/game-pair-connection.usecese';
 
 const questionsHandler = [
   CreateQuestionHandler,
@@ -21,6 +27,7 @@ const questionsHandler = [
   UpdateQuestionHandler,
   DeleteQuestionHandler,
 ];
+const pairGameHandler = [GamePairConnectionHandler];
 const questionQueryHandler = [GetQuestionsWithPagingHandler];
 
 @Module({
@@ -33,8 +40,11 @@ const questionQueryHandler = [GetQuestionsWithPagingHandler];
   providers: [
     QuestionRepository,
     QuestionQueryRepository,
+    PlayerRepository,
+    GameRepository,
     ...questionsHandler,
     ...questionQueryHandler,
+    ...pairGameHandler,
   ],
   exports: [],
 })

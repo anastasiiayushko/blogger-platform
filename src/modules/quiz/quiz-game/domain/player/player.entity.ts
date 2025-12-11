@@ -3,6 +3,7 @@ import { BaseOrmEntity } from '../../../../../core/base-orm-entity/base-orm-enti
 import { User } from '../../../../user-accounts/domin/user.entity';
 import { CreatePlayerDomainDto } from './dto/create-player.domain-dto';
 import { Answer } from '../answer/answer.entity';
+import { randomUUID } from 'crypto';
 
 @Entity('player')
 export class Player extends BaseOrmEntity {
@@ -15,12 +16,13 @@ export class Player extends BaseOrmEntity {
   score: number;
 
   @OneToMany(() => Answer, (a) => a.player, {
-    onDelete: 'CASCADE',
+    cascade: ['insert', 'update'],
   })
   answers: Answer[];
 
   static createPlayer(dto: CreatePlayerDomainDto): Player {
     const player = new this();
+    player.id = randomUUID();
     player.userId = dto.userId;
     player.score = 0;
     player.answers = [];

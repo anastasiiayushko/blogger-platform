@@ -9,7 +9,7 @@ import { configModule } from '../../../src/dynamic-config-module';
 import { DatabaseModule } from '../../../src/core/database/database.module';
 import { setupTestApp } from '../../setup-app/setup-test-app';
 import { DataSource } from 'typeorm';
-import { ormClearDatabase } from '../../util/orm-db-cleaner';
+import { ormDBCleaner } from '../../util/orm-db-cleaner';
 import {
   TogglePublishQuestionCommand,
   TogglePublishQuestionHandler,
@@ -56,7 +56,7 @@ describe('SA Quiz - UpdateQuestion (integration)', () => {
     createQuestionHandler = app.get(CreateQuestionHandler);
     togglePublishQuestionHandler = app.get(TogglePublishQuestionHandler);
     questionQueryRepository = app.get(QuestionQueryRepository);
-    await ormClearDatabase(dataSource);
+    await ormDBCleaner(dataSource);
 
     const payload = {
       body: ' How many continents are on Earth?  ',
@@ -73,7 +73,7 @@ describe('SA Quiz - UpdateQuestion (integration)', () => {
   });
 
   afterAll(async () => {
-    await ormClearDatabase(dataSource);
+    await ormDBCleaner(dataSource);
   });
 
   it('should set published = true by questionId.', async () => {

@@ -9,7 +9,7 @@ import { configModule } from '../../../src/dynamic-config-module';
 import { DatabaseModule } from '../../../src/core/database/database.module';
 import { setupTestApp } from '../../setup-app/setup-test-app';
 import { DataSource } from 'typeorm';
-import { ormClearDatabase } from '../../util/orm-db-cleaner';
+import { ormDBCleaner } from '../../util/orm-db-cleaner';
 import { questionBodyConstraints } from '../../../src/modules/quiz/sa-question/domain/question.constrains';
 import { generateRandomStringForTest } from '../../util/random/generate-random-text';
 import {
@@ -54,14 +54,14 @@ describe('SA Quiz - CreateQuestion (integration)', () => {
     createQuestionHandler = app.get(CreateQuestionHandler);
     qetQuestionsWithPagingHandler = app.get(GetQuestionsWithPagingHandler);
     questionQueryRepository = app.get(QuestionQueryRepository);
-    await ormClearDatabase(dataSource);
+    await ormDBCleaner(dataSource);
   });
   // afterEach(async () => {
   //   //   if (dataSource.isInitialized) await ormClearDatabase(dataSource);
   //   // });
   afterAll(async () => {
     await app.close();
-    await ormClearDatabase(dataSource);
+    await ormDBCleaner(dataSource);
   });
 
   it('should be created new question. Check question to View', async () => {
