@@ -12,11 +12,15 @@ import { FillQuestionsSeed } from '../../../seeds/fill-questions.seed';
 import { Game } from '../../../src/modules/quiz/quiz-game/domain/game/game.entity';
 import { GameStatusesEnum } from '../../../src/modules/quiz/quiz-game/domain/game/game-statuses.enum';
 import { DomainException } from '../../../src/core/exceptions/domain-exception';
+import { GameQueryRepository } from '../../../src/modules/quiz/quiz-game/infrastructure/query/game.query-repository';
+import { assertGamePairView } from '../../util/assert-view/assert-game-pair-view';
+import { GamePairViewDto } from '../../../src/modules/quiz/quiz-game/infrastructure/query/mapper/game-pair.view-dto';
 
 describe('Game Pair Connection Integration', () => {
   let app: INestApplication;
   let saCreateUserHandler;
   let gamePairConnectionHandler;
+  let gameQueryRepository: GameQueryRepository;
   let user_1_id;
   let user_2_id;
   let user_3_id;
@@ -29,6 +33,7 @@ describe('Game Pair Connection Integration', () => {
     app = appNest;
     saCreateUserHandler = appNest.get(SaCreateUserHandler);
     gamePairConnectionHandler = appNest.get(GamePairConnectionHandler);
+    gameQueryRepository = appNest.get(GameQueryRepository);
     dataSource = dS;
     await ormDBCleaner(dS);
     await FillQuestionsSeed.up(dataSource);
@@ -69,9 +74,10 @@ describe('Game Pair Connection Integration', () => {
       },
       where: { id: gameIdInPending.id },
     });
+
     expect(gameInPending!.firstPlayer.userId).toBe(user_1_id);
     expect(gameInPending!.status).toBe(GameStatusesEnum.pending);
-    expect(gameInPending!.pairCreatedDate).toBeInstanceOf(Date);
+    expect(gameInPending!.createdAt).toBeInstanceOf(Date);
     expect(gameInPending!.startGameDate).toBeNull();
     expect(gameInPending!.finishGameDate).toBeNull();
     expect(gameInPending!.secondPlayerId).toBeNull();
@@ -93,8 +99,7 @@ describe('Game Pair Connection Integration', () => {
     });
 
     expect(gameInStart!.status).toBe(GameStatusesEnum.active);
-    expect(gameInStart!.pairCreatedDate).toBeInstanceOf(Date);
-    expect(gameInStart!.pairCreatedDate).toBeInstanceOf(Date);
+    expect(gameInStart!.createdAt).toBeInstanceOf(Date);
     expect(gameInStart!.finishGameDate).toBeNull();
     expect(gameInStart!.secondPlayer?.userId).toBe(user_2_id);
     expect(gameInStart!.questions!.length).toBe(5);
@@ -105,6 +110,7 @@ describe('Game Pair Connection Integration', () => {
         new GamePairConnectionCmd(user_2_id),
       );
     } catch (e) {
+      console.log('expect exception error');
       expect(e).toBeInstanceOf(DomainException);
     }
   });
@@ -113,26 +119,18 @@ describe('Game Pair Connection Integration', () => {
     const gameIdInPending = await gamePairConnectionHandler.execute(
       new GamePairConnectionCmd(user_3_id),
     );
-    const gameInPending = await dataSource.getRepository(Game).findOne({
-      relations: {
-        firstPlayer: true,
-        questions: true,
+    const game = (await gameQueryRepository.findUnfinishedGameByUserId(
+      user_3_id,
+    )) as GamePairViewDto;
+
+    assertGamePairView(game, {
+      status: GameStatusesEnum.pending,
+      firstPlayer: {
+        score: 0,
+        login: 'player3',
+        answers: [],
       },
-      where: { id: gameIdInPending },
+      secondPlayer: null,
     });
-    expect(gameInPending!.firstPlayer.userId).toBe(user_3_id);
-    expect(gameInPending!.status).toBe(GameStatusesEnum.pending);
-    expect(gameInPending!.pairCreatedDate).toBeInstanceOf(Date);
-    expect(gameInPending!.startGameDate).toBeNull();
-    expect(gameInPending!.finishGameDate).toBeNull();
-    expect(gameInPending!.secondPlayerId).toBeNull();
-    expect(gameInPending!.questions!.length).toBe(5);
-
-    const gameCount = await dataSource
-      .getRepository(Game)
-      .createQueryBuilder()
-      .getCount();
-
-    expect(gameCount).toBe(2);
   });
 });

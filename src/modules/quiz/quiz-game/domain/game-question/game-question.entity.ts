@@ -17,6 +17,7 @@ export class GameQuestion extends BaseOrmEntity {
   questionId: string;
 
   @Generated('increment') // в новых версиях создаёт IDENTITY
+  @Column('int')
   order: number;
 
   static createQuestion(questionId, gameId: string): GameQuestion {

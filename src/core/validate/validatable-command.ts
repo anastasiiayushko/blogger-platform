@@ -8,7 +8,6 @@ import { DomainExceptionCode } from '../exceptions/domain-exception-codes';
 
 export abstract class ValidatableCommand {
   async validateOrFail() {
-    console.log('this ->', this);
     const errors = await validate(this, {
       whitelist: true,
       forbidUnknownValues: true,

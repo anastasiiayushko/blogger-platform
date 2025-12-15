@@ -12,7 +12,7 @@ export class QuizGameEntityInit1765055604413 implements MigrationInterface {
                                  "deleted_at"        TIMESTAMP,
                                  "version"           integer            NOT NULL DEFAULT '0',
                                  "status"            quiz_game_statuses NOT NULL DEFAULT 'PendingSecondPlayer',
-                                 "pair_created_date" TIMESTAMP          NOT NULL DEFAULT now(),
+--                                  "pair_created_date" TIMESTAMP          NOT NULL DEFAULT now(),
                                  "start_game_date"   TIMESTAMP                   DEFAULT NULL,
                                  "finish_game_date"  TIMESTAMP                   DEFAULT NULL,
                                  "first_player_id"   uuid               NOT NULL,

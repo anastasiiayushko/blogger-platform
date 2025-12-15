@@ -1,11 +1,4 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  OneToOne,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, OneToMany, OneToOne } from 'typeorm';
 import { BaseOrmEntity } from '../../../../../core/base-orm-entity/base-orm-entity';
 import { Player } from '../player/player.entity';
 import { GameStatusesEnum } from './game-statuses.enum';
@@ -37,12 +30,12 @@ export class Game extends BaseOrmEntity {
   })
   status: string;
 
-  @Column({
-    type: 'timestamp with time zone',
-    nullable: false,
-    default: () => 'NOW()',
-  })
-  pairCreatedDate: Date;
+  // @Column({
+  //   type: 'timestamp with time zone',
+  //   nullable: false,
+  //   default: () => 'NOW()',
+  // })
+  // pairCreatedDate: Date;
 
   @Column({ type: 'timestamp with time zone', nullable: true, default: null })
   startGameDate: Date | null;
@@ -50,14 +43,11 @@ export class Game extends BaseOrmEntity {
   @Column({ type: 'timestamp with time zone', nullable: true, default: null })
   finishGameDate: Date | null;
 
-  //::TODO насколько примемлимые опции в cascade.
   @OneToMany(() => GameQuestion, (gq) => gq.game, {
-    nullable: true,
     cascade: true,
     eager: true,
-    // cascade: ['insert', 'update', 'recover', 'soft-remove'],
   })
-  questions: GameQuestion[] | null;
+  questions: GameQuestion[];
 
   static createPending(dto: CreateGameDomainDto): Game {
     const game = new this();
@@ -67,7 +57,6 @@ export class Game extends BaseOrmEntity {
     game.status = GameStatusesEnum.pending;
     game.startGameDate = null;
     game.finishGameDate = null;
-    game.questions = null;
     return game;
   }
 

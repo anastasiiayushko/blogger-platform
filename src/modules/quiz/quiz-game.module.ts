@@ -20,6 +20,7 @@ import {
   GamePairConnectionCmd,
   GamePairConnectionHandler,
 } from './quiz-game/features/pair-game/application/usecases/game-pair-connection.usecese';
+import { GameQueryRepository } from './quiz-game/infrastructure/query/game.query-repository';
 
 const questionsHandler = [
   CreateQuestionHandler,
@@ -42,6 +43,7 @@ const questionQueryHandler = [GetQuestionsWithPagingHandler];
     QuestionQueryRepository,
     PlayerRepository,
     GameRepository,
+    GameQueryRepository,
     ...questionsHandler,
     ...questionQueryHandler,
     ...pairGameHandler,
