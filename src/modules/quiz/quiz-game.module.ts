@@ -16,11 +16,14 @@ import { GameQuestion } from './quiz-game/domain/game-question/game-question.ent
 import { Answer } from './quiz-game/domain/answer/answer.entity';
 import { PlayerRepository } from './quiz-game/infrastructure/player.repository';
 import { GameRepository } from './quiz-game/infrastructure/game.repository';
-import {
-  GamePairConnectionCmd,
-  GamePairConnectionHandler,
-} from './quiz-game/features/pair-game/application/usecases/game-pair-connection.usecese';
+import { GamePairConnectionHandler } from './quiz-game/features/pair-game/application/usecases/game-pair-connection.usecese';
 import { GameQueryRepository } from './quiz-game/infrastructure/query/game.query-repository';
+import { PairGameController } from './quiz-game/features/pair-game/api/pair-game.controller';
+import { GetUnfinishedGameQueryHandler } from './quiz-game/features/pair-game/application/query-useceses/get-unfinished-game.query-usecase';
+import { GetGameByIdHandler } from './quiz-game/features/pair-game/application/query-useceses/get-game-by-id.query-usecase';
+import {
+  RecordCurrentAnswerHandler
+} from './quiz-game/features/pair-game/application/usecases/record-current-answer.usecese';
 
 const questionsHandler = [
   CreateQuestionHandler,
@@ -28,15 +31,19 @@ const questionsHandler = [
   UpdateQuestionHandler,
   DeleteQuestionHandler,
 ];
-const pairGameHandler = [GamePairConnectionHandler];
+const pairGameHandler = [GamePairConnectionHandler, RecordCurrentAnswerHandler];
 const questionQueryHandler = [GetQuestionsWithPagingHandler];
+const pairGameQueryHandler = [
+  GetUnfinishedGameQueryHandler,
+  GetGameByIdHandler,
+];
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Question, Player, Game, GameQuestion, Answer]),
     UserAccountsModule,
   ],
-  controllers: [SaQuestionsController],
+  controllers: [SaQuestionsController, PairGameController],
 
   providers: [
     QuestionRepository,
@@ -47,6 +54,7 @@ const questionQueryHandler = [GetQuestionsWithPagingHandler];
     ...questionsHandler,
     ...questionQueryHandler,
     ...pairGameHandler,
+    ...pairGameQueryHandler,
   ],
   exports: [],
 })

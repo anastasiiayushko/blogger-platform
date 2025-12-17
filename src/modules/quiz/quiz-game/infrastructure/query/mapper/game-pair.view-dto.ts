@@ -1,5 +1,3 @@
-//GamePlayerProgressViewModel
-//GameQuestions
 import { GameStatusesEnum } from '../../../domain/game/game-statuses.enum';
 import { PlayerProgressViewDto } from './player-progress.view-dto';
 import { GameQuestionViewDto } from './game-question.view-dto';

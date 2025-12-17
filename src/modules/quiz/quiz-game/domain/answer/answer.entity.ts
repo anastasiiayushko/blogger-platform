@@ -20,4 +20,20 @@ export class Answer extends BaseOrmEntity {
     enumName: 'answer_statuses_enum',
   })
   status: AnswerStatusesEnum;
+
+  static createAnswer({
+    questionId,
+    status,
+    playerId,
+  }: {
+    questionId: string;
+    status: AnswerStatusesEnum;
+    playerId: string;
+  }): Answer {
+    const answer = new Answer();
+    answer.playerId = playerId;
+    answer.questionId = questionId;
+    answer.status = status;
+    return answer;
+  }
 }

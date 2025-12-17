@@ -5,6 +5,8 @@ import { GameStatusesEnum } from './game-statuses.enum';
 import { CreateGameDomainDto } from './dto/create-game.domain-dto';
 import { GameQuestion } from '../game-question/game-question.entity';
 import { randomUUID } from 'crypto';
+import { Answer } from '../answer/answer.entity';
+import { AnswerStatusesEnum } from '../answer/answer-statuses.enum';
 
 @Entity('game')
 export class Game extends BaseOrmEntity {
@@ -45,7 +47,6 @@ export class Game extends BaseOrmEntity {
 
   @OneToMany(() => GameQuestion, (gq) => gq.game, {
     cascade: true,
-    eager: true,
   })
   questions: GameQuestion[];
 
@@ -91,5 +92,39 @@ export class Game extends BaseOrmEntity {
     }
     this.startGameDate = new Date();
     this.status = GameStatusesEnum.active;
+  }
+
+  private determineWinner() {
+    const plr1 = this.firstPlayer.getAnswerSummary();
+    const plr2 = this.secondPlayer!.getAnswerSummary();
+
+    if (plr1.lastAddedAt < plr2.lastAddedAt && plr2.hasOneCorrectStatus) {
+      this.firstPlayer.addBonusPoint();
+    }
+    if (plr2.lastAddedAt < plr1.lastAddedAt && plr2.hasOneCorrectStatus) {
+      this!.secondPlayer!.addBonusPoint();
+    }
+
+    console.log('determineWinner to be implement');
+  }
+
+  private finishedGame() {
+    if (this.status !== GameStatusesEnum.active) {
+      throw new Error('The game has an incorrect status for completion.');
+    }
+    this.status = GameStatusesEnum.finished;
+    this.finishGameDate = new Date();
+  }
+
+  tryToFinish() {
+    if (
+      this.firstPlayer.hasAnsweredAllQuestions() &&
+      this.secondPlayer?.hasAnsweredAllQuestions()
+    ) {
+      this.determineWinner();
+      this.finishedGame();
+    }
+
+    return false;
   }
 }

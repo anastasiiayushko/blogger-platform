@@ -11,13 +11,46 @@ export class GameRepository {
     private readonly gameRepo: Repository<Game>,
   ) {}
 
-
   async findGameInStatusPending(): Promise<Game | null> {
     return await this.gameRepo.findOne({
+      relations: {
+        questions: true,
+      },
       where: {
         status: GameStatusesEnum.pending,
         startGameDate: IsNull(),
       },
+    });
+  }
+
+  async findActiveGameByUserId(userId: string): Promise<Game | null> {
+    return await this.gameRepo.findOne({
+      relations: {
+        firstPlayer: {
+          answers: true
+        },
+        secondPlayer: {
+          answers: true
+        },
+        questions: {
+          question: true,
+        },
+      },
+      order: {
+        questions: {
+          order: 'ASC',
+        },
+      },
+      where: [
+        {
+          firstPlayer: { userId: userId },
+          status: GameStatusesEnum.active,
+        },
+        {
+          secondPlayer: { userId: userId },
+          status: GameStatusesEnum.active,
+        },
+      ],
     });
   }
 

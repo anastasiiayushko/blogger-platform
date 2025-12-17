@@ -20,7 +20,7 @@ export class PlayerProgressViewDto {
   static mapToView(player: Player): PlayerProgressViewDto {
     const playerView = new PlayerProgressViewDto();
     playerView.player = {
-      id: player.id,
+      id: player.user.id,
       login: player.user.login,
     };
     playerView.score = player.score;
