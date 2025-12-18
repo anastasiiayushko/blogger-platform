@@ -32,13 +32,6 @@ export class Game extends BaseOrmEntity {
   })
   status: string;
 
-  // @Column({
-  //   type: 'timestamp with time zone',
-  //   nullable: false,
-  //   default: () => 'NOW()',
-  // })
-  // pairCreatedDate: Date;
-
   @Column({ type: 'timestamp with time zone', nullable: true, default: null })
   startGameDate: Date | null;
 
@@ -88,24 +81,28 @@ export class Game extends BaseOrmEntity {
       throw new Error('Second player not joined yet');
     }
     if (!this.questions?.length || !this.questions) {
-      throw new Error('Questions must be empty, before starting game');
+      throw new Error('Questions must be fill, before starting game');
     }
     this.startGameDate = new Date();
     this.status = GameStatusesEnum.active;
   }
 
   private determineWinner() {
-    const plr1 = this.firstPlayer.getAnswerSummary();
-    const plr2 = this.secondPlayer!.getAnswerSummary();
+    const firstPlayer = this.firstPlayer.getAnswerSummary();
+    const secondPlayer = this.secondPlayer!.getAnswerSummary();
 
-    if (plr1.lastAddedAt < plr2.lastAddedAt && plr2.hasOneCorrectStatus) {
+    if (
+      firstPlayer.lastAddedAt.getTime() < secondPlayer.lastAddedAt.getTime() &&
+      firstPlayer.hasOneCorrectStatus
+    ) {
       this.firstPlayer.addBonusPoint();
     }
-    if (plr2.lastAddedAt < plr1.lastAddedAt && plr2.hasOneCorrectStatus) {
+    if (
+      secondPlayer.lastAddedAt.getTime() < firstPlayer.lastAddedAt.getTime() &&
+      secondPlayer.hasOneCorrectStatus
+    ) {
       this!.secondPlayer!.addBonusPoint();
     }
-
-    console.log('determineWinner to be implement');
   }
 
   private finishedGame() {
@@ -123,6 +120,7 @@ export class Game extends BaseOrmEntity {
     ) {
       this.determineWinner();
       this.finishedGame();
+      return true;
     }
 
     return false;

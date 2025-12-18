@@ -91,7 +91,7 @@ export class SaQuestionsController {
     @Param('id', UuidValidationPipe) id: string,
     @Body() inputDto: PublishInputDto,
   ): Promise<void> {
-    console.log('id', id);
+
     await this.commandBus.execute(
       new TogglePublishQuestionCommand(id, inputDto.published),
     );

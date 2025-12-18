@@ -21,9 +21,8 @@ import { GameQueryRepository } from './quiz-game/infrastructure/query/game.query
 import { PairGameController } from './quiz-game/features/pair-game/api/pair-game.controller';
 import { GetUnfinishedGameQueryHandler } from './quiz-game/features/pair-game/application/query-useceses/get-unfinished-game.query-usecase';
 import { GetGameByIdHandler } from './quiz-game/features/pair-game/application/query-useceses/get-game-by-id.query-usecase';
-import {
-  RecordCurrentAnswerHandler
-} from './quiz-game/features/pair-game/application/usecases/record-current-answer.usecese';
+import { RecordCurrentAnswerHandler } from './quiz-game/features/pair-game/application/usecases/record-current-answer.usecese';
+import { AnswerRepository } from './quiz-game/infrastructure/answer.repository';
 
 const questionsHandler = [
   CreateQuestionHandler,
@@ -51,6 +50,7 @@ const pairGameQueryHandler = [
     PlayerRepository,
     GameRepository,
     GameQueryRepository,
+    AnswerRepository,
     ...questionsHandler,
     ...questionQueryHandler,
     ...pairGameHandler,

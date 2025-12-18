@@ -18,7 +18,7 @@ export class Player extends BaseOrmEntity {
   score: number;
 
   @OneToMany(() => Answer, (a) => a.player, {
-    cascade: ['insert', 'update'],
+    // cascade: ['insert', 'update'],
   })
   answers: Answer[];
 
@@ -35,31 +35,40 @@ export class Player extends BaseOrmEntity {
     return this.answers.length === 5;
   }
 
-  getIndexAnswer() {
+  getIndexAnswerQuestion() {
     return this.answers.length;
   }
 
-  addAnswer(question: Question, currentAnswer: string) {
-    const isCorrect = question.answers.includes(
-      currentAnswer.trim().toLowerCase(),
+  private updateAnswerScore() {
+    const corrects = this.answers.filter(
+      (a) => a.status === AnswerStatusesEnum.correct,
     );
-    const newAnswer = Answer.createAnswer({
-      playerId: this.id,
-      questionId: question.id,
-      status: isCorrect
-        ? AnswerStatusesEnum.correct
-        : AnswerStatusesEnum.incorrect,
-    });
-    this.answers.push(newAnswer);
+    this.score = corrects.length;
+  }
 
-    const score = isCorrect ? this.score + 1 : this.score - 1;
-    this.score = score < 0 ? 0 : score > 5 ? 5 : score;
+  addAnswerQuestion(newAnswer: Answer) {
+    // const isCorrect = question.answers.includes(
+    //   currentAnswer.trim().toLowerCase(),
+    // );
+    // const newAnswer = Answer.createAnswer({
+    //   playerId: this.id,
+    //   questionId: question.id,
+    //   status: isCorrect
+    //     ? AnswerStatusesEnum.correct
+    //     : AnswerStatusesEnum.incorrect,
+    // });
+    this.answers.push(newAnswer);
+    this.updateAnswerScore();
   }
 
   getAnswerSummary(): { lastAddedAt: Date; hasOneCorrectStatus: boolean } {
+    const lastAnswer = this.answers[this.answers.length - 1];
+
     return {
-      lastAddedAt: new Date(),
-      hasOneCorrectStatus: true,
+      lastAddedAt: lastAnswer.createdAt,
+      hasOneCorrectStatus: this.answers.some(
+        (a) => a.status === AnswerStatusesEnum.correct,
+      ),
     };
   }
 

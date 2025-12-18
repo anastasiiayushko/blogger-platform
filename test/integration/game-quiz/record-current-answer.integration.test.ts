@@ -9,19 +9,15 @@ import {
 import { DataSource } from 'typeorm';
 import { ormDBCleaner } from '../../util/orm-db-cleaner';
 import { FillQuestionsSeed } from '../../../seeds/fill-questions.seed';
-import { Game } from '../../../src/modules/quiz/quiz-game/domain/game/game.entity';
 import { GameStatusesEnum } from '../../../src/modules/quiz/quiz-game/domain/game/game-statuses.enum';
-import { DomainException } from '../../../src/core/exceptions/domain-exception';
 import { GameQueryRepository } from '../../../src/modules/quiz/quiz-game/infrastructure/query/game.query-repository';
-import { assertGamePairView } from '../../util/assert-view/assert-game-pair-view';
-import { GamePairViewDto } from '../../../src/modules/quiz/quiz-game/infrastructure/query/mapper/game-pair.view-dto';
 import {
   RecordCurrentAnswerCommand,
   RecordCurrentAnswerHandler,
 } from '../../../src/modules/quiz/quiz-game/features/pair-game/application/usecases/record-current-answer.usecese';
 import { GameRepository } from '../../../src/modules/quiz/quiz-game/infrastructure/game.repository';
 
-describe('Game Pair Connection Integration', () => {
+describe('Quiz: Sync AnswerQuestion Integration', () => {
   let app: INestApplication;
   let saCreateUserHandler;
   let gamePairConnectionHandler;
@@ -30,7 +26,6 @@ describe('Game Pair Connection Integration', () => {
   let gameRepository: GameRepository;
   let user_1_id;
   let user_2_id;
-  let user_3_id;
 
   let dataSource: DataSource;
   beforeAll(async () => {
@@ -66,8 +61,8 @@ describe('Game Pair Connection Integration', () => {
     await app.close();
   });
 
-  it(`should be create new game first player -> user_1 and success join second player -> user_2`, async () => {
-    const createdGameId = await gamePairConnectionHandler.execute(
+  it(`Игрок А(user_1) ответил быстрее Игрока Б(user_2) кол-во верных ответов равны. Игрок А получает бонусный бал и побеждает`, async () => {
+    const currentGameId = await gamePairConnectionHandler.execute(
       new GamePairConnectionCmd(user_1_id),
     );
 
@@ -76,23 +71,112 @@ describe('Game Pair Connection Integration', () => {
     );
     const currentGame = await gameRepository.findActiveGameByUserId(user_1_id);
 
-    const questions = currentGame!.questions;
+    const gameQuestions = currentGame!.questions;
+    const positionQuestion = [0, 1, 2, 3, 4];
+    for await (const i of positionQuestion) {
+      const question = gameQuestions[i].question;
+      const correctAnswerIndex = [0, 2, 3];
+      const answer = correctAnswerIndex.includes(i)
+        ? question.answers[0]
+        : 'some answer';
+      await recordCurrentAnswerHandler.execute(
+        new RecordCurrentAnswerCommand(user_1_id, answer),
+      );
+    }
 
-    const answer1 = await recordCurrentAnswerHandler.execute(
-      new RecordCurrentAnswerCommand(user_1_id, 'bla'),
-    );
-    const answer2 = await recordCurrentAnswerHandler.execute(
-      new RecordCurrentAnswerCommand(user_1_id, 'bla'),
+    for await (const i of positionQuestion) {
+      const question = gameQuestions[i].question;
+      const correctAnswerIndex = [1, 3, 4];
+      const answer = correctAnswerIndex.includes(i)
+        ? question.answers[0]
+        : 'some answer';
+      await recordCurrentAnswerHandler.execute(
+        new RecordCurrentAnswerCommand(user_2_id, answer),
+      );
+    }
+
+    const finishedGame = await gameQueryRepository.findGameById(currentGameId);
+
+    expect(finishedGame?.firstPlayerProgress.score).toBe(4);
+    expect(finishedGame?.secondPlayerProgress!.score).toBe(3);
+    expect(finishedGame?.status).toBe(GameStatusesEnum.finished);
+  });
+  it(`Игрок А(user_1) ответил быстрее но 0 верных ответов Игрока Б(user_2) ответил на один ворпос верно. Игрок Б побеждает но без начисления бонусного бала`, async () => {
+    const currentGameId = await gamePairConnectionHandler.execute(
+      new GamePairConnectionCmd(user_1_id),
     );
 
-    const answer3 = await recordCurrentAnswerHandler.execute(
-      new RecordCurrentAnswerCommand(user_1_id, 'bla'),
+    await gamePairConnectionHandler.execute(
+      new GamePairConnectionCmd(user_2_id),
     );
-    const answer4 = await recordCurrentAnswerHandler.execute(
-      new RecordCurrentAnswerCommand(user_1_id, 'bla'),
+    const currentGame = await gameRepository.findActiveGameByUserId(user_1_id);
+
+    const gameQuestions = currentGame!.questions;
+    const positionQuestion = [0, 1, 2, 3, 4];
+    for await (const i of positionQuestion) {
+      const answer = 'some answer';
+      await recordCurrentAnswerHandler.execute(
+        new RecordCurrentAnswerCommand(user_1_id, answer),
+      );
+    }
+
+    for await (const i of positionQuestion) {
+      const question = gameQuestions[i].question;
+      const correctAnswerIndex = [1];
+      const answer = correctAnswerIndex.includes(i)
+        ? question.answers[0]
+        : 'some answer';
+      await recordCurrentAnswerHandler.execute(
+        new RecordCurrentAnswerCommand(user_2_id, answer),
+      );
+    }
+
+    const finishedGame = await gameQueryRepository.findGameById(currentGameId);
+
+    console.log('finishedGame ->', finishedGame);
+
+    expect(finishedGame?.firstPlayerProgress.score).toBe(0);
+    expect(finishedGame?.secondPlayerProgress!.score).toBe(1);
+    expect(finishedGame?.status).toBe(GameStatusesEnum.finished);
+  });
+  it(`Игрок А(user_1) ответил быстрее но 2 верных ответа Игрока Б(user_2) ответил на 3 ворпоса. Игроку А начисляется брнусный бал. В результате будет НИЧЬЯ!`, async () => {
+    const currentGameId = await gamePairConnectionHandler.execute(
+      new GamePairConnectionCmd(user_1_id),
     );
-    const answer5 = await recordCurrentAnswerHandler.execute(
-      new RecordCurrentAnswerCommand(user_1_id, 'bla'),
+
+    await gamePairConnectionHandler.execute(
+      new GamePairConnectionCmd(user_2_id),
     );
+    const currentGame = await gameRepository.findActiveGameByUserId(user_1_id);
+
+    const gameQuestions = currentGame!.questions;
+    const positionQuestion = [0, 1, 2, 3, 4];
+    for await (const i of positionQuestion) {
+      const question = gameQuestions[i].question;
+      const correctAnswerIndex = [0, 4];
+      const answer = correctAnswerIndex.includes(i)
+        ? question.answers[0]
+        : 'some answer';
+      await recordCurrentAnswerHandler.execute(
+        new RecordCurrentAnswerCommand(user_1_id, answer),
+      );
+    }
+
+    for await (const i of positionQuestion) {
+      const question = gameQuestions[i].question;
+      const correctAnswerIndex = [1, 2, 3];
+      const answer = correctAnswerIndex.includes(i)
+        ? question.answers[0]
+        : 'some answer';
+      await recordCurrentAnswerHandler.execute(
+        new RecordCurrentAnswerCommand(user_2_id, answer),
+      );
+    }
+
+    const finishedGame = await gameQueryRepository.findGameById(currentGameId);
+
+    expect(finishedGame?.firstPlayerProgress.score).toBe(3);
+    expect(finishedGame?.secondPlayerProgress!.score).toBe(3);
+    expect(finishedGame?.status).toBe(GameStatusesEnum.finished);
   });
 });

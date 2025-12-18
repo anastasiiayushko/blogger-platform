@@ -6,6 +6,9 @@ import { DomainException } from '../../../../../../../core/exceptions/domain-exc
 import { DomainExceptionCode } from '../../../../../../../core/exceptions/domain-exception-codes';
 import { PlayerRepository } from '../../../../infrastructure/player.repository';
 import { Player } from '../../../../domain/player/player.entity';
+import { AnswerRepository } from '../../../../infrastructure/answer.repository';
+import { Answer } from '../../../../domain/answer/answer.entity';
+import { AnswerStatusesEnum } from '../../../../domain/answer/answer-statuses.enum';
 
 export class RecordCurrentAnswerCommand extends ValidatableCommand {
   @IsNotEmpty()
@@ -36,6 +39,7 @@ export class RecordCurrentAnswerHandler
   constructor(
     protected gameRepository: GameRepository,
     protected playerRepository: PlayerRepository,
+    protected answerRepository: AnswerRepository,
   ) {}
 
   async execute(command: RecordCurrentAnswerCommand) {
@@ -52,6 +56,25 @@ export class RecordCurrentAnswerHandler
       });
     }
 
+    /**
+     * application-слой явно проверяет, что
+     * обязательные связи не undefined и соответствуют ожиданиям
+     * ловим до того, как доменная логика начнёт падать
+     * */
+
+    if (!game.firstPlayer || !game.secondPlayer) {
+      throw new DomainException({
+        code: DomainExceptionCode.InternalServerError,
+        message: 'Players must be loaded',
+      });
+    }
+    if (!game.firstPlayer.answers || !game.secondPlayer.answers) {
+      throw new DomainException({
+        code: DomainExceptionCode.InternalServerError,
+        message: 'Player answers must be loaded',
+      });
+    }
+
     const currentPlayerKey =
       game.firstPlayer.userId === command.userId
         ? 'firstPlayer'
@@ -62,16 +85,24 @@ export class RecordCurrentAnswerHandler
     const currentPlayer = game[currentPlayerKey] as Player;
     const opponentPlayer = game[opponentPlayerKey] as Player;
 
-    console.log('current player ->', currentPlayer);
-    const currentQuestion = game.questions[currentPlayer.getIndexAnswer()];
+    const gameQuestion = game.questions[currentPlayer.getIndexAnswerQuestion()];
 
-    currentPlayer.addAnswer(currentQuestion.question, command.answer);
+    const newAnswer = Answer.createAnswer({
+      questionId: gameQuestion.questionId,
+      playerId: currentPlayer.id,
+      status: gameQuestion.question.answers.includes(
+        command.answer.trim().toLowerCase(),
+      )
+        ? AnswerStatusesEnum.correct
+        : AnswerStatusesEnum.incorrect,
+    });
+    await this.answerRepository.save(newAnswer);
+    currentPlayer.addAnswerQuestion(newAnswer);
 
-
-
-
+    game.tryToFinish();
 
     await this.playerRepository.save(currentPlayer);
+    await this.playerRepository.save(opponentPlayer);
 
     await this.gameRepository.save(game);
   }
