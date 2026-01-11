@@ -15,6 +15,12 @@ export const assertQuestionView = (
   expect(actual.correctAnswers).toEqual(expected.correctAnswers);
 
   expect(actual.createdAt).toEqual(expect.any(String));
+  const createdAt = new Date(actual.createdAt).getTime();
 
-  expect(actual.updatedAt).toEqual(expect.any(String));
+  if (!actual.updatedAt) {
+    expect(actual.updatedAt).toEqual(null);
+  } else {
+    const updatedAt = new Date(actual.updatedAt).getTime();
+    expect(updatedAt).toBeGreaterThan(createdAt);
+  }
 };

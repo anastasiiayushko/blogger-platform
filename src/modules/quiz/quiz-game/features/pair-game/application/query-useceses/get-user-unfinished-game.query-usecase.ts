@@ -4,19 +4,19 @@ import { GameQueryRepository } from '../../../../infrastructure/query/game.query
 import { DomainException } from '../../../../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../../../../core/exceptions/domain-exception-codes';
 
-export class GetUnfinishedGameQuery extends Query<GamePairViewDto> {
+export class GetUserUnfinishedGameQuery extends Query<GamePairViewDto> {
   constructor(public userId: string) {
     super();
   }
 }
 
-@QueryHandler(GetUnfinishedGameQuery)
-export class GetUnfinishedGameQueryHandler
-  implements IQueryHandler<GetUnfinishedGameQuery>
+@QueryHandler(GetUserUnfinishedGameQuery)
+export class GetUserUnfinishedGameQueryHandler
+  implements IQueryHandler<GetUserUnfinishedGameQuery>
 {
   constructor(protected gameQueryRepository: GameQueryRepository) {}
 
-  async execute(query: GetUnfinishedGameQuery) {
+  async execute(query: GetUserUnfinishedGameQuery) {
     const game = await this.gameQueryRepository.findUnfinishedGameByUserId(
       query.userId,
     );

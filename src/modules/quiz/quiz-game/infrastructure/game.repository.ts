@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, IsNull, Repository } from 'typeorm';
+import { In, IsNull, Not, Repository } from 'typeorm';
 import { Game } from '../domain/game/game.entity';
 import { GameStatusesEnum } from '../domain/game/game-statuses.enum';
 
@@ -11,14 +11,16 @@ export class GameRepository {
     private readonly gameRepo: Repository<Game>,
   ) {}
 
-  async findGameInStatusPending(): Promise<Game | null> {
+  async findGameInStatusPending(excludedUserId: string): Promise<Game | null> {
     return await this.gameRepo.findOne({
       relations: {
         questions: true,
+        firstPlayer: true,
       },
       where: {
         status: GameStatusesEnum.pending,
         startGameDate: IsNull(),
+        ...(excludedUserId ? {firstPlayer:{userId: Not(excludedUserId)}} : {})
       },
     });
   }
@@ -27,18 +29,13 @@ export class GameRepository {
     return await this.gameRepo.findOne({
       relations: {
         firstPlayer: {
-          answers: true
+          answers: true,
         },
         secondPlayer: {
-          answers: true
+          answers: true,
         },
         questions: {
           question: true,
-        },
-      },
-      order: {
-        questions: {
-          order: 'ASC',
         },
       },
       where: [
@@ -51,6 +48,18 @@ export class GameRepository {
           status: GameStatusesEnum.active,
         },
       ],
+      order: {
+        createdAt: 'DESC',
+        questions: {
+          order: 'ASC',
+        },
+        firstPlayer:{
+          answers: {createdAt: 'ASC'}
+        },
+        secondPlayer:{
+          answers: {createdAt: 'ASC'}
+        },
+      },
     });
   }
 
@@ -70,6 +79,7 @@ export class GameRepository {
           status: In([GameStatusesEnum.pending, GameStatusesEnum.active]),
         },
       ],
+      order: { createdAt: 'DESC' },
       take: 1,
     });
     if (games.length === 0) {

@@ -79,6 +79,7 @@ export class SaQuestionsController {
     @Param('id', UuidValidationPipe) id: string,
     @Body() inputDto: QuestionInputDto,
   ): Promise<void> {
+
     await this.commandBus.execute(
       new UpdateQuestionCommand(id, inputDto.body, inputDto.correctAnswers),
     );
@@ -90,12 +91,11 @@ export class SaQuestionsController {
   async togglePublish(
     @Param('id', UuidValidationPipe) id: string,
     @Body() inputDto: PublishInputDto,
-  ): Promise<void> {
-
+  ) {
     await this.commandBus.execute(
       new TogglePublishQuestionCommand(id, inputDto.published),
     );
-    return;
+    return
   }
 
   @Delete(':id')

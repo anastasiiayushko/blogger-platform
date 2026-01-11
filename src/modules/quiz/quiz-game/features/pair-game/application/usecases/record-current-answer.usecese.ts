@@ -9,6 +9,9 @@ import { Player } from '../../../../domain/player/player.entity';
 import { AnswerRepository } from '../../../../infrastructure/answer.repository';
 import { Answer } from '../../../../domain/answer/answer.entity';
 import { AnswerStatusesEnum } from '../../../../domain/answer/answer-statuses.enum';
+import { AnswerViewDto } from '../../api/view-dto/answer.view-dto';
+import { Question } from '../../../../../sa-question/domain/question.entity';
+import { GameQuestion } from '../../../../domain/game-question/game-question.entity';
 
 export class RecordCurrentAnswerCommand extends ValidatableCommand {
   @IsNotEmpty()
@@ -26,12 +29,6 @@ export class RecordCurrentAnswerCommand extends ValidatableCommand {
   }
 }
 
-type Result = {
-  questionId: string;
-  answerStatus: string;
-  addedAt: string;
-};
-
 @CommandHandler(RecordCurrentAnswerCommand)
 export class RecordCurrentAnswerHandler
   implements ICommandHandler<RecordCurrentAnswerCommand>
@@ -42,7 +39,7 @@ export class RecordCurrentAnswerHandler
     protected answerRepository: AnswerRepository,
   ) {}
 
-  async execute(command: RecordCurrentAnswerCommand) {
+  async execute(command: RecordCurrentAnswerCommand): Promise<AnswerViewDto> {
     await command.validateOrFail();
 
     const game = await this.gameRepository.findActiveGameByUserId(
@@ -85,7 +82,14 @@ export class RecordCurrentAnswerHandler
     const currentPlayer = game[currentPlayerKey] as Player;
     const opponentPlayer = game[opponentPlayerKey] as Player;
 
-    const gameQuestion = game.questions[currentPlayer.getIndexAnswerQuestion()];
+    if (currentPlayer.hasAnsweredAllQuestions()) {
+      throw new DomainException({
+        code: DomainExceptionCode.Forbidden,
+        message: 'Player already answered to all questions',
+      });
+    }
+    const questions = game.questions as GameQuestion[];
+    const gameQuestion = questions[currentPlayer.getIndexAnswerQuestion()];
 
     const newAnswer = Answer.createAnswer({
       questionId: gameQuestion.questionId,
@@ -105,5 +109,7 @@ export class RecordCurrentAnswerHandler
     await this.playerRepository.save(opponentPlayer);
 
     await this.gameRepository.save(game);
+
+    return AnswerViewDto.mapToView(newAnswer);
   }
 }

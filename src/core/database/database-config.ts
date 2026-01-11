@@ -65,7 +65,6 @@ export class DatabaseConfig {
     this.logging = configValidationUtility.convertToBoolean(
       this.configService.get('PG_DATABASE_LOGGING'),
     );
-
     configValidationUtility.validateConfig(this);
   }
 }

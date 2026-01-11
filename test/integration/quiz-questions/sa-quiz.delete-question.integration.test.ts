@@ -3,14 +3,12 @@ import {
   CreateQuestionCommand,
   CreateQuestionHandler,
 } from '../../../src/modules/quiz/sa-question/application/usecases/create-question.usecase';
-import { QuestionQueryRepository } from '../../../src/modules/quiz/sa-question/infrastructure/question.query-repository';
 import { CoreModule } from '../../../src/core/core.module';
 import { configModule } from '../../../src/dynamic-config-module';
 import { DatabaseModule } from '../../../src/core/database/database.module';
 import { setupTestApp } from '../../setup-app/setup-test-app';
 import { DataSource } from 'typeorm';
 import { ormDBCleaner } from '../../util/orm-db-cleaner';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { Question } from '../../../src/modules/quiz/sa-question/domain/question.entity';
 import { QuestionRepository } from '../../../src/modules/quiz/sa-question/infrastructure/question.repository';
 import {
@@ -21,6 +19,7 @@ import { DomainException } from '../../../src/core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../src/core/exceptions/domain-exception-codes';
 import { randomUUID } from 'crypto';
 import { assertValidateErrorDto } from '../../util/assert-error/assert-validate-error-dto';
+import { QuizGameModule } from '../../../src/modules/quiz/quiz-game.module';
 
 describe('SA Quiz - DeleteQuestion (integration)', () => {
   jest.setTimeout(20000);
@@ -37,13 +36,7 @@ describe('SA Quiz - DeleteQuestion (integration)', () => {
         CoreModule,
         configModule, //  инициализация конфигурации
         DatabaseModule,
-        TypeOrmModule.forFeature([Question]),
-      ],
-      providers: [
-        QuestionRepository,
-        CreateQuestionHandler,
-        DeleteQuestionHandler,
-        QuestionQueryRepository,
+        QuizGameModule,
       ],
     });
     app = appNest;

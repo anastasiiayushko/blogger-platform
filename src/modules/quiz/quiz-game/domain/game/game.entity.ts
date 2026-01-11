@@ -40,8 +40,9 @@ export class Game extends BaseOrmEntity {
 
   @OneToMany(() => GameQuestion, (gq) => gq.game, {
     cascade: true,
+    nullable: true,
   })
-  questions: GameQuestion[];
+  questions: GameQuestion[] | null;
 
   static createPending(dto: CreateGameDomainDto): Game {
     const game = new this();
@@ -51,6 +52,7 @@ export class Game extends BaseOrmEntity {
     game.status = GameStatusesEnum.pending;
     game.startGameDate = null;
     game.finishGameDate = null;
+    game.questions = null;
     return game;
   }
 

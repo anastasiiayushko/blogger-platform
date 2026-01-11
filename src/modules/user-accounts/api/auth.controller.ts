@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { LocalAuthGuard } from '../guards/local/local-auth.guard';
-import { ApiResponse } from '@nestjs/swagger';
+import { ApiBasicAuth, ApiBody, ApiResponse } from '@nestjs/swagger';
 import { CurrentUserFormRequest } from '../decorators/param/current-user-form-request.decorator';
 import { UserContextDto } from '../decorators/param/user-context.dto';
 import { AuthCodeInputDto } from './input-dto/auth-code.input-dto';
@@ -40,6 +40,7 @@ import { RegistrationUserCommand } from '../application/auth-usecases/registrati
 import { RegistrationEmailResendingCommand } from '../application/auth-usecases/registration-email-resending.usecase';
 import { UserQueryRepository } from '../infrastructure/query/user-query-repositroy';
 import { UserMeViewDto } from '../infrastructure/mapper/user-me-view-dto';
+import { LoginInputDto } from './input-dto/login.input-dto';
 
 type PairTokenType = {
   accessToken: string;
@@ -56,6 +57,9 @@ export class AuthController {
   @Post('/login')
   @HttpCode(HttpStatus.OK)
   @UseGuards(LocalAuthGuard)
+  @ApiBody({
+    type: LoginInputDto,
+  })
   async login(
     @UserAgentAndIpParam() agentAndIp: UserAgentAndIpDto,
     @CurrentUserFormRequest() user: UserContextDto,

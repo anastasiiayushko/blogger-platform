@@ -18,12 +18,9 @@ import {
 } from '../../../src/modules/quiz/sa-question/application/query-usecases/get-questions-with-paging.query-usecase';
 import { QuestionQueryParams } from '../../../src/modules/quiz/sa-question/api/input-dto/question-query-params.input-dto';
 import { assertQuestionView } from '../../util/assert-view/assert-question-view';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Question } from '../../../src/modules/quiz/sa-question/domain/question.entity';
-import { QuestionRepository } from '../../../src/modules/quiz/sa-question/infrastructure/question.repository';
-import { DomainException } from '../../../src/core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../src/core/exceptions/domain-exception-codes';
 import { assertValidateErrorDto } from '../../util/assert-error/assert-validate-error-dto';
+import { QuizGameModule } from '../../../src/modules/quiz/quiz-game.module';
 
 describe('SA Quiz - CreateQuestion (integration)', () => {
   jest.setTimeout(20000);
@@ -40,13 +37,7 @@ describe('SA Quiz - CreateQuestion (integration)', () => {
         CoreModule,
         configModule, //  инициализация конфигурации
         DatabaseModule,
-        TypeOrmModule.forFeature([Question]),
-      ],
-      providers: [
-        QuestionRepository,
-        CreateQuestionHandler,
-        GetQuestionsWithPagingHandler,
-        QuestionQueryRepository,
+        QuizGameModule,
       ],
     });
     app = appNest;
@@ -56,9 +47,9 @@ describe('SA Quiz - CreateQuestion (integration)', () => {
     questionQueryRepository = app.get(QuestionQueryRepository);
     await ormDBCleaner(dataSource);
   });
-  // afterEach(async () => {
-  //   //   if (dataSource.isInitialized) await ormClearDatabase(dataSource);
-  //   // });
+  afterEach(async () => {
+    if (dataSource.isInitialized) await ormDBCleaner(dataSource);
+  });
   afterAll(async () => {
     await app.close();
     await ormDBCleaner(dataSource);

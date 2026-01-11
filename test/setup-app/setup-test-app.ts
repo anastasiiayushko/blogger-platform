@@ -1,6 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule, TestingModuleBuilder } from '@nestjs/testing';
 import { DataSource } from 'typeorm';
+import { AppModule } from '../../src/app.module';
 
 export interface SetupTestAppOptions {
   imports: any[]; // твои модули
@@ -21,11 +22,11 @@ export async function setupTestApp(
 ): Promise<TestApp> {
   const { imports, override, initHttp = true, providers = [] } = options;
   if (!Array.isArray(imports) || !imports.length) {
-    throw new Error('Import must be an array and not empty');
+    // throw new Error('Import must be an array and not empty');
   }
 
   const moduleMetaData = {
-    imports: imports,
+    imports: !Array.isArray(imports) || !imports.length ? [AppModule] : imports,
   };
   if (providers.length) {
     moduleMetaData['providers'] = providers;

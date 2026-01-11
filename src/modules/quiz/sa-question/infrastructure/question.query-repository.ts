@@ -80,6 +80,7 @@ export class QuestionQueryRepository {
     const SORT_BY_FIELD_MAP: Record<QuestionSortByEnum, string> = {
       ['createdAt']: 'created_at',
       ['updatedAt']: 'updated_at',
+      ['body']: 'body'
     };
 
     const whereCondition: string[] = [];

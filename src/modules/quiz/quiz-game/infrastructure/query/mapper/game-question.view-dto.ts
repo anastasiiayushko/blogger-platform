@@ -1,12 +1,12 @@
 //GamePlayerProgressViewModel
 //GameQuestions
-import { GameStatusesEnum } from '../../../domain/game/game-statuses.enum';
-import { PlayerProgressViewDto } from './player-progress.view-dto';
 import { GameQuestion } from '../../../domain/game-question/game-question.entity';
-import { Question } from '../../../../sa-question/domain/question.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class GameQuestionViewDto {
+  @ApiProperty({type: String})
   id: string;
+  @ApiProperty({type: String})
   body: string;
 
   static mapToView(question: GameQuestion): GameQuestionViewDto {

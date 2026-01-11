@@ -19,10 +19,10 @@ import { GameRepository } from './quiz-game/infrastructure/game.repository';
 import { GamePairConnectionHandler } from './quiz-game/features/pair-game/application/usecases/game-pair-connection.usecese';
 import { GameQueryRepository } from './quiz-game/infrastructure/query/game.query-repository';
 import { PairGameController } from './quiz-game/features/pair-game/api/pair-game.controller';
-import { GetUnfinishedGameQueryHandler } from './quiz-game/features/pair-game/application/query-useceses/get-unfinished-game.query-usecase';
 import { GetGameByIdHandler } from './quiz-game/features/pair-game/application/query-useceses/get-game-by-id.query-usecase';
 import { RecordCurrentAnswerHandler } from './quiz-game/features/pair-game/application/usecases/record-current-answer.usecese';
 import { AnswerRepository } from './quiz-game/infrastructure/answer.repository';
+import { GetUserUnfinishedGameQueryHandler } from './quiz-game/features/pair-game/application/query-useceses/get-user-unfinished-game.query-usecase';
 
 const questionsHandler = [
   CreateQuestionHandler,
@@ -33,7 +33,7 @@ const questionsHandler = [
 const pairGameHandler = [GamePairConnectionHandler, RecordCurrentAnswerHandler];
 const questionQueryHandler = [GetQuestionsWithPagingHandler];
 const pairGameQueryHandler = [
-  GetUnfinishedGameQueryHandler,
+  GetUserUnfinishedGameQueryHandler,
   GetGameByIdHandler,
 ];
 

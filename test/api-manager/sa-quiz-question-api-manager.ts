@@ -61,12 +61,12 @@ export class SaQuizQuestionApiManager {
   }
 
   async getAllWithPaging(
-    queryParams: Partial<QuestionQueryParams>,
+    queryParams?: Partial<QuestionQueryParams>,
     basicAuth = this.basicAuth,
   ): ResponseBodySuperTest<PaginatedViewDto<QuestionViewDto[]>> {
     return await request(this.app.getHttpServer())
       .get(`${this.URL_PATH}`)
-      .query(queryParams)
+      .query(queryParams ?? {})
       .set('Authorization', basicAuth);
   }
 }

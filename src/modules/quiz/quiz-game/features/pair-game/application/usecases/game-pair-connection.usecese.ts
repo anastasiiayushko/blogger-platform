@@ -42,8 +42,9 @@ export class GamePairConnectionHandler
       });
     }
 
-    const gameInAwaitSecondPlayer =
-      await this.gameRepo.findGameInStatusPending();
+    const gameInAwaitSecondPlayer = await this.gameRepo.findGameInStatusPending(
+      cmd.userId,
+    );
     if (gameInAwaitSecondPlayer) {
       const secondPlayer = Player.createPlayer({
         userId: cmd.userId,
@@ -51,10 +52,18 @@ export class GamePairConnectionHandler
 
       gameInAwaitSecondPlayer.joinSecondPlayer(secondPlayer.id);
 
-      gameInAwaitSecondPlayer.startGame();
+      const randomQuestion = await this.questionRepository.getRandomQuestion();
 
+      const gameQuestions = GameQuestion.createMany(
+        randomQuestion,
+        gameInAwaitSecondPlayer.id,
+      );
+      gameInAwaitSecondPlayer.assignQuestions(gameQuestions);
+
+      gameInAwaitSecondPlayer.startGame();
       await this.playerRepository.save(secondPlayer);
       await this.gameRepo.save(gameInAwaitSecondPlayer);
+
       return gameInAwaitSecondPlayer.id;
     }
 
@@ -65,11 +74,6 @@ export class GamePairConnectionHandler
     const newGame = Game.createPending({
       firstPlayerId: playerFirst.id,
     });
-
-    const randomQuestion = await this.questionRepository.getRandomQuestion();
-
-    const gameQuestions = GameQuestion.createMany(randomQuestion, newGame.id);
-    newGame.assignQuestions(gameQuestions);
 
     await this.playerRepository.save(playerFirst);
     await this.gameRepo.save(newGame);

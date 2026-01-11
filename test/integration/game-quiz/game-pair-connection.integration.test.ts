@@ -15,6 +15,7 @@ import { DomainException } from '../../../src/core/exceptions/domain-exception';
 import { GameQueryRepository } from '../../../src/modules/quiz/quiz-game/infrastructure/query/game.query-repository';
 import { assertGamePairView } from '../../util/assert-view/assert-game-pair-view';
 import { GamePairViewDto } from '../../../src/modules/quiz/quiz-game/infrastructure/query/mapper/game-pair.view-dto';
+import { Player } from '../../../src/modules/quiz/quiz-game/domain/player/player.entity';
 
 describe('Game Pair Connection Integration', () => {
   let app: INestApplication;
@@ -81,7 +82,7 @@ describe('Game Pair Connection Integration', () => {
     expect(gameInPending!.startGameDate).toBeNull();
     expect(gameInPending!.finishGameDate).toBeNull();
     expect(gameInPending!.secondPlayerId).toBeNull();
-    expect(gameInPending!.questions!.length).toBe(5);
+    expect(gameInPending!.questions).toEqual([]);
 
     const gameIdInActive = await gamePairConnectionHandler.execute(
       new GamePairConnectionCmd(user_2_id),
@@ -132,5 +133,62 @@ describe('Game Pair Connection Integration', () => {
       },
       secondPlayer: null,
     });
+  });
+
+  it(`should not allow player to join his own pending game`, async () => {
+    await ormDBCleaner(dataSource);
+    await FillQuestionsSeed.up(dataSource);
+
+    const userId = await saCreateUserHandler.execute({
+      login: 'player4',
+      email: 'player4@example.com',
+      password: 'player4',
+    });
+
+    await gamePairConnectionHandler.execute(new GamePairConnectionCmd(userId));
+
+    await expect(
+      gamePairConnectionHandler.execute(new GamePairConnectionCmd(userId)),
+    ).rejects.toBeInstanceOf(DomainException);
+  });
+
+  it(`should deterministically return latest unfinished game for user`, async () => {
+    await ormDBCleaner(dataSource);
+    await FillQuestionsSeed.up(dataSource);
+
+    const userId = await saCreateUserHandler.execute({
+      login: 'player5',
+      email: 'player5@example.com',
+      password: 'player5',
+    });
+
+    const playerRepo = dataSource.getRepository(Player);
+    const gameRepo = dataSource.getRepository(Game);
+
+    const firstPlayer = Player.createPlayer({ userId });
+    const secondPlayer = Player.createPlayer({ userId });
+    await playerRepo.save([firstPlayer, secondPlayer]);
+
+    const olderGame = Game.createPending({ firstPlayerId: firstPlayer.id });
+    const newerGame = Game.createPending({ firstPlayerId: secondPlayer.id });
+    await gameRepo.save([olderGame, newerGame]);
+
+    await dataSource.query(
+      `UPDATE "game"
+       SET "created_at" = $1
+       WHERE id = $2`,
+      [new Date('2026-01-01T00:00:00.000Z'), olderGame.id],
+    );
+    await dataSource.query(
+      `UPDATE "game"
+       SET "created_at" = $1
+       WHERE id = $2`,
+      [new Date('2026-01-02T00:00:00.000Z'), newerGame.id],
+    );
+
+    const game = await gameQueryRepository.findUnfinishedGameByUserId(userId);
+
+    expect(game).not.toBeNull();
+    expect(game!.id).toBe(newerGame.id);
   });
 });

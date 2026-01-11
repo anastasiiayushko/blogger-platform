@@ -4,7 +4,7 @@ import { GameQueryRepository } from '../../../../infrastructure/query/game.query
 import { DomainException } from '../../../../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../../../../core/exceptions/domain-exception-codes';
 
-export class GetGameById extends Query<GamePairViewDto> {
+export class GetGameByIdQuery extends Query<GamePairViewDto> {
   constructor(
     public userId: string,
     public gameId: string,
@@ -13,13 +13,13 @@ export class GetGameById extends Query<GamePairViewDto> {
   }
 }
 
-@QueryHandler(GetGameById)
+@QueryHandler(GetGameByIdQuery)
 export class GetGameByIdHandler
-  implements IQueryHandler<GetGameById>
+  implements IQueryHandler<GetGameByIdQuery>
 {
   constructor(protected gameQueryRepository: GameQueryRepository) {}
 
-  async execute(query: GetGameById) {
+  async execute(query: GetGameByIdQuery) {
     const game = await this.gameQueryRepository.findGameById(query.gameId);
 
     if (!game) {

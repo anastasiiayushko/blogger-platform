@@ -16,12 +16,12 @@ export class GameQueryRepository {
       .leftJoinAndSelect('game.firstPlayer', 'p1')
       .leftJoinAndSelect('p1.user', 'u1')
       .leftJoinAndSelect('p1.answers', 'a1')
+
       .leftJoinAndSelect('game.secondPlayer', 'p2')
       .leftJoinAndSelect('p2.user', 'u2')
       .leftJoinAndSelect('p2.answers', 'a2')
       .leftJoinAndSelect('game.questions', 'gq', 'gq.game_id = game.id')
-      .leftJoinAndSelect('gq.question', 'q')
-      .orderBy('gq.order', 'ASC');
+      .leftJoinAndSelect('gq.question', 'q');
   }
 
   async findUnfinishedGameByUserId(
@@ -34,6 +34,10 @@ export class GameQueryRepository {
       .andWhere('game.status In(:...statuses) ', {
         statuses: [GameStatusesEnum.pending, GameStatusesEnum.active],
       })
+      .orderBy('game.createdAt', 'DESC')
+      .addOrderBy('gq.order', 'ASC')
+      .addOrderBy('a1.createdAt', 'ASC')
+      .addOrderBy('a2.createdAt', 'ASC')
       .getOne();
 
     if (!game) {
@@ -47,6 +51,9 @@ export class GameQueryRepository {
       .where('game.id = :id', {
         id,
       })
+      .orderBy('gq.order', 'ASC')
+      .addOrderBy('a1.createdAt', 'ASC')
+      .addOrderBy('a2.createdAt', 'ASC')
       .getOne();
 
     if (!game) {

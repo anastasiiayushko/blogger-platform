@@ -5,6 +5,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export enum QuestionSortByEnum {
   createdAt = 'createdAt',
   updatedAt = 'updatedAt',
+  body = 'body',
 }
 
 export enum QuestionPublishStatusEnum {

@@ -10,19 +10,15 @@ export class TestingController {
 
   @Delete('all-data')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteAll(): Promise<{ status: boolean }> {
-    await this.dataSource.query('TRUNCATE TABLE public."questions" CASCADE');
+  async deleteAll() {
+    const tableNames = this.dataSource.entityMetadatas
+      .map((m) => m.tableName)
+      .filter((name) => name !== 'migrations')
+      .map((name) => `"${name}"`);
 
     await this.dataSource.query(
-      `TRUNCATE TABLE public."comment_reaction" CASCADE;`,
+      `TRUNCATE TABLE ${tableNames.join(', ')} CASCADE;`,
     );
-
-    await this.dataSource.query(`TRUNCATE TABLE public.post CASCADE;`);
-    await this.dataSource.query(`TRUNCATE TABLE public.blog CASCADE;`);
-    await this.dataSource.query(
-      `TRUNCATE TABLE public.email_confirmation CASCADE;`,
-    );
-    await this.dataSource.query(`TRUNCATE TABLE public."user" CASCADE;`);
 
     return {
       status: true,

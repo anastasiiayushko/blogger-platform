@@ -4,6 +4,7 @@ import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import * as process from 'node:process';
 import { envFilePaths } from './src/dynamic-config-module';
 import { snakeCase } from 'typeorm/util/StringUtils';
+import { SeederOptions } from 'typeorm-extension';
 
 config({ path: envFilePaths });
 
@@ -34,7 +35,7 @@ class CustomSnakeNamingStrategy extends SnakeNamingStrategy {
 }
 
 // нужен как “едининый источник правды” для подключения к БД, который понимает и ваше приложение
-export const dataSourceOptions: DataSourceOptions = {
+export const dataSourceOptions: DataSourceOptions & SeederOptions = {
   type: 'postgres',
   host: process.env.PG_DATABASE_HOST,
   //@ts-expect-error
@@ -45,6 +46,7 @@ export const dataSourceOptions: DataSourceOptions = {
   // entities: [User],
   entities: ['src/**/*.entity.ts'],
   migrations: ['migrations/**/*.ts'],
+  seeds: ['seeds/**/*.seeder.ts'],
   logging: ['query', 'error'],
   namingStrategy: new CustomSnakeNamingStrategy(),
   synchronize: false, // в проде всегда false

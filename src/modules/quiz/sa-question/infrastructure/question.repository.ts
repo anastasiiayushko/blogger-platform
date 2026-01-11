@@ -38,12 +38,11 @@ export class QuestionRepository {
   }
 
   async getRandomQuestion(limit = 5): Promise<Question[]> {
-    const result = await this.dataSource
+    return await this.dataSource
       .getRepository(Question)
       .createQueryBuilder('question')
       .orderBy('RANDOM()')
       .limit(limit)
       .getMany();
-    return result;
   }
 }

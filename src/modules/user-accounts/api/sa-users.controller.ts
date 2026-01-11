@@ -22,10 +22,12 @@ import { SkipThrottle } from '@nestjs/throttler';
 import { UserQueryRepository } from '../infrastructure/query/user-query-repositroy';
 import { PaginatedViewDto } from '../../../core/dto/base.paginated.view-dto';
 import { UserViewDto } from '../infrastructure/mapper/user-view-dto';
+import { ApiBasicAuth } from '@nestjs/swagger';
 
 @Injectable()
 @Controller('/sa/users')
 @UseGuards(BasicAuthGuard)
+@ApiBasicAuth('basicAuth')
 @SkipThrottle()
 export class SaUsersController {
   constructor(

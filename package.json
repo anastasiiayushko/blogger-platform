@@ -25,7 +25,9 @@
     "migration:create": "typeorm-ts-node-commonjs migration:create",
     "migration:generate": "cross-env NODE_ENV=testing typeorm-ts-node-commonjs migration:generate -d ./typeorm.config.ts",
     "migration:run": "cross-env  NODE_ENV=development typeorm-ts-node-commonjs migration:run -d typeorm.config.ts",
-    "migration:revert": "typeorm-ts-node-commonjs migration:revert -d typeorm.config.ts"
+    "migration:revert": "typeorm-ts-node-commonjs migration:revert -d typeorm.config.ts",
+    "seed": "cross-env NODE_ENV=development typeorm-extension seed -d ./typeorm.config.ts"
+
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^2.0.2",
@@ -54,11 +56,13 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "typeorm": "^0.3.26",
+    "typeorm-extension": "^3.7.3",
     "typeorm-naming-strategies": "^4.1.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
+    "@faker-js/faker": "^9.6.0",
     "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/swagger": "^11.1.3",
