@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, IsNull, Not, Repository } from 'typeorm';
+import { DataSource, In, IsNull, Not, Repository } from 'typeorm';
 import { Game } from '../domain/game/game.entity';
 import { GameStatusesEnum } from '../domain/game/game-statuses.enum';
 
@@ -20,7 +20,9 @@ export class GameRepository {
       where: {
         status: GameStatusesEnum.pending,
         startGameDate: IsNull(),
-        ...(excludedUserId ? {firstPlayer:{userId: Not(excludedUserId)}} : {})
+        ...(excludedUserId
+          ? { firstPlayer: { userId: Not(excludedUserId) } }
+          : {}),
       },
     });
   }
@@ -53,18 +55,22 @@ export class GameRepository {
         questions: {
           order: 'ASC',
         },
-        firstPlayer:{
-          answers: {createdAt: 'ASC'}
+        firstPlayer: {
+          answers: { createdAt: 'ASC' },
         },
-        secondPlayer:{
-          answers: {createdAt: 'ASC'}
+        secondPlayer: {
+          answers: { createdAt: 'ASC' },
         },
       },
     });
   }
 
-  async findUnFinishGameByUser(userId: string): Promise<Game | null> {
-    const games = await this.gameRepo.find({
+  async findUnFinishGameByUser(
+    userId: string,
+    em?: DataSource,
+  ): Promise<Game | null> {
+    const repo = em ? em.getRepository(Game) : this.gameRepo;
+    const games = await repo.find({
       relations: {
         firstPlayer: true,
         secondPlayer: true,
