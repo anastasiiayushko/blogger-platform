@@ -42,8 +42,12 @@ export class GamePairConnectionHandler
 
     // lets now open a new transaction:
     await queryRunner.startTransaction();
-    try{
-      const unFinishGame = await this.gameRepo.findUnFinishGameByUser(cmd.userId, em);
+    const em = queryRunner.manager;
+    try {
+      const unFinishGame = await this.gameRepo.findUnFinishGameByUser(
+        cmd.userId,
+        em,
+      );
 
       if (unFinishGame) {
         throw new DomainException({
@@ -52,9 +56,8 @@ export class GamePairConnectionHandler
         });
       }
 
-      const gameInAwaitSecondPlayer = await this.gameRepo.findGameInStatusPending(
-        cmd.userId,
-      );
+      const gameInAwaitSecondPlayer =
+        await this.gameRepo.findGameInStatusPending(cmd.userId, em);
       if (gameInAwaitSecondPlayer) {
         const secondPlayer = Player.createPlayer({
           userId: cmd.userId,
@@ -62,7 +65,8 @@ export class GamePairConnectionHandler
 
         gameInAwaitSecondPlayer.joinSecondPlayer(secondPlayer.id);
 
-        const randomQuestion = await this.questionRepository.getRandomQuestion();
+        const randomQuestion =
+          await this.questionRepository.getRandomQuestion();
 
         const gameQuestions = GameQuestion.createMany(
           randomQuestion,
@@ -71,8 +75,8 @@ export class GamePairConnectionHandler
         gameInAwaitSecondPlayer.assignQuestions(gameQuestions);
 
         gameInAwaitSecondPlayer.startGame();
-        await this.playerRepository.save(secondPlayer);
-        await this.gameRepo.save(gameInAwaitSecondPlayer);
+        await this.playerRepository.save(secondPlayer, em);
+        await this.gameRepo.save(gameInAwaitSecondPlayer, em);
 
         return gameInAwaitSecondPlayer.id;
       }
@@ -85,20 +89,19 @@ export class GamePairConnectionHandler
         firstPlayerId: playerFirst.id,
       });
 
-      await this.playerRepository.save(playerFirst);
-      await this.gameRepo.save(newGame);
+      await this.playerRepository.save(playerFirst, em);
+      await this.gameRepo.save(newGame, em);
+
+      await queryRunner.commitTransaction();
 
       return newGame.id;
-    }
-    catch(err){
+    } catch (err) {
       // since we have errors let's rollback changes we made
-      await queryRunner.rollbackTransaction()
+      await queryRunner.rollbackTransaction();
       throw err;
-    }
-    finally {
+    } finally {
       // you need to release query runner which is manually created:
-      await queryRunner.release()
+      await queryRunner.release();
     }
-
   }
 }

@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { Question } from '../domain/question.entity';
 import { DomainException } from '../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
+import { Player } from '../../quiz-game/domain/player/player.entity';
 
 @Injectable()
 export class QuestionRepository {
@@ -13,6 +14,9 @@ export class QuestionRepository {
     @InjectDataSource()
     private readonly dataSource: DataSource,
   ) {}
+  private getRepository(em?: EntityManager): Repository<Question> {
+    return em ? em.getRepository(Question) : this.questionRepository;
+  }
 
   async save(question: Question) {
     await this.questionRepository.save(question);
@@ -37,9 +41,9 @@ export class QuestionRepository {
     return !!result.affected;
   }
 
-  async getRandomQuestion(limit = 5): Promise<Question[]> {
-    return await this.dataSource
-      .getRepository(Question)
+  async getRandomQuestion(limit = 5, em?:EntityManager): Promise<Question[]> {
+   const repo = this.getRepository(em);
+    return await repo
       .createQueryBuilder('question')
       .orderBy('RANDOM()')
       .limit(limit)

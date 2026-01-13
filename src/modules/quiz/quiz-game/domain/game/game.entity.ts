@@ -79,7 +79,7 @@ export class Game extends BaseOrmEntity {
     if (this.status !== GameStatusesEnum.pending) {
       throw new Error('Game is already in progress');
     }
-    if (!this.secondPlayerId) {
+    if (!this.firstPlayer || !this.secondPlayer) {
       throw new Error('Second player not joined yet');
     }
     if (!this.questions?.length || !this.questions) {
