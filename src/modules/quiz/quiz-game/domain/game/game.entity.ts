@@ -5,8 +5,7 @@ import { GameStatusesEnum } from './game-statuses.enum';
 import { CreateGameDomainDto } from './dto/create-game.domain-dto';
 import { GameQuestion } from '../game-question/game-question.entity';
 import { randomUUID } from 'crypto';
-import { Answer } from '../answer/answer.entity';
-import { AnswerStatusesEnum } from '../answer/answer-statuses.enum';
+import { PlayerGameStatusEnum } from '../player/player-game-status.enum';
 
 @Entity('game')
 export class Game extends BaseOrmEntity {
@@ -56,14 +55,15 @@ export class Game extends BaseOrmEntity {
     return game;
   }
 
-  joinSecondPlayer(playerId: string) {
+  joinSecondPlayer(player: Player) {
     if (this.secondPlayerId) {
       throw new Error(`Second Player is already joined`);
     }
     if (this.status !== GameStatusesEnum.pending) {
       throw new Error('Game is not pending');
     }
-    this.secondPlayerId = playerId;
+    this.secondPlayer = player;
+    this.secondPlayerId = player.id;
   }
 
   assignQuestions(questions: GameQuestion[]) {
@@ -86,6 +86,8 @@ export class Game extends BaseOrmEntity {
       throw new Error('Questions must be fill, before starting game');
     }
     this.startGameDate = new Date();
+    this.firstPlayer.setGameParticipationStatus(PlayerGameStatusEnum.active);
+    this.secondPlayer.setGameParticipationStatus(PlayerGameStatusEnum.active);
     this.status = GameStatusesEnum.active;
   }
 
@@ -111,6 +113,10 @@ export class Game extends BaseOrmEntity {
     if (this.status !== GameStatusesEnum.active) {
       throw new Error('The game has an incorrect status for completion.');
     }
+    this.firstPlayer.setGameParticipationStatus(PlayerGameStatusEnum.finished);
+    this!.secondPlayer!.setGameParticipationStatus(
+      PlayerGameStatusEnum.finished,
+    );
     this.status = GameStatusesEnum.finished;
     this.finishGameDate = new Date();
   }

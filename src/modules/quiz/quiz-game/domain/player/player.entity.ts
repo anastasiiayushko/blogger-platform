@@ -1,26 +1,44 @@
-import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
+import { Column, Entity, Index, ManyToOne, OneToMany } from 'typeorm';
 import { BaseOrmEntity } from '../../../../../core/base-orm-entity/base-orm-entity';
 import { User } from '../../../../user-accounts/domin/user.entity';
 import { CreatePlayerDomainDto } from './dto/create-player.domain-dto';
 import { Answer } from '../answer/answer.entity';
 import { randomUUID } from 'crypto';
-import { Question } from '../../../sa-question/domain/question.entity';
 import { AnswerStatusesEnum } from '../answer/answer-statuses.enum';
+import { PlayerResultEnum } from './player-result.enum';
+import { PlayerGameStatusEnum } from './player-game-status.enum';
 
 @Entity('player')
+@Index('uq_player_active_user', ['userId'], {
+  unique: true,
+  // Уникальность будет проверяться только для строк, где статус либо pending, либо active
+  where: `"game_status" IN ('pending', 'active')`,
+})
 export class Player extends BaseOrmEntity {
   @ManyToOne((type) => User, (user) => user.players)
   user: User;
   @Column({ nullable: false })
   userId: string;
-
+  ў;
   @Column('int', { nullable: false, default: 0 })
   score: number;
 
-  @OneToMany(() => Answer, (a) => a.player, {
-    // cascade: ['insert', 'update'],
-  })
+  @OneToMany(() => Answer, (a) => a.player, {})
   answers: Answer[];
+
+  @Column('enum', {
+    enum: PlayerGameStatusEnum,
+    enumName: 'quiz_player_game_statuses',
+    default: PlayerGameStatusEnum.pending,
+  })
+  gameStatus: PlayerGameStatusEnum;
+
+  @Column('enum', {
+    enum: PlayerResultEnum,
+    enumName: 'quiz_player_result',
+    default: null,
+  })
+  result: PlayerResultEnum | null;
 
   static createPlayer(dto: CreatePlayerDomainDto): Player {
     const player = new this();
@@ -28,6 +46,8 @@ export class Player extends BaseOrmEntity {
     player.userId = dto.userId;
     player.score = 0;
     player.answers = [];
+    player.gameStatus = PlayerGameStatusEnum.pending;
+    // player.gameStatus = dto.gameStatus;
     return player;
   }
 
@@ -47,16 +67,6 @@ export class Player extends BaseOrmEntity {
   }
 
   addAnswerQuestion(newAnswer: Answer) {
-    // const isCorrect = question.answers.includes(
-    //   currentAnswer.trim().toLowerCase(),
-    // );
-    // const newAnswer = Answer.createAnswer({
-    //   playerId: this.id,
-    //   questionId: question.id,
-    //   status: isCorrect
-    //     ? AnswerStatusesEnum.correct
-    //     : AnswerStatusesEnum.incorrect,
-    // });
     this.answers.push(newAnswer);
     this.updateAnswerScore();
   }
@@ -79,5 +89,9 @@ export class Player extends BaseOrmEntity {
     if (this.score >= 0 && this.score < 5) {
       this.score = this.score + 1;
     }
+  }
+
+  setGameParticipationStatus(status: PlayerGameStatusEnum) {
+    this.gameStatus = status;
   }
 }

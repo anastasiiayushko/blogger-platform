@@ -1,13 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  DataSource,
-  EntityManager,
-  In,
-  IsNull,
-  Not,
-  Repository,
-} from 'typeorm';
+import { EntityManager, In, Repository } from 'typeorm';
 import { Game } from '../domain/game/game.entity';
 import { GameStatusesEnum } from '../domain/game/game-statuses.enum';
 
@@ -27,20 +20,18 @@ export class GameRepository {
     em?: EntityManager,
   ): Promise<Game | null> {
     const repo = this.getRepository(em);
-    return await repo.findOne({
-      relations: {
-        questions: true,
-        firstPlayer: true,
-      },
-      where: {
-        status: GameStatusesEnum.pending,
-        startGameDate: IsNull(),
-        ...(excludedUserId
-          ? { firstPlayer: { userId: Not(excludedUserId) } }
-          : {}),
-      },
-      lock: { mode: 'pessimistic_write' },
-    });
+    const qb = repo
+      .createQueryBuilder('game')
+      .innerJoinAndSelect('game.firstPlayer', 'firstPlayer')
+      .where('game.status = :status', { status: GameStatusesEnum.pending })
+      .andWhere('game.startGameDate IS NULL')
+      .setLock('pessimistic_write', undefined, ['game']);
+
+    if (excludedUserId) {
+      qb.andWhere('firstPlayer.userId != :excludedUserId', { excludedUserId });
+    }
+
+    return await qb.getOne();
   }
 
   async findActiveGameByUserId(

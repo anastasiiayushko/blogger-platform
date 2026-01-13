@@ -6,39 +6,27 @@ import {
   GamePairConnectionCmd,
   GamePairConnectionHandler,
 } from '../../../src/modules/quiz/quiz-game/features/pair-game/application/usecases/game-pair-connection.usecese';
-import { DataSource } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { ormDBCleaner } from '../../util/orm-db-cleaner';
 import { FillQuestionsSeed } from '../../../seeds/fill-questions.seed';
 import { Game } from '../../../src/modules/quiz/quiz-game/domain/game/game.entity';
 import { GameStatusesEnum } from '../../../src/modules/quiz/quiz-game/domain/game/game-statuses.enum';
 import { DomainException } from '../../../src/core/exceptions/domain-exception';
 import { GameQueryRepository } from '../../../src/modules/quiz/quiz-game/infrastructure/query/game.query-repository';
-import { assertGamePairView } from '../../util/assert-view/assert-game-pair-view';
 import { GamePairViewDto } from '../../../src/modules/quiz/quiz-game/infrastructure/query/mapper/game-pair.view-dto';
-import { Player } from '../../../src/modules/quiz/quiz-game/domain/player/player.entity';
+import { assertGamePairView } from '../../util/assert-view/assert-game-pair-view';
 
 describe('Game Pair Connection Integration', () => {
   let app: INestApplication;
   let saCreateUserHandler;
   let gamePairConnectionHandler;
   let gameQueryRepository: GameQueryRepository;
+  let gameRepo: Repository<Game>;
   let user_1_id;
   let user_2_id;
   let user_3_id;
 
-  let dataSource: DataSource;
-  beforeAll(async () => {
-    const { appNest, dataSource: dS } = await setupTestApp({
-      imports: [AppModule],
-    });
-    app = appNest;
-    saCreateUserHandler = appNest.get(SaCreateUserHandler);
-    gamePairConnectionHandler = appNest.get(GamePairConnectionHandler);
-    gameQueryRepository = appNest.get(GameQueryRepository);
-    dataSource = dS;
-    await ormDBCleaner(dS);
-    await FillQuestionsSeed.up(dataSource);
-
+  async function serverCreateUser() {
     user_1_id = await saCreateUserHandler.execute({
       login: 'player1',
       email: 'player1@example.com',
@@ -58,9 +46,26 @@ describe('Game Pair Connection Integration', () => {
       password: 'player3',
     });
     expect(user_3_id).toBeDefined();
+  }
+
+  let dataSource: DataSource;
+  beforeAll(async () => {
+    const { appNest, dataSource: dS } = await setupTestApp({
+      imports: [AppModule],
+    });
+    app = appNest;
+    saCreateUserHandler = appNest.get(SaCreateUserHandler);
+    gamePairConnectionHandler = appNest.get(GamePairConnectionHandler);
+    gameQueryRepository = appNest.get(GameQueryRepository);
+    dataSource = dS;
+    gameRepo = dataSource.getRepository(Game);
+
+    await ormDBCleaner(dS);
+    await FillQuestionsSeed.up(dataSource);
+
+    await serverCreateUser();
   });
   afterAll(async () => {
-    // await ormDBCleaner(dataSource);
     await app.close();
   });
 
@@ -105,21 +110,31 @@ describe('Game Pair Connection Integration', () => {
     expect(gameInStart!.secondPlayer?.userId).toBe(user_2_id);
     expect(gameInStart!.questions!.length).toBe(5);
   });
+
   it(`should be return error if player want to join to new game, not finished prev game`, async () => {
-    try {
-      await gamePairConnectionHandler.execute(
-        new GamePairConnectionCmd(user_2_id),
-      );
-    } catch (e) {
-      console.log('expect exception error');
-      expect(e).toBeInstanceOf(DomainException);
-    }
+    await expect(
+      gamePairConnectionHandler.execute(new GamePairConnectionCmd(user_2_id)),
+    ).rejects.toBeInstanceOf(DomainException);
+    const games = await gameRepo.find({
+      relations: {
+        firstPlayer: { user: true },
+        secondPlayer: { user: true },
+      },
+    });
+    console.log('games', games);
   });
 
   it(`user_3 should be create new Game and awaiting pair`, async () => {
-    const gameIdInPending = await gamePairConnectionHandler.execute(
+    await gamePairConnectionHandler.execute(
       new GamePairConnectionCmd(user_3_id),
     );
+    const games = await gameRepo.find({
+      relations: {
+        firstPlayer: { user: true },
+        secondPlayer: { user: true },
+      },
+    });
+    console.log('games', games);
     const game = (await gameQueryRepository.findUnfinishedGameByUserId(
       user_3_id,
     )) as GamePairViewDto;
@@ -150,45 +165,5 @@ describe('Game Pair Connection Integration', () => {
     await expect(
       gamePairConnectionHandler.execute(new GamePairConnectionCmd(userId)),
     ).rejects.toBeInstanceOf(DomainException);
-  });
-
-  it(`should deterministically return latest unfinished game for user`, async () => {
-    await ormDBCleaner(dataSource);
-    await FillQuestionsSeed.up(dataSource);
-
-    const userId = await saCreateUserHandler.execute({
-      login: 'player5',
-      email: 'player5@example.com',
-      password: 'player5',
-    });
-
-    const playerRepo = dataSource.getRepository(Player);
-    const gameRepo = dataSource.getRepository(Game);
-
-    const firstPlayer = Player.createPlayer({ userId });
-    const secondPlayer = Player.createPlayer({ userId });
-    await playerRepo.save([firstPlayer, secondPlayer]);
-
-    const olderGame = Game.createPending({ firstPlayerId: firstPlayer.id });
-    const newerGame = Game.createPending({ firstPlayerId: secondPlayer.id });
-    await gameRepo.save([olderGame, newerGame]);
-
-    await dataSource.query(
-      `UPDATE "game"
-       SET "created_at" = $1
-       WHERE id = $2`,
-      [new Date('2026-01-01T00:00:00.000Z'), olderGame.id],
-    );
-    await dataSource.query(
-      `UPDATE "game"
-       SET "created_at" = $1
-       WHERE id = $2`,
-      [new Date('2026-01-02T00:00:00.000Z'), newerGame.id],
-    );
-
-    const game = await gameQueryRepository.findUnfinishedGameByUserId(userId);
-
-    expect(game).not.toBeNull();
-    expect(game!.id).toBe(newerGame.id);
   });
 });

@@ -9,7 +9,7 @@ import { Player } from '../../../../domain/player/player.entity';
 import { QuestionRepository } from '../../../../../sa-question/infrastructure/question.repository';
 import { GameQuestion } from '../../../../domain/game-question/game-question.entity';
 import { Game } from '../../../../domain/game/game.entity';
-import { DataSource } from 'typeorm';
+import { DataSource, QueryFailedError } from 'typeorm';
 
 export class GamePairConnectionCmd extends ValidatableCommand {
   @IsUUID()
@@ -43,8 +43,9 @@ export class GamePairConnectionHandler
     // lets now open a new transaction:
     await queryRunner.startTransaction();
     const em = queryRunner.manager;
+
     try {
-      const unFinishGame = await this.gameRepo.findUnFinishGameByUser(
+      const unFinishGame = await this.playerRepository.findUnfinishedGamePlayer(
         cmd.userId,
         em,
       );
@@ -58,12 +59,13 @@ export class GamePairConnectionHandler
 
       const gameInAwaitSecondPlayer =
         await this.gameRepo.findGameInStatusPending(cmd.userId, em);
+
       if (gameInAwaitSecondPlayer) {
         const secondPlayer = Player.createPlayer({
           userId: cmd.userId,
         });
 
-        gameInAwaitSecondPlayer.joinSecondPlayer(secondPlayer.id);
+        gameInAwaitSecondPlayer.joinSecondPlayer(secondPlayer);
 
         const randomQuestion =
           await this.questionRepository.getRandomQuestion();
@@ -78,6 +80,7 @@ export class GamePairConnectionHandler
         await this.playerRepository.save(secondPlayer, em);
         await this.gameRepo.save(gameInAwaitSecondPlayer, em);
 
+        await queryRunner.commitTransaction();
         return gameInAwaitSecondPlayer.id;
       }
 
@@ -98,6 +101,12 @@ export class GamePairConnectionHandler
     } catch (err) {
       // since we have errors let's rollback changes we made
       await queryRunner.rollbackTransaction();
+      if (err instanceof QueryFailedError && err.driverError.code === '23505') {
+        throw new DomainException({
+          code: DomainExceptionCode.Forbidden,
+          message: 'current user is already participating in active pair',
+        });
+      }
       throw err;
     } finally {
       // you need to release query runner which is manually created:

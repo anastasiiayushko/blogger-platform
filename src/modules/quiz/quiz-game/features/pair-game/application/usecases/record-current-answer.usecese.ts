@@ -10,7 +10,6 @@ import { AnswerRepository } from '../../../../infrastructure/answer.repository';
 import { Answer } from '../../../../domain/answer/answer.entity';
 import { AnswerStatusesEnum } from '../../../../domain/answer/answer-statuses.enum';
 import { AnswerViewDto } from '../../api/view-dto/answer.view-dto';
-import { Question } from '../../../../../sa-question/domain/question.entity';
 import { GameQuestion } from '../../../../domain/game-question/game-question.entity';
 
 export class RecordCurrentAnswerCommand extends ValidatableCommand {
@@ -88,6 +87,7 @@ export class RecordCurrentAnswerHandler
         message: 'Player already answered to all questions',
       });
     }
+
     const questions = game.questions as GameQuestion[];
     const gameQuestion = questions[currentPlayer.getIndexAnswerQuestion()];
 
