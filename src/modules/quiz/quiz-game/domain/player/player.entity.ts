@@ -11,15 +11,15 @@ import { PlayerGameStatusEnum } from './player-game-status.enum';
 @Entity('player')
 @Index('uq_player_active_user', ['userId'], {
   unique: true,
-  // Уникальность будет проверяться только для строк, где статус либо pending, либо active
-  where: `"game_status" IN ('pending', 'active')`,
+  // Уникальность будет проверяться только для строк, где статус либо
+  where: `"game_status" IN ('joined')`,
 })
 export class Player extends BaseOrmEntity {
   @ManyToOne((type) => User, (user) => user.players)
   user: User;
   @Column({ nullable: false })
   userId: string;
-  ў;
+
   @Column('int', { nullable: false, default: 0 })
   score: number;
 
@@ -29,7 +29,7 @@ export class Player extends BaseOrmEntity {
   @Column('enum', {
     enum: PlayerGameStatusEnum,
     enumName: 'quiz_player_game_statuses',
-    default: PlayerGameStatusEnum.pending,
+    default: PlayerGameStatusEnum.joined,
   })
   gameStatus: PlayerGameStatusEnum;
 
@@ -46,8 +46,7 @@ export class Player extends BaseOrmEntity {
     player.userId = dto.userId;
     player.score = 0;
     player.answers = [];
-    player.gameStatus = PlayerGameStatusEnum.pending;
-    // player.gameStatus = dto.gameStatus;
+    player.gameStatus = PlayerGameStatusEnum.joined;
     return player;
   }
 
@@ -91,7 +90,7 @@ export class Player extends BaseOrmEntity {
     }
   }
 
-  setGameParticipationStatus(status: PlayerGameStatusEnum) {
-    this.gameStatus = status;
+  finished() {
+    this.gameStatus = PlayerGameStatusEnum.finished;
   }
 }

@@ -1,5 +1,4 @@
 export enum PlayerGameStatusEnum {
-  pending = 'pending',
-  active = 'active',
+  joined = 'joined',
   finished = 'finished',
 }

@@ -21,8 +21,6 @@ export class Answer extends BaseOrmEntity {
   })
   status: AnswerStatusesEnum;
 
-
-
   static createAnswer({
     questionId,
     status,
@@ -31,6 +29,7 @@ export class Answer extends BaseOrmEntity {
     questionId: string;
     status: AnswerStatusesEnum;
     playerId: string;
+    // player: Player;
   }): Answer {
     const answer = new Answer();
     answer.playerId = playerId;

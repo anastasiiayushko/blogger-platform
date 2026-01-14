@@ -5,7 +5,7 @@ import { GameStatusesEnum } from './game-statuses.enum';
 import { CreateGameDomainDto } from './dto/create-game.domain-dto';
 import { GameQuestion } from '../game-question/game-question.entity';
 import { randomUUID } from 'crypto';
-import { PlayerGameStatusEnum } from '../player/player-game-status.enum';
+import { PlayerResultEnum } from '../player/player-result.enum';
 
 @Entity('game')
 export class Game extends BaseOrmEntity {
@@ -86,8 +86,6 @@ export class Game extends BaseOrmEntity {
       throw new Error('Questions must be fill, before starting game');
     }
     this.startGameDate = new Date();
-    this.firstPlayer.setGameParticipationStatus(PlayerGameStatusEnum.active);
-    this.secondPlayer.setGameParticipationStatus(PlayerGameStatusEnum.active);
     this.status = GameStatusesEnum.active;
   }
 
@@ -107,16 +105,26 @@ export class Game extends BaseOrmEntity {
     ) {
       this!.secondPlayer!.addBonusPoint();
     }
+    const scorePlr1 = +this.firstPlayer.score;
+    const scorePlr2 = +this.secondPlayer!.score;
+
+    if (scorePlr1 < scorePlr2) {
+      this.secondPlayer!.result = PlayerResultEnum.win;
+      this.firstPlayer!.result = PlayerResultEnum.lose;
+    } else if (scorePlr1 > scorePlr2) {
+      this.firstPlayer!.result = PlayerResultEnum.win;
+      this.secondPlayer!.result = PlayerResultEnum.lose;
+    } else {
+      this.firstPlayer!.result = PlayerResultEnum.draw;
+      this.secondPlayer!.result = PlayerResultEnum.draw;
+    }
   }
 
   private finishedGame() {
     if (this.status !== GameStatusesEnum.active) {
       throw new Error('The game has an incorrect status for completion.');
     }
-    this.firstPlayer.setGameParticipationStatus(PlayerGameStatusEnum.finished);
-    this!.secondPlayer!.setGameParticipationStatus(
-      PlayerGameStatusEnum.finished,
-    );
+
     this.status = GameStatusesEnum.finished;
     this.finishGameDate = new Date();
   }
@@ -126,11 +134,25 @@ export class Game extends BaseOrmEntity {
       this.firstPlayer.hasAnsweredAllQuestions() &&
       this.secondPlayer?.hasAnsweredAllQuestions()
     ) {
+      this.firstPlayer.finished();
+      this.secondPlayer!.finished();
       this.determineWinner();
       this.finishedGame();
       return true;
     }
 
     return false;
+  }
+
+  getPlayersByUserId(userId: string) {
+    const currentPlayerKey =
+      this.firstPlayer.userId === userId ? 'firstPlayer' : 'secondPlayer';
+    const opponentPlayerKey =
+      currentPlayerKey === 'firstPlayer' ? 'secondPlayer' : 'firstPlayer';
+
+    const currentPlayer = this[currentPlayerKey] as Player;
+    const opponentPlayer = this[opponentPlayerKey] as Player;
+
+    return { currentPlayer, opponentPlayer };
   }
 }

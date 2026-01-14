@@ -5,12 +5,12 @@ import { GameRepository } from '../../../../infrastructure/game.repository';
 import { DomainException } from '../../../../../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../../../../../core/exceptions/domain-exception-codes';
 import { PlayerRepository } from '../../../../infrastructure/player.repository';
-import { Player } from '../../../../domain/player/player.entity';
 import { AnswerRepository } from '../../../../infrastructure/answer.repository';
 import { Answer } from '../../../../domain/answer/answer.entity';
 import { AnswerStatusesEnum } from '../../../../domain/answer/answer-statuses.enum';
 import { AnswerViewDto } from '../../api/view-dto/answer.view-dto';
 import { GameQuestion } from '../../../../domain/game-question/game-question.entity';
+import { DataSource } from 'typeorm';
 
 export class RecordCurrentAnswerCommand extends ValidatableCommand {
   @IsNotEmpty()
@@ -28,6 +28,9 @@ export class RecordCurrentAnswerCommand extends ValidatableCommand {
   }
 }
 
+//::TODO T1 - T2 почти в один момент выполняются Т1 - захватил игру Т2 - прочитала но ожидает commit T1
+// в результате игра для T2 не консистента
+
 @CommandHandler(RecordCurrentAnswerCommand)
 export class RecordCurrentAnswerHandler
   implements ICommandHandler<RecordCurrentAnswerCommand>
@@ -36,80 +39,89 @@ export class RecordCurrentAnswerHandler
     protected gameRepository: GameRepository,
     protected playerRepository: PlayerRepository,
     protected answerRepository: AnswerRepository,
+    protected dataSource: DataSource,
   ) {}
 
   async execute(command: RecordCurrentAnswerCommand): Promise<AnswerViewDto> {
     await command.validateOrFail();
+    const answerViewDto = await this.dataSource.transaction(async (em) => {
+      try {
+        console.log('start -> ', command);
+        const game = await this.gameRepository.findActiveGameByUserId(
+          command.userId,
+          em,
+        );
 
-    const game = await this.gameRepository.findActiveGameByUserId(
-      command.userId,
-    );
+        if (!game) {
+          throw new DomainException({
+            code: DomainExceptionCode.Forbidden,
+            message: 'Current game is not active',
+          });
+        }
 
-    if (!game) {
-      throw new DomainException({
-        code: DomainExceptionCode.Forbidden,
-        message: 'Current game is not active',
-      });
-    }
+        /**
+         * application-слой явно проверяет, что
+         * обязательные связи не undefined и соответствуют ожиданиям
+         * ловим до того, как доменная логика начнёт падать
+         * */
 
-    /**
-     * application-слой явно проверяет, что
-     * обязательные связи не undefined и соответствуют ожиданиям
-     * ловим до того, как доменная логика начнёт падать
-     * */
+        if (!game.firstPlayer || !game.secondPlayer) {
+          throw new DomainException({
+            code: DomainExceptionCode.InternalServerError,
+            message: 'Players must be loaded',
+          });
+        }
+        if (!game.firstPlayer.answers || !game.secondPlayer.answers) {
+          throw new DomainException({
+            code: DomainExceptionCode.InternalServerError,
+            message: 'Player answers must be loaded',
+          });
+        }
 
-    if (!game.firstPlayer || !game.secondPlayer) {
-      throw new DomainException({
-        code: DomainExceptionCode.InternalServerError,
-        message: 'Players must be loaded',
-      });
-    }
-    if (!game.firstPlayer.answers || !game.secondPlayer.answers) {
-      throw new DomainException({
-        code: DomainExceptionCode.InternalServerError,
-        message: 'Player answers must be loaded',
-      });
-    }
+        const { currentPlayer, opponentPlayer } = game.getPlayersByUserId(
+          command.userId,
+        );
 
-    const currentPlayerKey =
-      game.firstPlayer.userId === command.userId
-        ? 'firstPlayer'
-        : 'secondPlayer';
-    const opponentPlayerKey =
-      currentPlayerKey === 'firstPlayer' ? 'secondPlayer' : 'firstPlayer';
+        if (currentPlayer.hasAnsweredAllQuestions()) {
+          throw new DomainException({
+            code: DomainExceptionCode.Forbidden,
+            message: 'Player already answered to all questions',
+          });
+        }
 
-    const currentPlayer = game[currentPlayerKey] as Player;
-    const opponentPlayer = game[opponentPlayerKey] as Player;
+        const questions = game.questions as GameQuestion[];
+        const gameQuestion = questions[currentPlayer.getIndexAnswerQuestion()];
 
-    if (currentPlayer.hasAnsweredAllQuestions()) {
-      throw new DomainException({
-        code: DomainExceptionCode.Forbidden,
-        message: 'Player already answered to all questions',
-      });
-    }
+        const newAnswer = Answer.createAnswer({
+          questionId: gameQuestion.questionId,
+          playerId: currentPlayer.id,
+          status: gameQuestion.question.answers.includes(
+            command.answer.trim().toLowerCase(),
+          )
+            ? AnswerStatusesEnum.correct
+            : AnswerStatusesEnum.incorrect,
+        });
 
-    const questions = game.questions as GameQuestion[];
-    const gameQuestion = questions[currentPlayer.getIndexAnswerQuestion()];
+        await this.answerRepository.save(newAnswer, em);
+        currentPlayer.addAnswerQuestion(newAnswer);
 
-    const newAnswer = Answer.createAnswer({
-      questionId: gameQuestion.questionId,
-      playerId: currentPlayer.id,
-      status: gameQuestion.question.answers.includes(
-        command.answer.trim().toLowerCase(),
-      )
-        ? AnswerStatusesEnum.correct
-        : AnswerStatusesEnum.incorrect,
+        game.tryToFinish();
+
+        await this.playerRepository.updatePlayerProgress(currentPlayer, em);
+        await this.playerRepository.updatePlayerProgress(opponentPlayer, em);
+        await this.gameRepository.save(game, em);
+
+        return AnswerViewDto.mapToView(newAnswer);
+      } catch (err) {
+
+        if (err?.code === '55P03') {
+          // lock_not_available
+        }
+
+        console.error(err);
+        throw err;
+      }
     });
-    await this.answerRepository.save(newAnswer);
-    currentPlayer.addAnswerQuestion(newAnswer);
-
-    game.tryToFinish();
-
-    await this.playerRepository.save(currentPlayer);
-    await this.playerRepository.save(opponentPlayer);
-
-    await this.gameRepository.save(game);
-
-    return AnswerViewDto.mapToView(newAnswer);
+    return answerViewDto;
   }
 }

@@ -23,23 +23,28 @@ export class PlayerRepository {
     return repo.findOne({
       where: {
         userId: userId,
-        gameStatus: In([
-          PlayerGameStatusEnum.pending,
-          PlayerGameStatusEnum.active,
-        ]),
+        gameStatus: PlayerGameStatusEnum.joined,
       },
       lock: { mode: 'pessimistic_write' },
-    });
-  }
-
-  async findAllPlayedByUserId(userId: string): Promise<Player[]> {
-    return await this.playerRepo.find({
-      where: { userId: userId },
     });
   }
 
   async save(player: Player, em?: EntityManager): Promise<void> {
     const repo = this.getRepository(em);
     await repo.save(player);
+  }
+
+  async updatePlayerProgress(
+    player: Player,
+    em?: EntityManager,
+  ): Promise<void> {
+    const repo = this.getRepository(em);
+
+    await repo.save({
+      id: player.id,
+      score: player.score,
+      gameStatus: player.gameStatus,
+      result: player.result,
+    });
   }
 }

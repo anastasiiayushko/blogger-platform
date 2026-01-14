@@ -6,7 +6,7 @@ import {
   GamePairConnectionCmd,
   GamePairConnectionHandler,
 } from '../../../src/modules/quiz/quiz-game/features/pair-game/application/usecases/game-pair-connection.usecese';
-import { DataSource, In } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { ormDBCleaner } from '../../util/orm-db-cleaner';
 import { FillQuestionsSeed } from '../../../seeds/fill-questions.seed';
 import { Game } from '../../../src/modules/quiz/quiz-game/domain/game/game.entity';
@@ -110,13 +110,13 @@ describe('Game Pair Connection Integration', () => {
     const activePlayerCount = await dataSource.getRepository(Player).count({
       where: {
         userId: user_1_id,
-        gameStatus: In([PlayerGameStatusEnum.pending, PlayerGameStatusEnum.active]),
+        gameStatus: PlayerGameStatusEnum.joined,
       },
     });
     expect(activePlayerCount).toBe(1);
   });
 
-  it(`game exist in status pending (player_1_id).
+  it(`game exist in status joined (player_1_id).
   Several user(player_2, player_3) want to concurrency join. 
   Result work  to be next ->one game in status active, second game status pending. `, async () => {
     const severalCmd = [

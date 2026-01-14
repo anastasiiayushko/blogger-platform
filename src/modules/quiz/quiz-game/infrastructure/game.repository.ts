@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, In, Repository } from 'typeorm';
+import { Brackets, EntityManager, In, Repository } from 'typeorm';
 import { Game } from '../domain/game/game.entity';
 import { GameStatusesEnum } from '../domain/game/game-statuses.enum';
 
@@ -38,41 +38,72 @@ export class GameRepository {
     userId: string,
     em?: EntityManager,
   ): Promise<Game | null> {
-    return await this.gameRepo.findOne({
-      relations: {
-        firstPlayer: {
-          answers: true,
+    const repo = this.getRepository(em);
+    if (!em) {
+      return await repo.findOne({
+        relations: {
+          firstPlayer: {
+            answers: true,
+          },
+          secondPlayer: {
+            answers: true,
+          },
+          questions: {
+            question: true,
+          },
         },
-        secondPlayer: {
-          answers: true,
+        where: [
+          {
+            firstPlayer: { userId: userId },
+            status: GameStatusesEnum.active,
+          },
+          {
+            secondPlayer: { userId: userId },
+            status: GameStatusesEnum.active,
+          },
+        ],
+        order: {
+          createdAt: 'DESC',
+          questions: {
+            order: 'ASC',
+          },
+          firstPlayer: {
+            answers: { createdAt: 'ASC' },
+          },
+          secondPlayer: {
+            answers: { createdAt: 'ASC' },
+          },
         },
-        questions: {
-          question: true,
-        },
-      },
-      where: [
-        {
-          firstPlayer: { userId: userId },
-          status: GameStatusesEnum.active,
-        },
-        {
-          secondPlayer: { userId: userId },
-          status: GameStatusesEnum.active,
-        },
-      ],
-      order: {
-        createdAt: 'DESC',
-        questions: {
-          order: 'ASC',
-        },
-        firstPlayer: {
-          answers: { createdAt: 'ASC' },
-        },
-        secondPlayer: {
-          answers: { createdAt: 'ASC' },
-        },
-      },
-    });
+      });
+    }
+
+    return await repo
+      .createQueryBuilder('game')
+      .innerJoinAndSelect('game.firstPlayer', 'firstplayer')
+      .leftJoinAndSelect('firstplayer.answers', 'firstplayeranswers')
+      .innerJoinAndSelect('game.secondPlayer', 'secondplayer')
+      .leftJoinAndSelect('secondplayer.answers', 'secondplayeranswers')
+      .leftJoinAndSelect('game.questions', 'questions')
+      .leftJoinAndSelect('questions.question', 'question')
+      .where('game.status = :status', { status: GameStatusesEnum.active })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('firstplayer.userId = :userId', { userId }).orWhere(
+            'secondplayer.userId = :userId',
+            { userId },
+          );
+        }),
+      )
+      // .orderBy('game.createdAt', 'DESC')
+      .addOrderBy('questions.order', 'ASC')
+      .addOrderBy('firstplayeranswers.createdAt', 'ASC')
+      .addOrderBy('secondplayeranswers.createdAt', 'ASC')
+      .setLock('pessimistic_write', undefined, [
+        'game',
+        'firstplayer',
+        'secondplayer',
+      ])
+      .getOne();
   }
 
   async findUnFinishGameByUser(
