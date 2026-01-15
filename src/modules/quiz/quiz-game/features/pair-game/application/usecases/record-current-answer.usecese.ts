@@ -11,6 +11,9 @@ import { AnswerStatusesEnum } from '../../../../domain/answer/answer-statuses.en
 import { AnswerViewDto } from '../../api/view-dto/answer.view-dto';
 import { GameQuestion } from '../../../../domain/game-question/game-question.entity';
 import { DataSource } from 'typeorm';
+import { GameStatusesEnum } from '../../../../domain/game/game-statuses.enum';
+import { GameStatisticRepository } from '../../../../infrastructure/game-statistic.repository';
+import { GameStatistic } from '../../../../domain/game-statistic/game-statistic.entity';
 
 export class RecordCurrentAnswerCommand extends ValidatableCommand {
   @IsNotEmpty()
@@ -39,6 +42,7 @@ export class RecordCurrentAnswerHandler
     protected gameRepository: GameRepository,
     protected playerRepository: PlayerRepository,
     protected answerRepository: AnswerRepository,
+    protected gameStatisticRepository: GameStatisticRepository,
     protected dataSource: DataSource,
   ) {}
 
@@ -46,7 +50,6 @@ export class RecordCurrentAnswerHandler
     await command.validateOrFail();
     const answerViewDto = await this.dataSource.transaction(async (em) => {
       try {
-        console.log('start -> ', command);
         const game = await this.gameRepository.findActiveGameByUserId(
           command.userId,
           em,
@@ -111,9 +114,36 @@ export class RecordCurrentAnswerHandler
         await this.playerRepository.updatePlayerProgress(opponentPlayer, em);
         await this.gameRepository.save(game, em);
 
+        if (game.status === GameStatusesEnum.finished) {
+          let statFirstPlayer = await this.gameStatisticRepository.findByUserId(
+            game.firstPlayer.userId,
+          );
+          let statSecondPlayer =
+            await this.gameStatisticRepository.findByUserId(
+              game.secondPlayer.userId,
+            );
+
+          if (!statFirstPlayer) {
+            statFirstPlayer = GameStatistic.createStatistic(
+              game.firstPlayer.userId,
+            );
+          }
+          if (!statSecondPlayer) {
+            statSecondPlayer = GameStatistic.createStatistic(
+              game.secondPlayer.userId,
+            );
+          }
+
+          statFirstPlayer.recalculateStatisticAfterGame(game.firstPlayer);
+
+          statSecondPlayer?.recalculateStatisticAfterGame(game.secondPlayer);
+
+          await this.gameStatisticRepository.save(statFirstPlayer, em);
+          await this.gameStatisticRepository.save(statSecondPlayer, em);
+        }
+
         return AnswerViewDto.mapToView(newAnswer);
       } catch (err) {
-
         if (err?.code === '55P03') {
           // lock_not_available
         }

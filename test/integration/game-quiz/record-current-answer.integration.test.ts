@@ -27,12 +27,10 @@ describe('Quiz: Sync AnswerQuestion Integration', () => {
   let recordCurrentAnswerHandler;
   let gameQueryRepository: GameQueryRepository;
   let gameRepository: GameRepository;
-  let user_1_id;
-  let user_2_id;
-  let userCounter = 3;
+  let userCounter = 0;
 
   let dataSource: DataSource;
-  const createUser = async () => {
+  const createUser = async (): Promise<string> => {
     const index = userCounter++;
     return saCreateUserHandler.execute({
       login: `player${index}`,
@@ -51,41 +49,24 @@ describe('Quiz: Sync AnswerQuestion Integration', () => {
     gameQueryRepository = appNest.get(GameQueryRepository);
     gameRepository = appNest.get(GameRepository);
     dataSource = dS;
-  });
-
-  beforeEach(async () => {
-    userCounter = 3;
     await ormDBCleaner(dataSource);
     await FillQuestionsSeed.up(dataSource);
-
-    user_1_id = await saCreateUserHandler.execute({
-      login: 'player1',
-      email: 'player1@example.com',
-      password: 'player1',
-    });
-    expect(user_1_id).toBeDefined();
-
-    user_2_id = await saCreateUserHandler.execute({
-      login: 'player2',
-      email: 'player2@example.com',
-      password: 'player2',
-    });
-    expect(user_2_id).toBeDefined();
   });
+
   afterAll(async () => {
     // await ormDBCleaner(dataSource);
     await app.close();
   });
 
   it(`Игрок А(user_1) ответил быстрее Игрока Б(user_2) кол-во верных ответов равны. Игрок А получает бонусный бал и побеждает`, async () => {
+    const userA = await createUser();
+    const userB = await createUser();
     const currentGameId = await gamePairConnectionHandler.execute(
-      new GamePairConnectionCmd(user_1_id),
+      new GamePairConnectionCmd(userA),
     );
 
-    await gamePairConnectionHandler.execute(
-      new GamePairConnectionCmd(user_2_id),
-    );
-    const currentGame = await gameRepository.findActiveGameByUserId(user_1_id);
+    await gamePairConnectionHandler.execute(new GamePairConnectionCmd(userB));
+    const currentGame = await gameRepository.findActiveGameByUserId(userA);
 
     const gameQuestions = currentGame!.questions;
     const positionQuestion = [0, 1, 2, 3, 4];
@@ -97,7 +78,7 @@ describe('Quiz: Sync AnswerQuestion Integration', () => {
         ? question.answers[0]
         : 'some answer';
       await recordCurrentAnswerHandler.execute(
-        new RecordCurrentAnswerCommand(user_1_id, answer),
+        new RecordCurrentAnswerCommand(userA, answer),
       );
     }
 
@@ -109,7 +90,7 @@ describe('Quiz: Sync AnswerQuestion Integration', () => {
         ? question.answers[0]
         : 'some answer';
       await recordCurrentAnswerHandler.execute(
-        new RecordCurrentAnswerCommand(user_2_id, answer),
+        new RecordCurrentAnswerCommand(userB, answer),
       );
     }
 
@@ -121,21 +102,22 @@ describe('Quiz: Sync AnswerQuestion Integration', () => {
     expect(finishedGame?.finishGameDate).not.toBeNull();
   });
   it(`Игрок А(user_1) ответил быстрее но 0 верных ответов Игрока Б(user_2) ответил на один ворпос верно. Игрок Б побеждает но без начисления бонусного бала`, async () => {
+    const userA = await createUser();
+    const userB = await createUser();
+
     const currentGameId = await gamePairConnectionHandler.execute(
-      new GamePairConnectionCmd(user_1_id),
+      new GamePairConnectionCmd(userA),
     );
 
-    await gamePairConnectionHandler.execute(
-      new GamePairConnectionCmd(user_2_id),
-    );
-    const currentGame = await gameRepository.findActiveGameByUserId(user_1_id);
+    await gamePairConnectionHandler.execute(new GamePairConnectionCmd(userB));
+    const currentGame = await gameRepository.findActiveGameByUserId(userA);
 
     const gameQuestions = currentGame!.questions;
     const positionQuestion = [0, 1, 2, 3, 4];
     for await (const i of positionQuestion) {
       const answer = 'some answer';
       await recordCurrentAnswerHandler.execute(
-        new RecordCurrentAnswerCommand(user_1_id, answer),
+        new RecordCurrentAnswerCommand(userA, answer),
       );
     }
 
@@ -147,7 +129,7 @@ describe('Quiz: Sync AnswerQuestion Integration', () => {
         ? question.answers[0]
         : 'some answer';
       await recordCurrentAnswerHandler.execute(
-        new RecordCurrentAnswerCommand(user_2_id, answer),
+        new RecordCurrentAnswerCommand(userB, answer),
       );
     }
 
@@ -158,14 +140,15 @@ describe('Quiz: Sync AnswerQuestion Integration', () => {
     expect(finishedGame?.status).toBe(GameStatusesEnum.finished);
   });
   it(`Игрок А(user_1) ответил быстрее но 2 верных ответа Игрока Б(user_2) ответил на 3 ворпоса. Игроку А начисляется брнусный бал. В результате будет НИЧЬЯ!`, async () => {
+    const userA = await createUser();
+    const userB = await createUser();
+
     const currentGameId = await gamePairConnectionHandler.execute(
-      new GamePairConnectionCmd(user_1_id),
+      new GamePairConnectionCmd(userA),
     );
 
-    await gamePairConnectionHandler.execute(
-      new GamePairConnectionCmd(user_2_id),
-    );
-    const currentGame = await gameRepository.findActiveGameByUserId(user_1_id);
+    await gamePairConnectionHandler.execute(new GamePairConnectionCmd(userB));
+    const currentGame = await gameRepository.findActiveGameByUserId(userA);
 
     const gameQuestions = currentGame!.questions;
     const positionQuestion = [0, 1, 2, 3, 4];
@@ -177,7 +160,7 @@ describe('Quiz: Sync AnswerQuestion Integration', () => {
         ? question.answers[0]
         : 'some answer';
       const result = await recordCurrentAnswerHandler.execute(
-        new RecordCurrentAnswerCommand(user_1_id, answer),
+        new RecordCurrentAnswerCommand(userA, answer),
       );
       expect(result).toEqual({
         questionId: question.id,
@@ -196,7 +179,7 @@ describe('Quiz: Sync AnswerQuestion Integration', () => {
         ? question.answers[0]
         : 'some answer';
       const result = await recordCurrentAnswerHandler.execute(
-        new RecordCurrentAnswerCommand(user_2_id, answer),
+        new RecordCurrentAnswerCommand(userB, answer),
       );
       expect(result).toEqual({
         questionId: question.id,
@@ -214,18 +197,6 @@ describe('Quiz: Sync AnswerQuestion Integration', () => {
     expect(finishedGame?.status).toBe(GameStatusesEnum.finished);
   });
 
-  it(`должен вернуть ошибку если игра еще не активна`, async () => {
-    const userId = await createUser();
-
-    await gamePairConnectionHandler.execute(new GamePairConnectionCmd(userId));
-
-    await expect(
-      recordCurrentAnswerHandler.execute(
-        new RecordCurrentAnswerCommand(userId, 'some answer'),
-      ),
-    ).rejects.toBeInstanceOf(DomainException);
-  });
-
   it(`должен вернуть ошибку если игрок отвечает более 5 раз`, async () => {
     const userA = await createUser();
     const userB = await createUser();
@@ -237,7 +208,6 @@ describe('Quiz: Sync AnswerQuestion Integration', () => {
     const gameQuestions = currentGame!.questions;
 
     for (const i of [0, 1, 2, 3, 4]) {
-
       //@ts-ignore
       const question = gameQuestions[i].question as unknown as Question;
       await recordCurrentAnswerHandler.execute(
@@ -287,5 +257,17 @@ describe('Quiz: Sync AnswerQuestion Integration', () => {
     expect(finishedGame?.firstPlayerProgress.score).toBe(2);
     expect(finishedGame?.secondPlayerProgress!.score).toBe(3);
     expect(finishedGame?.status).toBe(GameStatusesEnum.finished);
+  });
+
+  it(`должен вернуть ошибку если игра еще не активна`, async () => {
+    const userId = await createUser();
+
+    await gamePairConnectionHandler.execute(new GamePairConnectionCmd(userId));
+
+    await expect(
+      recordCurrentAnswerHandler.execute(
+        new RecordCurrentAnswerCommand(userId, 'some answer'),
+      ),
+    ).rejects.toBeInstanceOf(DomainException);
   });
 });

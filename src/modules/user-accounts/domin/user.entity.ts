@@ -7,6 +7,7 @@ import { IsEmail } from 'class-validator';
 import { CommentReaction } from '../../bloggers-platform/comments/domain/comment-reactions.entity';
 import { PostReaction } from '../../bloggers-platform/posts/domain/post-reactions.entity';
 import { Player } from '../../quiz/quiz-game/domain/player/player.entity';
+import { GameStatistic } from '../../quiz/quiz-game/domain/game-statistic/game-statistic.entity';
 
 @Entity('user')
 export class User extends BaseOrmEntity {
@@ -37,6 +38,10 @@ export class User extends BaseOrmEntity {
 
   @OneToMany(() => Player, (p) => p.user, {})
   players: Player[];
+
+
+  @OneToOne(()=>GameStatistic, (game) => game.user, {})
+  gameStatistic: GameStatistic;
 
   static createInstance(userInput: {
     login: string;

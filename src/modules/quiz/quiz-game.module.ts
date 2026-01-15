@@ -23,6 +23,9 @@ import { GetGameByIdHandler } from './quiz-game/features/pair-game/application/q
 import { RecordCurrentAnswerHandler } from './quiz-game/features/pair-game/application/usecases/record-current-answer.usecese';
 import { AnswerRepository } from './quiz-game/infrastructure/answer.repository';
 import { GetUserUnfinishedGameQueryHandler } from './quiz-game/features/pair-game/application/query-useceses/get-user-unfinished-game.query-usecase';
+import { GameStatisticRepository } from './quiz-game/infrastructure/game-statistic.repository';
+import { GameStatistic } from './quiz-game/domain/game-statistic/game-statistic.entity';
+import { GameStatisticQueryRepository } from './quiz-game/infrastructure/query/game-statistic.query-repository';
 
 const questionsHandler = [
   CreateQuestionHandler,
@@ -39,7 +42,14 @@ const pairGameQueryHandler = [
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Question, Player, Game, GameQuestion, Answer]),
+    TypeOrmModule.forFeature([
+      Question,
+      Player,
+      Game,
+      GameQuestion,
+      Answer,
+      GameStatistic,
+    ]),
     UserAccountsModule,
   ],
   controllers: [SaQuestionsController, PairGameController],
@@ -51,6 +61,8 @@ const pairGameQueryHandler = [
     GameRepository,
     GameQueryRepository,
     AnswerRepository,
+    GameStatisticRepository,
+    GameStatisticQueryRepository,
     ...questionsHandler,
     ...questionQueryHandler,
     ...pairGameHandler,
