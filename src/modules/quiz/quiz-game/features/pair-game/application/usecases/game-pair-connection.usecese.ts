@@ -10,6 +10,7 @@ import { QuestionRepository } from '../../../../../sa-question/infrastructure/qu
 import { GameQuestion } from '../../../../domain/game-question/game-question.entity';
 import { Game } from '../../../../domain/game/game.entity';
 import { DataSource, QueryFailedError } from 'typeorm';
+import { GameStatisticService } from '../services/game-statistic.service';
 
 export class GamePairConnectionCmd extends ValidatableCommand {
   @IsUUID()
@@ -29,6 +30,7 @@ export class GamePairConnectionHandler
     private readonly gameRepo: GameRepository,
     private playerRepository: PlayerRepository,
     private questionRepository: QuestionRepository,
+    protected gameStatisticService: GameStatisticService,
     private dataSource: DataSource,
   ) {}
 
@@ -56,6 +58,11 @@ export class GamePairConnectionHandler
           message: 'current user is already participating in active pair',
         });
       }
+
+      await this.gameStatisticService.createStatisticForUserIfNotExist(
+        cmd.userId,
+        em,
+      );
 
       const gameInAwaitSecondPlayer =
         await this.gameRepo.findGameInStatusPending(cmd.userId, em);

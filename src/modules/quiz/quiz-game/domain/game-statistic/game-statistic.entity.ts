@@ -46,14 +46,14 @@ export class GameStatistic extends BaseOrmEntity {
     return statistic;
   }
 
-  recalculateStatisticAfterGame(player: Player) {
-    this.gameCount = this.gameCount + 1;
-
-    this.sumScore = this.sumScore + player.score;
-    this.avgScore = this.sumScore / this.gameCount;
-
-    this.winsCount = this.winsCount + Number(player.result === PlayerResultEnum.win);
-    this.lossesCount = this.lossesCount + Number(player.result === PlayerResultEnum.lose);
-    this.drawsCount = this.drawsCount + Number(player.result === PlayerResultEnum.draw);
+  prepareDataByPlayer(player: Player) {
+    return {
+      userId: player.userId,
+      score: player.score,
+      winsCount: Number(player.result === PlayerResultEnum.win),
+      lossesCount: Number(player.result === PlayerResultEnum.lose),
+      drawsCount: Number(player.result === PlayerResultEnum.draw),
+    };
   }
+
 }

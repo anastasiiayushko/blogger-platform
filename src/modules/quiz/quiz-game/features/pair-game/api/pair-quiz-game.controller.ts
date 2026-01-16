@@ -24,16 +24,30 @@ import { GameSendAnswerDocDecorator } from './docs/game-send-answer.doc.decorato
 import { RecordCurrentAnswerCommand } from '../application/usecases/record-current-answer.usecese';
 import { AnswerInputDto } from './input-dto/answer.input-dto';
 import { AnswerViewDto } from './view-dto/answer.view-dto';
+import { GameStatisticViewDto } from '../../../infrastructure/query/mapper/game-statistic.view-dto';
+import { GameStatisticQueryRepository } from '../../../infrastructure/query/game-statistic.query-repository';
+import { UsersStatisticGameDocDecorator } from './docs/users-statistic-game.doc.decorator';
 
-@Controller('pair-game-quiz/pairs')
+@Controller('pair-game-quiz')
 @UseGuards(BearerJwtAuthGuard)
-export class PairGameController {
+export class PairQuizGameController {
   constructor(
     private readonly queryBus: QueryBus,
     private readonly commandBus: CommandBus,
+    protected readonly gameStatisticQueryRepository: GameStatisticQueryRepository,
   ) {}
 
-  @Get('/my-current')
+  @Get('/users/statistic')
+  @UsersStatisticGameDocDecorator()
+  async getGameStatistic(
+    @CurrentUserFormRequest() user: UserContextDto,
+  ): Promise<GameStatisticViewDto> {
+    return await this.gameStatisticQueryRepository.findStatisticByUserId(
+      user.id,
+    );
+  }
+
+  @Get('/pairs/my-current')
   @GetMyUnfinishedGameDocDecorator()
   async myCurrentUnfinishedGame(
     @CurrentUserFormRequest() user: UserContextDto,
@@ -41,7 +55,7 @@ export class PairGameController {
     return this.queryBus.execute(new GetUserUnfinishedGameQuery(user.id));
   }
 
-  @Get(':id')
+  @Get('/pairs/:id')
   @GetGameByIdDocDecorator()
   async getGameById(
     @Param('id', UuidValidationPipe) id: string,
@@ -50,7 +64,7 @@ export class PairGameController {
     return this.queryBus.execute(new GetGameByIdQuery(user.id, id));
   }
 
-  @Post('/connection')
+  @Post('/pairs/connection')
   @HttpCode(HttpStatus.OK)
   @GamePairConnectionDocDecorator()
   async joinGame(@CurrentUserFormRequest() user: UserContextDto) {
@@ -59,8 +73,9 @@ export class PairGameController {
     );
     return this.queryBus.execute(new GetGameByIdQuery(user.id, gameId));
   }
+
   // pair-game-quiz/pairs/my-current/answers
-  @Post('/my-current/answers')
+  @Post('/pairs/my-current/answers')
   @HttpCode(HttpStatus.OK)
   @GameSendAnswerDocDecorator()
   async myAnswer(

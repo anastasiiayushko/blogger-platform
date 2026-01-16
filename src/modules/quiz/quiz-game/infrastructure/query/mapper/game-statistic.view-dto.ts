@@ -6,11 +6,9 @@ import { Player } from '../../../domain/player/player.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { AnswerStatusesEnum } from '../../../domain/answer/answer-statuses.enum';
 import { GameStatistic } from '../../../domain/game-statistic/game-statistic.entity';
+import { loginConstraints } from '../../../../../user-accounts/domin/user.constraints';
 
 export class GameStatisticViewDto {
-  @ApiProperty({ type: 'string' })
-  id: string;
-
   @ApiProperty({
     type: 'number',
     nullable: false,
@@ -54,9 +52,10 @@ export class GameStatisticViewDto {
       return statisticViewDto;
     }
 
+
     statisticViewDto.gamesCount = statistic.gameCount;
     statisticViewDto.sumScore = statistic.sumScore;
-    statisticViewDto.avgScores = statistic.avgScore;
+    statisticViewDto.avgScores =  Number(statistic.avgScore);
     statisticViewDto.winsCount = statistic.winsCount;
     statisticViewDto.lossesCount = statistic.lossesCount;
     statisticViewDto.drawsCount = statistic.drawsCount;

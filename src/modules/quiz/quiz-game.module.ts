@@ -18,7 +18,7 @@ import { PlayerRepository } from './quiz-game/infrastructure/player.repository';
 import { GameRepository } from './quiz-game/infrastructure/game.repository';
 import { GamePairConnectionHandler } from './quiz-game/features/pair-game/application/usecases/game-pair-connection.usecese';
 import { GameQueryRepository } from './quiz-game/infrastructure/query/game.query-repository';
-import { PairGameController } from './quiz-game/features/pair-game/api/pair-game.controller';
+import { PairQuizGameController } from './quiz-game/features/pair-game/api/pair-quiz-game.controller';
 import { GetGameByIdHandler } from './quiz-game/features/pair-game/application/query-useceses/get-game-by-id.query-usecase';
 import { RecordCurrentAnswerHandler } from './quiz-game/features/pair-game/application/usecases/record-current-answer.usecese';
 import { AnswerRepository } from './quiz-game/infrastructure/answer.repository';
@@ -26,6 +26,7 @@ import { GetUserUnfinishedGameQueryHandler } from './quiz-game/features/pair-gam
 import { GameStatisticRepository } from './quiz-game/infrastructure/game-statistic.repository';
 import { GameStatistic } from './quiz-game/domain/game-statistic/game-statistic.entity';
 import { GameStatisticQueryRepository } from './quiz-game/infrastructure/query/game-statistic.query-repository';
+import { GameStatisticService } from './quiz-game/features/pair-game/application/services/game-statistic.service';
 
 const questionsHandler = [
   CreateQuestionHandler,
@@ -40,6 +41,8 @@ const pairGameQueryHandler = [
   GetGameByIdHandler,
 ];
 
+const services = [GameStatisticService];
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -52,7 +55,7 @@ const pairGameQueryHandler = [
     ]),
     UserAccountsModule,
   ],
-  controllers: [SaQuestionsController, PairGameController],
+  controllers: [SaQuestionsController, PairQuizGameController],
 
   providers: [
     QuestionRepository,
@@ -63,6 +66,7 @@ const pairGameQueryHandler = [
     AnswerRepository,
     GameStatisticRepository,
     GameStatisticQueryRepository,
+    ...services,
     ...questionsHandler,
     ...questionQueryHandler,
     ...pairGameHandler,
