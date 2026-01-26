@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { CurrentUserFormRequest } from '../../../../../user-accounts/decorators/param/current-user-form-request.decorator';
@@ -27,6 +28,8 @@ import { AnswerViewDto } from './view-dto/answer.view-dto';
 import { GameStatisticViewDto } from '../../../infrastructure/query/mapper/game-statistic.view-dto';
 import { GameStatisticQueryRepository } from '../../../infrastructure/query/game-statistic.query-repository';
 import { UsersStatisticGameDocDecorator } from './docs/users-statistic-game.doc.decorator';
+import { MyGamesQueryDto } from './input-dto/my-games-query-params.input-dto';
+import { MyGamesQuery } from '../application/query-useceses/my-game.query-usecase';
 
 @Controller('pair-game-quiz')
 @UseGuards(BearerJwtAuthGuard)
@@ -45,6 +48,14 @@ export class PairQuizGameController {
     return await this.gameStatisticQueryRepository.findStatisticByUserId(
       user.id,
     );
+  }
+
+  @Get('/pairs/my')
+  async myGames(
+    @Query() query: MyGamesQueryDto,
+    @CurrentUserFormRequest() user: UserContextDto,
+  ) {
+    return this.queryBus.execute(new MyGamesQuery(user.id, query));
   }
 
   @Get('/pairs/my-current')

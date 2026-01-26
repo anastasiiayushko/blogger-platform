@@ -27,6 +27,7 @@ import { GameStatisticRepository } from './quiz-game/infrastructure/game-statist
 import { GameStatistic } from './quiz-game/domain/game-statistic/game-statistic.entity';
 import { GameStatisticQueryRepository } from './quiz-game/infrastructure/query/game-statistic.query-repository';
 import { GameStatisticService } from './quiz-game/features/pair-game/application/services/game-statistic.service';
+import { MyGamesHandler } from './quiz-game/features/pair-game/application/query-useceses/my-game.query-usecase';
 
 const questionsHandler = [
   CreateQuestionHandler,
@@ -39,6 +40,7 @@ const questionQueryHandler = [GetQuestionsWithPagingHandler];
 const pairGameQueryHandler = [
   GetUserUnfinishedGameQueryHandler,
   GetGameByIdHandler,
+  MyGamesHandler,
 ];
 
 const services = [GameStatisticService];
