@@ -78,25 +78,33 @@ export class GameQueryRepository {
       [MyGameSortByEnum.pairCreatedDate]: 'createdAt',
       [MyGameSortByEnum.startGameDate]: 'startGameDate',
       [MyGameSortByEnum.finishGameDate]: 'finishGameDate',
+      [MyGameSortByEnum.status]: 'status',
     };
+
     const sortBy = QUERY_MAP[query.sortBy];
     const sortDirection = toTypeOrmOrderDir(query.sortDirection);
+    const sortDirectionAdd =
+      QUERY_MAP[query.sortBy] === 'createdAt' ? sortDirection : 'DESC';
 
-    const [gamesForPage, totalCount] = await
-      this.dataSource
-        .getRepository(Game)
-        .createQueryBuilder('game')
-        .leftJoin('game.firstPlayer', 'p1')
-        .leftJoin('game.secondPlayer', 'p2')
-        .where('p1.userId = :userId OR p2.userId = :userId', { userId })
-        .select('game.id', 'game_id')
-        .addSelect(`game.${sortBy}`, 'game_sort')
-        .addSelect('game.createdAt', 'game_created_at')
-        .orderBy('game_sort', sortDirection)
-        .addOrderBy('game_created_at', 'DESC')
-        .skip(query.calculateSkip())
-        .take(query.pageSize)
-        .getManyAndCount();
+    const qb = this.dataSource
+      .getRepository(Game)
+      .createQueryBuilder('game')
+      .leftJoin('game.firstPlayer', 'p1')
+      .leftJoin('game.secondPlayer', 'p2')
+      .where('p1.userId = :userId OR p2.userId = :userId', { userId })
+      .select('game.id', 'game_id')
+      .addSelect(`game.${sortBy}`, 'game_sort')
+      .addSelect('game.createdAt', 'game_created_at')
+      .orderBy('game_sort', sortDirection);
+
+    if (query.sortBy === MyGameSortByEnum.status) {
+      qb.addOrderBy('game_created_at', 'DESC');
+    }
+
+    const [gamesForPage, totalCount] = await qb
+      .skip(query.calculateSkip())
+      .take(query.pageSize)
+      .getManyAndCount();
 
     const ids = gamesForPage.map((game) => game.id);
     if (!ids.length) {
@@ -108,15 +116,19 @@ export class GameQueryRepository {
       });
     }
 
-    const games = await this.baseGameQueryBuilder()
+    const gameQb = this.baseGameQueryBuilder()
       .where('game.id IN (:...ids)', { ids })
-      .orderBy(`game.${sortBy}`, sortDirection)
-      .addOrderBy('game.createdAt', 'DESC')
+      .orderBy(`game.${sortBy}`, sortDirection);
+
+    if (query.sortBy === MyGameSortByEnum.status) {
+      gameQb.addOrderBy('game_created_at', 'DESC');
+    }
+
+    const games = await gameQb
       .addOrderBy('gq.order', 'ASC')
       .addOrderBy('a1.createdAt', 'ASC')
       .addOrderBy('a2.createdAt', 'ASC')
       .getMany();
-
     return PaginatedViewDto.mapToView({
       totalCount,
       page: query.pageNumber,

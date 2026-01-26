@@ -13,6 +13,14 @@ async function bootstrap() {
   app.use(cookieParser());
   app.enableCors();
   appSetup(app);
+  app.use((req, _res, next) => {
+    console.log('----------- logs -------');
+    console.log('REQ', req.method, req.url);
+    console.log('QUERY', req.query);
+    console.log('BODY', req.body);
+    next();
+  });
+
   console.info(`App listening http://localhost:${port}/api`);
   await app.listen(port);
 }

@@ -20,7 +20,6 @@ function formatterError(errors: ValidationError[]): ApiExtensionError[] {
   });
 }
 
-
 export function pipesSetup(app: INestApplication) {
   //Глобальный пайп для валидации и трансформации входящих данных.
 
@@ -38,6 +37,9 @@ export function pipesSetup(app: INestApplication) {
       //forbidNonWhitelisted: true
       exceptionFactory: (errors) => {
         const errorResponse = formatterError(errors);
+        // Логируем подробности в консоль
+        console.log('Validation errors:', JSON.stringify(errors, null, 2));
+
         throw new DomainException({
           code: DomainExceptionCode.BadRequest,
           extensions: errorResponse,
