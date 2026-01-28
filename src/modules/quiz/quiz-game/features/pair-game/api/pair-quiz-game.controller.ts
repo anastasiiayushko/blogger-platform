@@ -32,7 +32,7 @@ import { MyGamesQueryDto } from './input-dto/my-games-query-params.input-dto';
 import { MyGamesQuery } from '../application/query-useceses/my-game.query-usecase';
 import { PairsMyGamesDocDecorator } from './docs/pairs-my-games-doc.decorator';
 import { Public } from '../../../../../user-accounts/guards/decorators/public.decorators';
-import { UsersTopQueryParamsDto } from './input-dto/users-top-query-params.input-dto';
+import { TopPlayersQueryParamsDto } from './input-dto/top-players-query-params.input-dto';
 
 @Controller('pair-game-quiz')
 @UseGuards(BearerJwtAuthGuard)
@@ -45,8 +45,8 @@ export class PairQuizGameController {
 
   @Public()
   @Get('/users/top')
-  async getUsersTop(@Query() queryParamsDto: UsersTopQueryParamsDto) {
-    return await this.gameStatisticQueryRepository.getUsersTop(queryParamsDto);
+  async getUsersTop(@Query() queryParamsDto: TopPlayersQueryParamsDto) {
+    return await this.gameStatisticQueryRepository.getTopPlayers(queryParamsDto);
   }
 
   @Get('/users/my-statistic')

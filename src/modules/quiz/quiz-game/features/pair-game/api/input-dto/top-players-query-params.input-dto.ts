@@ -20,8 +20,8 @@ const parseSortItems = (value): SortItemDto[] => {
     });
 };
 
-export enum UsersTopSortByEnum {
-  avgScore = 'avgScore',
+export enum TopPlayersSortByEnum {
+  avgScore = 'avgScores',
   sumScore = 'sumScore',
   gameCount = 'gameCount',
   winsCount = 'winsCount',
@@ -35,14 +35,14 @@ enum SortDirection {
 }
 
 class SortItemDto {
-  @IsEnum(UsersTopSortByEnum)
-  field: UsersTopSortByEnum;
+  @IsEnum(TopPlayersSortByEnum)
+  field: TopPlayersSortByEnum;
 
   @IsEnum(SortDirection)
   direction: SortDirection;
 }
 
-export class UsersTopQueryParamsDto extends OmitType(BaseQueryParams, [
+export class TopPlayersQueryParamsDto extends OmitType(BaseQueryParams, [
   'sortDirection',
 ] as const) {
   @ApiProperty({

@@ -1,14 +1,7 @@
-import { GameStatusesEnum } from '../../../domain/game/game-statuses.enum';
-import { PlayerProgressViewDto } from './player-progress.view-dto';
-import { GameQuestionViewDto } from './game-question.view-dto';
-import { Game } from '../../../domain/game/game.entity';
-import { Player } from '../../../domain/player/player.entity';
 import { ApiProperty } from '@nestjs/swagger';
-import { AnswerStatusesEnum } from '../../../domain/answer/answer-statuses.enum';
 import { GameStatistic } from '../../../domain/game-statistic/game-statistic.entity';
-import { loginConstraints } from '../../../../../user-accounts/domin/user.constraints';
 
-export class UsersTopViewDto {
+export class TopPlayersViewDto {
   @ApiProperty({
     type: 'number',
     nullable: false,
@@ -50,8 +43,8 @@ export class UsersTopViewDto {
     login: string;
   };
 
-  static mapToView(statistic: GameStatistic): UsersTopViewDto {
-    const usersTopViewDto = new UsersTopViewDto();
+  static mapToView(statistic: GameStatistic): TopPlayersViewDto {
+    const usersTopViewDto = new TopPlayersViewDto();
 
     usersTopViewDto.gamesCount = statistic.gameCount;
     usersTopViewDto.sumScore = statistic.sumScore;
