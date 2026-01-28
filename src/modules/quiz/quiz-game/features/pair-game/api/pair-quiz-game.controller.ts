@@ -31,6 +31,8 @@ import { UsersStatisticGameDocDecorator } from './docs/users-statistic-game.doc.
 import { MyGamesQueryDto } from './input-dto/my-games-query-params.input-dto';
 import { MyGamesQuery } from '../application/query-useceses/my-game.query-usecase';
 import { PairsMyGamesDocDecorator } from './docs/pairs-my-games-doc.decorator';
+import { Public } from '../../../../../user-accounts/guards/decorators/public.decorators';
+import { UsersTopQueryParamsDto } from './input-dto/users-top-query-params.input-dto';
 
 @Controller('pair-game-quiz')
 @UseGuards(BearerJwtAuthGuard)
@@ -40,6 +42,12 @@ export class PairQuizGameController {
     private readonly commandBus: CommandBus,
     protected readonly gameStatisticQueryRepository: GameStatisticQueryRepository,
   ) {}
+
+  @Public()
+  @Get('/users/top')
+  async getUsersTop(@Query() queryParamsDto: UsersTopQueryParamsDto) {
+    return await this.gameStatisticQueryRepository.getUsersTop(queryParamsDto);
+  }
 
   @Get('/users/my-statistic')
   @UsersStatisticGameDocDecorator()

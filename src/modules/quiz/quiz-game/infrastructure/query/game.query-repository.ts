@@ -83,8 +83,6 @@ export class GameQueryRepository {
 
     const sortBy = QUERY_MAP[query.sortBy];
     const sortDirection = toTypeOrmOrderDir(query.sortDirection);
-    const sortDirectionAdd =
-      QUERY_MAP[query.sortBy] === 'createdAt' ? sortDirection : 'DESC';
 
     const qb = this.dataSource
       .getRepository(Game)

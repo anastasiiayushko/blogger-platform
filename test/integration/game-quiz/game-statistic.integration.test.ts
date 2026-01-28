@@ -1,11 +1,9 @@
 import { setupTestApp } from '../../setup-app/setup-test-app';
 import { INestApplication } from '@nestjs/common';
 import { AppModule } from '../../../src/app.module';
-import { GamePairConnectionHandler } from '../../../src/modules/quiz/quiz-game/features/pair-game/application/usecases/game-pair-connection.usecese';
 import { DataSource } from 'typeorm';
 import { ormDBCleaner } from '../../util/orm-db-cleaner';
 import { FillQuestionsSeed } from '../../../seeds/fill-questions.seed';
-import { RecordCurrentAnswerHandler } from '../../../src/modules/quiz/quiz-game/features/pair-game/application/usecases/record-current-answer.usecese';
 import { GameStatisticQueryRepository } from '../../../src/modules/quiz/quiz-game/infrastructure/query/game-statistic.query-repository';
 import { GameStatisticViewDto } from '../../../src/modules/quiz/quiz-game/infrastructure/query/mapper/game-statistic.view-dto';
 import { gameTestDriver } from '../../helpers/game/game-test-driver';
@@ -42,13 +40,13 @@ describe('Quiz: game statistic', () => {
     const firstUserId = await saCreateUser();
     const secondUserId = await saCreateUser();
     await gameRunner(2, 3, 'first', firstUserId, secondUserId); // ничья
-    await delay(80)
+    await delay(80);
     await gameRunner(5, 3, 'first', firstUserId, secondUserId); //  user1 win
-    await delay(60)
+    await delay(60);
     await gameRunner(1, 4, 'second', firstUserId, secondUserId); // user2 win
-    await delay(60)
+    await delay(60);
     await gameRunner(0, 1, 'first', firstUserId, secondUserId); // user2 win
-    await delay(10)
+    await delay(10);
     await gameRunner(4, 1, 'second', firstUserId, secondUserId); // user1 win
 
     const expectedStatisticUser1: GameStatisticViewDto = {
