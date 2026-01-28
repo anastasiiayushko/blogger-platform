@@ -42,9 +42,11 @@ class SortItemDto {
   direction: SortDirection;
 }
 
-export class TopPlayersQueryParamsDto extends OmitType(BaseQueryParams, [
-  'sortDirection',
-] as const) {
+export class TopPlayersQueryParamsDto extends BaseQueryParams {
+
+// export class TopPlayersQueryParamsDto extends OmitType(BaseQueryParams, [
+//   'sortDirection',
+// ] as const) {
   @ApiProperty({
     type: 'array',
     description: 'Sort fields with direction, e.g. "avgScore asc".',

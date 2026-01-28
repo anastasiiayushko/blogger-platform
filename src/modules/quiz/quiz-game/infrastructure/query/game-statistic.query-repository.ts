@@ -51,7 +51,7 @@ export class GameStatisticQueryRepository {
     }
 
     const [result, totalCount] = await statisticQb
-      .skip((+queryParamsDto.pageNumber - 1) * queryParamsDto.pageSize)
+      .skip(queryParamsDto.calculateSkip())
       .take(queryParamsDto.pageSize)
       .getManyAndCount();
 
