@@ -50,6 +50,8 @@ export class GameStatisticQueryRepository {
       });
     }
 
+    console.log('sql', statisticQb.getSql());
+
     const [result, totalCount] = await statisticQb
       .skip((+queryParamsDto.pageNumber - 1) * queryParamsDto.pageSize)
       .take(queryParamsDto.pageSize)
