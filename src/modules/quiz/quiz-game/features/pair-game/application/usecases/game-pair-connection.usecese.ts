@@ -59,10 +59,10 @@ export class GamePairConnectionHandler
         });
       }
 
-      await this.gameStatisticService.createStatisticForUserIfNotExist(
-        cmd.userId,
-        em,
-      );
+      // await this.gameStatisticService.createStatisticForUserIfNotExist(
+      //   cmd.userId,
+      //   em,
+      // );
 
       const gameInAwaitSecondPlayer =
         await this.gameRepo.findGameInStatusPending(cmd.userId, em);

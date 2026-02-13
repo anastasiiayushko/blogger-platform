@@ -94,7 +94,6 @@ export class GameRepository {
           );
         }),
       )
-      // .orderBy('game.createdAt', 'DESC')
       .addOrderBy('questions.order', 'ASC')
       .addOrderBy('firstplayeranswers.createdAt', 'ASC')
       .addOrderBy('secondplayeranswers.createdAt', 'ASC')

@@ -6,6 +6,8 @@ import { CreateGameDomainDto } from './dto/create-game.domain-dto';
 import { GameQuestion } from '../game-question/game-question.entity';
 import { randomUUID } from 'crypto';
 import { PlayerResultEnum } from '../player/player-result.enum';
+import { GameTask } from '../game-task/game-task.entity';
+import { Answer } from '../answer/answer.entity';
 
 @Entity('game')
 export class Game extends BaseOrmEntity {
@@ -43,6 +45,11 @@ export class Game extends BaseOrmEntity {
   })
   questions: GameQuestion[] | null;
 
+  @OneToOne(() => GameTask, (gt) => gt.game, {})
+  task: GameTask | null;
+  @Column('uuid', { nullable: true, default: null })
+  taskId: string | null;
+
   static createPending(dto: CreateGameDomainDto): Game {
     const game = new this();
     game.id = randomUUID();
@@ -52,6 +59,7 @@ export class Game extends BaseOrmEntity {
     game.startGameDate = null;
     game.finishGameDate = null;
     game.questions = null;
+    game.task = null;
     return game;
   }
 
@@ -142,6 +150,36 @@ export class Game extends BaseOrmEntity {
     }
 
     return false;
+  }
+
+  createMissingAnswersForPlayer(): Answer[] {
+    const firstPlayerFinished =
+      this.firstPlayer.hasAnsweredAllQuestions() &&
+      !this.secondPlayer?.hasAnsweredAllQuestions();
+    const secondPlayerFinished =
+      this.secondPlayer!.hasAnsweredAllQuestions() &&
+      !this.firstPlayer.hasAnsweredAllQuestions();
+
+    const newAutoAnswer: Answer[] = [];
+
+    if (firstPlayerFinished || secondPlayerFinished) {
+      if (!this.firstPlayer.hasAnsweredAllQuestions()) {
+        const answers = this.firstPlayer.addAutoAnswers(
+          this.questions as GameQuestion[],
+        );
+        newAutoAnswer.push(...answers);
+      }
+      if (!this.secondPlayer!.hasAnsweredAllQuestions()) {
+        const answers = this!.secondPlayer!.addAutoAnswers(
+          this.questions as GameQuestion[],
+        );
+        newAutoAnswer.push(...answers);
+      }
+
+      return newAutoAnswer;
+    }
+
+    return [];
   }
 
   getPlayersByUserId(userId: string) {

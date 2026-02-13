@@ -14,12 +14,14 @@ import { ThrottlerConfig } from './core/config/throttler.config';
 import { BloggersPlatformModule } from './modules/bloggers-platform/bloggers-platform.module';
 import { QuizGameModule } from './modules/quiz/quiz-game.module';
 import { DatabaseModule } from './core/database/database.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     CoreModule,
     configModule, //  инициализация конфигурации
     DatabaseModule,
+    ScheduleModule.forRoot(),
     UserAccountsModule,
     BloggersPlatformModule,
     TestingModule,

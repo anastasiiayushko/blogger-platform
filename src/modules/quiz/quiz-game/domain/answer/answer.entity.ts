@@ -1,9 +1,10 @@
 import { BaseOrmEntity } from '../../../../../core/base-orm-entity/base-orm-entity';
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Column, Entity, Index, ManyToOne, Unique } from 'typeorm';
 import { Player } from '../player/player.entity';
 import { AnswerStatusesEnum } from './answer-statuses.enum';
 
 @Entity('answer')
+@Unique('UQ_answer_player_question', ['playerId', 'questionId'])
 export class Answer extends BaseOrmEntity {
   @ManyToOne(() => Player, (player) => player.answers)
   player: Player;

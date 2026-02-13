@@ -28,6 +28,9 @@ import { GameStatistic } from './quiz-game/domain/game-statistic/game-statistic.
 import { GameStatisticQueryRepository } from './quiz-game/infrastructure/query/game-statistic.query-repository';
 import { GameStatisticService } from './quiz-game/features/pair-game/application/services/game-statistic.service';
 import { MyGamesHandler } from './quiz-game/features/pair-game/application/query-useceses/my-game.query-usecase';
+import { GameTaskService } from './quiz-game/features/pair-game/application/services/game-task.sevice';
+import { GameTask } from './quiz-game/domain/game-task/game-task.entity';
+import { GameTaskRepository } from './quiz-game/infrastructure/game-task.repository';
 
 const questionsHandler = [
   CreateQuestionHandler,
@@ -54,6 +57,7 @@ const services = [GameStatisticService];
       GameQuestion,
       Answer,
       GameStatistic,
+      GameTask,
     ]),
     UserAccountsModule,
   ],
@@ -68,6 +72,8 @@ const services = [GameStatisticService];
     AnswerRepository,
     GameStatisticRepository,
     GameStatisticQueryRepository,
+    GameTaskRepository,
+    GameTaskService,
     ...services,
     ...questionsHandler,
     ...questionQueryHandler,

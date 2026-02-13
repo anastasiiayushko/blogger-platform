@@ -2,7 +2,7 @@ import { SaCreateUserHandler } from '../../../src/modules/user-accounts/applicat
 import { INestApplication } from '@nestjs/common';
 
 export const makeSaCreateUserHelper = (app: INestApplication) => {
-  let v = 0;
+  let v = 6;
   const saCreateUserHandler = app.get(SaCreateUserHandler);
 
   return async (): Promise<string> => {

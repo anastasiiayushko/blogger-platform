@@ -12,6 +12,8 @@ import { AnswerViewDto } from '../../api/view-dto/answer.view-dto';
 import { GameQuestion } from '../../../../domain/game-question/game-question.entity';
 import { DataSource } from 'typeorm';
 import { GameStatisticService } from '../services/game-statistic.service';
+import { GameTaskRepository } from '../../../../infrastructure/game-task.repository';
+import { GameTask } from '../../../../domain/game-task/game-task.entity';
 
 export class RecordCurrentAnswerCommand extends ValidatableCommand {
   @IsNotEmpty()
@@ -41,6 +43,7 @@ export class RecordCurrentAnswerHandler
     protected playerRepository: PlayerRepository,
     protected answerRepository: AnswerRepository,
     protected applyGameStatisticService: GameStatisticService,
+    protected gameTaskRepository: GameTaskRepository,
     protected dataSource: DataSource,
   ) {}
 
@@ -107,6 +110,20 @@ export class RecordCurrentAnswerHandler
         currentPlayer.addAnswerQuestion(newAnswer);
 
         game.tryToFinish();
+        console.log(
+          'currentPlayer hasAnsweredAllQuestions',
+          currentPlayer.hasAnsweredAllQuestions(),
+        );
+
+        if (
+          currentPlayer.hasAnsweredAllQuestions() &&
+          !opponentPlayer.hasAnsweredAllQuestions()
+        ) {
+          const task = GameTask.createTask(game.id);
+          const taskId = await this.gameTaskRepository.createTask(task, em);
+
+          game.taskId = taskId;
+        }
 
         await this.playerRepository.updatePlayerProgress(currentPlayer, em);
         await this.playerRepository.updatePlayerProgress(opponentPlayer, em);

@@ -7,6 +7,7 @@ import { randomUUID } from 'crypto';
 import { AnswerStatusesEnum } from '../answer/answer-statuses.enum';
 import { PlayerResultEnum } from './player-result.enum';
 import { PlayerGameStatusEnum } from './player-game-status.enum';
+import { GameQuestion } from '../game-question/game-question.entity';
 
 @Entity('player')
 @Index('uq_player_active_user', ['userId'], {
@@ -48,6 +49,29 @@ export class Player extends BaseOrmEntity {
     player.answers = [];
     player.gameStatus = PlayerGameStatusEnum.joined;
     return player;
+  }
+
+  addAutoAnswers(questions: GameQuestion[]): Answer[] {
+    // какие вопросы уже отвечены
+    const answeredQuestionIds = new Set(this.answers.map(a => a.questionId));
+
+    // какие вопросы остались без ответа
+    const missingQuestions = questions.filter(q => !answeredQuestionIds.has(q.questionId));
+
+    // создаём авто-ответы именно на них
+    const autoAnswers = missingQuestions.map(q =>
+      Answer.createAnswer({
+        questionId: q.questionId,
+        status: AnswerStatusesEnum.incorrect,
+        playerId: this.id,
+        // полезно иметь: isAuto: true, answeredAt: now, reason: 'timeout'
+      }),
+    );
+
+    // опционально: сразу добавить в состояние игрока
+    this.answers.push(...autoAnswers);
+    return autoAnswers;
+
   }
 
   hasAnsweredAllQuestions() {

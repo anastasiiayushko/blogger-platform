@@ -31,7 +31,7 @@ export class GameStatisticService {
     await this.gameStatisticRepository.setStatistic(result2, em);
   }
 
-  async createStatisticForUserIfNotExist(
+  private async createStatisticForUserIfNotExist(
     userId: string,
     em: EntityManager,
   ): Promise<GameStatistic> {
