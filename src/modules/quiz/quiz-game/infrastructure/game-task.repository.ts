@@ -19,12 +19,12 @@ export class GameTaskRepository {
       .values({
         gameId: gameTask.gameId,
         status: gameTask.status,
-        executeAt: () => "Now() + INTERVAL '3 seconds'",
+        executeAt: () => "Now() + INTERVAL '8 seconds'",
       })
       .returning('id')
       .execute();
-    console.log('task', task);
-    return task.raw.id;
+    const taskId = task?.raw?.[0]?.id;
+    return taskId
   }
 
   async getExecutedTasks(
@@ -58,7 +58,7 @@ export class GameTaskRepository {
       .update(GameTask)
       .set({
         status: GameTaskStatuses.PROCESSING,
-        lockedUntil: () => "NOW() + INTERVAL '30 seconds'",
+        lockedUntil: () => "NOW() + INTERVAL '20 seconds'",
       })
       // Підставляємо SQL підзапиту в IN
       .where(`id IN (:...ids)`, { ids: taskIds })
@@ -66,10 +66,6 @@ export class GameTaskRepository {
       .execute();
 
     return updated.raw;
-    // return await em
-    //   .getRepository(GameTask)
-    //   .createQueryBuilder('game_task')
-    //   .where(`id IN(:...ids)`, { ids: taskIds })
-    //   .getMany();
+
   }
 }

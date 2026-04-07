@@ -27,6 +27,10 @@ import { DeleteQuestionCommand } from '../application/usecases/delete-question.u
 import { GetQuestionsWithPagingQuery } from '../application/query-usecases/get-questions-with-paging.query-usecase';
 import { BasicAuthGuard } from '../../../user-accounts/guards/basic/basic-auth.guard';
 import { ApiErrorResult } from '../../../../core/exceptions/filters/error-response-body.type';
+import { Question } from '../domain/question.entity';
+import { DataSource } from 'typeorm';
+import { FillQuestionsSeed } from '../../../../../seeds/fill-questions.seed';
+import { Public } from '../../../user-accounts/guards/decorators/public.decorators';
 
 // Apply to the entire controller
 @ApiTags('QuizQuestions')
@@ -38,7 +42,15 @@ export class SaQuestionsController {
     protected readonly commandBus: CommandBus,
     protected readonly queryBus: QueryBus,
     protected questionQueryRepository: QuestionQueryRepository,
+    protected dataSource: DataSource,
   ) {}
+
+  @ApiResponse({ status: HttpStatus.CREATED })
+  @Public()
+  @Post('/seed')
+  async seedQuizQuestions() {
+    await FillQuestionsSeed.up(this.dataSource);
+  }
 
   @ApiResponse({
     type: PaginatedViewDto<QuestionViewDto[]>,
@@ -79,7 +91,6 @@ export class SaQuestionsController {
     @Param('id', UuidValidationPipe) id: string,
     @Body() inputDto: QuestionInputDto,
   ): Promise<void> {
-
     await this.commandBus.execute(
       new UpdateQuestionCommand(id, inputDto.body, inputDto.correctAnswers),
     );
@@ -95,7 +106,7 @@ export class SaQuestionsController {
     await this.commandBus.execute(
       new TogglePublishQuestionCommand(id, inputDto.published),
     );
-    return
+    return;
   }
 
   @Delete(':id')

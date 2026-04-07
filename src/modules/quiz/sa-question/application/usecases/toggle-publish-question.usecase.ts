@@ -13,8 +13,6 @@ export class TogglePublishQuestionCommand extends Command<void> {
 
   constructor(questionId: string, published: boolean) {
     super();
-    console.log('questionId ->', questionId);
-    console.log('published ->', published);
     this.questionId = questionId;
     this.published = published;
   }

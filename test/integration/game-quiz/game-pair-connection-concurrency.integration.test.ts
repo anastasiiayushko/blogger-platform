@@ -5,7 +5,7 @@ import { SaCreateUserHandler } from '../../../src/modules/user-accounts/applicat
 import {
   GamePairConnectionCmd,
   GamePairConnectionHandler,
-} from '../../../src/modules/quiz/quiz-game/features/pair-game/application/usecases/game-pair-connection.usecese';
+} from '../../../src/modules/quiz/quiz-game/features/pair-game/application/usecases/game-pair-connection.usecase';
 import { DataSource } from 'typeorm';
 import { ormDBCleaner } from '../../util/orm-db-cleaner';
 import { FillQuestionsSeed } from '../../../seeds/fill-questions.seed';

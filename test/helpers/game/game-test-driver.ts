@@ -3,13 +3,13 @@ import { Question } from '../../../src/modules/quiz/sa-question/domain/question.
 import {
   RecordCurrentAnswerCommand,
   RecordCurrentAnswerHandler,
-} from '../../../src/modules/quiz/quiz-game/features/pair-game/application/usecases/record-current-answer.usecese';
+} from '../../../src/modules/quiz/quiz-game/features/pair-game/application/usecases/record-current-answer.usecase';
 import { INestApplication } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import {
   GamePairConnectionCmd,
   GamePairConnectionHandler,
-} from '../../../src/modules/quiz/quiz-game/features/pair-game/application/usecases/game-pair-connection.usecese';
+} from '../../../src/modules/quiz/quiz-game/features/pair-game/application/usecases/game-pair-connection.usecase';
 
 export function gameTestDriver(app: INestApplication) {
   let gamePairConnectionHandler;

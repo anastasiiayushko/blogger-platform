@@ -16,11 +16,11 @@ import { GameQuestion } from './quiz-game/domain/game-question/game-question.ent
 import { Answer } from './quiz-game/domain/answer/answer.entity';
 import { PlayerRepository } from './quiz-game/infrastructure/player.repository';
 import { GameRepository } from './quiz-game/infrastructure/game.repository';
-import { GamePairConnectionHandler } from './quiz-game/features/pair-game/application/usecases/game-pair-connection.usecese';
+import { GamePairConnectionHandler } from './quiz-game/features/pair-game/application/usecases/game-pair-connection.usecase';
 import { GameQueryRepository } from './quiz-game/infrastructure/query/game.query-repository';
 import { PairQuizGameController } from './quiz-game/features/pair-game/api/pair-quiz-game.controller';
 import { GetGameByIdHandler } from './quiz-game/features/pair-game/application/query-useceses/get-game-by-id.query-usecase';
-import { RecordCurrentAnswerHandler } from './quiz-game/features/pair-game/application/usecases/record-current-answer.usecese';
+import { RecordCurrentAnswerHandler } from './quiz-game/features/pair-game/application/usecases/record-current-answer.usecase';
 import { AnswerRepository } from './quiz-game/infrastructure/answer.repository';
 import { GetUserUnfinishedGameQueryHandler } from './quiz-game/features/pair-game/application/query-useceses/get-user-unfinished-game.query-usecase';
 import { GameStatisticRepository } from './quiz-game/infrastructure/game-statistic.repository';

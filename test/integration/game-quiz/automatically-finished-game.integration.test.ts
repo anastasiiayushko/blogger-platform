@@ -5,7 +5,7 @@ import { SaCreateUserHandler } from '../../../src/modules/user-accounts/applicat
 import {
   GamePairConnectionCmd,
   GamePairConnectionHandler,
-} from '../../../src/modules/quiz/quiz-game/features/pair-game/application/usecases/game-pair-connection.usecese';
+} from '../../../src/modules/quiz/quiz-game/features/pair-game/application/usecases/game-pair-connection.usecase';
 import { DataSource } from 'typeorm';
 import { ormDBCleaner } from '../../util/orm-db-cleaner';
 import { FillQuestionsSeed } from '../../../seeds/fill-questions.seed';
@@ -14,7 +14,7 @@ import { GameQueryRepository } from '../../../src/modules/quiz/quiz-game/infrast
 import {
   RecordCurrentAnswerCommand,
   RecordCurrentAnswerHandler,
-} from '../../../src/modules/quiz/quiz-game/features/pair-game/application/usecases/record-current-answer.usecese';
+} from '../../../src/modules/quiz/quiz-game/features/pair-game/application/usecases/record-current-answer.usecase';
 import { GameRepository } from '../../../src/modules/quiz/quiz-game/infrastructure/game.repository';
 import { AnswerStatusesEnum } from '../../../src/modules/quiz/quiz-game/domain/answer/answer-statuses.enum';
 import { Question } from '../../../src/modules/quiz/sa-question/domain/question.entity';

@@ -53,13 +53,15 @@ export class Player extends BaseOrmEntity {
 
   addAutoAnswers(questions: GameQuestion[]): Answer[] {
     // какие вопросы уже отвечены
-    const answeredQuestionIds = new Set(this.answers.map(a => a.questionId));
+    const answeredQuestionIds = new Set(this.answers.map((a) => a.questionId));
 
     // какие вопросы остались без ответа
-    const missingQuestions = questions.filter(q => !answeredQuestionIds.has(q.questionId));
+    const missingQuestions = questions.filter(
+      (q) => !answeredQuestionIds.has(q.questionId),
+    );
 
     // создаём авто-ответы именно на них
-    const autoAnswers = missingQuestions.map(q =>
+    const autoAnswers = missingQuestions.map((q) =>
       Answer.createAnswer({
         questionId: q.questionId,
         status: AnswerStatusesEnum.incorrect,
@@ -71,7 +73,6 @@ export class Player extends BaseOrmEntity {
     // опционально: сразу добавить в состояние игрока
     this.answers.push(...autoAnswers);
     return autoAnswers;
-
   }
 
   hasAnsweredAllQuestions() {
@@ -109,9 +110,9 @@ export class Player extends BaseOrmEntity {
     if (!this.hasAnsweredAllQuestions()) {
       throw Error(`The player did not answer all the questions.`);
     }
-    if (this.score >= 0 && this.score < 5) {
-      this.score = this.score + 1;
-    }
+    // if (this.score >= 0 && this.score < 5) {
+    this.score = this.score + 1;
+    // }
   }
 
   finished() {

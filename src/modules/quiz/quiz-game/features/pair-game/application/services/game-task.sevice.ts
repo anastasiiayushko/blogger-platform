@@ -20,7 +20,7 @@ export class GameTaskService {
     protected dataSource: DataSource,
   ) {}
 
-  @Cron('*/10 * * * * *', {
+  @Cron('*/1 * * * * *', {
     name: 'GameTask',
   })
   async handleCron() {

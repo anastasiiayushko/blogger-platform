@@ -20,9 +20,9 @@ import { UuidValidationPipe } from '../../../../../../core/pipes/uuid-validation
 import { GetGameByIdQuery } from '../application/query-useceses/get-game-by-id.query-usecase';
 import { GetGameByIdDocDecorator } from './docs/get-game-by-id.doc.decorator';
 import { GamePairConnectionDocDecorator } from './docs/game-pair-connection.doc.decorator';
-import { GamePairConnectionCmd } from '../application/usecases/game-pair-connection.usecese';
+import { GamePairConnectionCmd } from '../application/usecases/game-pair-connection.usecase';
 import { GameSendAnswerDocDecorator } from './docs/game-send-answer.doc.decorator';
-import { RecordCurrentAnswerCommand } from '../application/usecases/record-current-answer.usecese';
+import { RecordCurrentAnswerCommand } from '../application/usecases/record-current-answer.usecase';
 import { AnswerInputDto } from './input-dto/answer.input-dto';
 import { AnswerViewDto } from './view-dto/answer.view-dto';
 import { GameStatisticViewDto } from '../../../infrastructure/query/mapper/game-statistic.view-dto';
