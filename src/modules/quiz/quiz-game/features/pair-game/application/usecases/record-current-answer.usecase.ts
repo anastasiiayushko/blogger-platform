@@ -96,12 +96,24 @@ export class RecordCurrentAnswerHandler
         const questions = game.questions as GameQuestion[];
         const gameQuestion = questions[currentPlayer.getIndexAnswerQuestion()];
 
+        if (!gameQuestion) {
+          throw new DomainException({
+            code: DomainExceptionCode.Forbidden,
+            message: 'No question available for current answer index',
+          });
+        }
+
+        const normalizeAnswer = (value: string): string =>
+          value.trim().toLowerCase();
+        const normalizedUserAnswer = normalizeAnswer(command.answer);
+        const isCorrect = gameQuestion.question.answers
+          .map(normalizeAnswer)
+          .includes(normalizedUserAnswer);
+
         const newAnswer = Answer.createAnswer({
           questionId: gameQuestion.questionId,
           playerId: currentPlayer.id,
-          status: gameQuestion.question.answers.includes(
-            command.answer.trim().toLowerCase(),
-          )
+          status: isCorrect
             ? AnswerStatusesEnum.correct
             : AnswerStatusesEnum.incorrect,
         });
@@ -110,11 +122,6 @@ export class RecordCurrentAnswerHandler
         currentPlayer.addAnswerQuestion(newAnswer);
 
         game.tryToFinish();
-
-        // console.log(
-        //   'currentPlayer hasAnsweredAllQuestions',
-        //   currentPlayer.hasAnsweredAllQuestions(),
-        // );
 
         if (
           currentPlayer.hasAnsweredAllQuestions() &&

@@ -34,7 +34,7 @@ export class GameTaskRepository {
       .createQueryBuilder()
       .select('game_task.id', 'id')
       .from(GameTask, 'game_task')
-      // .setLock('pessimistic_write')
+      .setLock('pessimistic_write')
       .setOnLocked('skip_locked')
       .where(
         'game_task.executeAt <= NOW() AND game_task.status = :statusPending',
@@ -58,7 +58,7 @@ export class GameTaskRepository {
       .update(GameTask)
       .set({
         status: GameTaskStatuses.PROCESSING,
-        lockedUntil: () => "NOW() + INTERVAL '20 seconds'",
+        lockedUntil: () => "NOW() + INTERVAL '8 seconds'",
       })
       // Підставляємо SQL підзапиту в IN
       .where(`id IN (:...ids)`, { ids: taskIds })

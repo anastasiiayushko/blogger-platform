@@ -40,7 +40,8 @@ export class CommentsQueryRepository {
         FROM "Comments" AS c
                  JOIN "Users" AS u ON u.id = c."userId"
                  LEFT JOIN (SELECT "commentId",
-                                   COUNT(*) FILTER (WHERE status = '${LikeStatusEnum.Like}') AS "likesCount", COUNT(*) FILTER (WHERE status = '${LikeStatusEnum.Dislike}') AS "dislikesCount"
+                                   COUNT(*) FILTER (WHERE status = '${LikeStatusEnum.Like}') AS "likesCount",
+                                   COUNT(*) FILTER (WHERE status = '${LikeStatusEnum.Dislike}') AS "dislikesCount"
                             FROM "CommentReactions"
                             GROUP BY "commentId") AS r ON r."commentId" = c."id"
                  LEFT JOIN "CommentReactions" AS my ON my."commentId" = $1 AND my."userId" = $2

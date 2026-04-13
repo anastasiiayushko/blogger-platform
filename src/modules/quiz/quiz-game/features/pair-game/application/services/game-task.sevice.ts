@@ -95,7 +95,7 @@ export class GameTaskService {
                     finishGameDate: () => 'NOW()',
                   })
                   .where(
-                    `status = :statusActive and id = :idGame and version = :version`,
+                    `status = :statusActive and finishGameDate IS NULL and id = :idGame and version = :version`,
                     {
                       statusActive: GameStatusesEnum.active,
                       idGame: game.id,
