@@ -16,8 +16,8 @@ async function bootstrap() {
   app.use((req, _res, next) => {
     console.log('----------- logs -------');
     console.log('REQ', req.method, req.url);
-    console.log('QUERY', req.query);
-    console.log('BODY', req.body);
+    // console.log('QUERY', req.query);
+    // console.log('BODY', req.body);
     next();
   });
 

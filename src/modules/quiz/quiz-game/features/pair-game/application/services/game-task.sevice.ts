@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { GameTaskRepository } from '../../../../infrastructure/game-task.repository';
-import { DataSource } from 'typeorm';
+import { DataSource, LockNotSupportedOnGivenDriverError } from 'typeorm';
 import { GameStatusesEnum } from '../../../../domain/game/game-statuses.enum';
 import { GameTask } from '../../../../domain/game-task/game-task.entity';
 import { GameTaskStatuses } from '../../../../domain/game-task/game-task.statuses.enum';
@@ -10,6 +10,7 @@ import { Game } from '../../../../domain/game/game.entity';
 import { Player } from '../../../../domain/player/player.entity';
 import { PlayerRepository } from '../../../../infrastructure/player.repository';
 import { GameStatisticService } from './game-statistic.service';
+import { log } from 'node:util';
 
 @Injectable()
 export class GameTaskService {
@@ -29,12 +30,15 @@ export class GameTaskService {
         const tasks = await this.gameTaskRepository.getExecutedTasks(trx);
 
         if (!tasks) return;
+        console.log('ALL tasks:', tasks);
 
         for (const task of tasks) {
           try {
+            console.log('ONE task:', task);
             const resultCancelGame = await this.dataSource.transaction(
               async (subTrx) => {
                 const okTrx = true;
+
                 const game = await subTrx.getRepository(Game).findOne({
                   where: { id: task.gameId },
                   relations: {
@@ -78,6 +82,26 @@ export class GameTaskService {
                   );
                   return false;
                 }
+
+                const gameUpdateResult = await subTrx
+                  .createQueryBuilder()
+                  .update(Game)
+                  .set({
+                    status: GameStatusesEnum.finished,
+                    finishGameDate: () => 'NOW()',
+                  })
+                  .where(
+                    `status = :statusActive and finishGameDate IS NULL and id = :idGame`,
+                    {
+                      statusActive: GameStatusesEnum.active,
+                      idGame: game.id,
+                    },
+                  )
+                  .execute();
+                console.log('game updated result ->', gameUpdateResult);
+                if (gameUpdateResult.affected !== 1) {
+                  return false;
+                }
                 await this.playerRepository.updatePlayerProgress(
                   game.firstPlayer,
                   subTrx,
@@ -86,66 +110,16 @@ export class GameTaskService {
                   game!.secondPlayer as Player,
                   subTrx,
                 );
-
-                await subTrx
-                  .createQueryBuilder()
-                  .update(Game)
-                  .set({
-                    status: GameStatusesEnum.finished,
-                    finishGameDate: () => 'NOW()',
-                  })
-                  .where(
-                    `status = :statusActive and finishGameDate IS NULL and id = :idGame and version = :version`,
-                    {
-                      statusActive: GameStatusesEnum.active,
-                      idGame: game.id,
-                      version: game.version,
-                    },
-                  )
-                  .execute();
-                await this.gameStatisticService.recalculateAndSaveGameStatistic(game, subTrx)
+                await this.gameStatisticService.recalculateAndSaveGameStatistic(
+                  game,
+                  subTrx,
+                );
 
                 return okTrx;
-
-                // await this.gameRepository.save(game, em);
-
-                // await subTrx
-                //   .createQueryBuilder()
-                //   .update(Player)
-                //   .set({
-                //     score: game.firstPlayer.score,
-                //     result: game.firstPlayer.result,
-                //     gameStatus: game.firstPlayer.gameStatus,
-                //   })
-                //   .where(
-                //     `id = :idPlayer and version = :version and result Is Null`,
-                //     {
-                //       id: game.firstPlayer.id,
-                //       version: game.firstPlayer.version,
-                //     },
-                //   )
-                //   .execute();
-                //
-                // await subTrx
-                //   .createQueryBuilder()
-                //   .update(Player)
-                //   .set({
-                //     score: game.secondPlayer!.score,
-                //     result: game.secondPlayer!.result,
-                //     gameStatus: game.secondPlayer!.gameStatus,
-                //   })
-                //   .where(
-                //     `id = :idPlayer and version = :version and result Is Null`,
-                //     {
-                //       id: game.secondPlayer!.id,
-                //       version: game.secondPlayer!.version,
-                //     },
-                //   )
-                //   .execute();
-
-                // return okTrx;
               },
             );
+
+            console.log('result canceled ->', resultCancelGame);
 
             await trx
               .createQueryBuilder()
