@@ -11,10 +11,14 @@ import { ConfigService } from '@nestjs/config';
 import * as process from 'node:process';
 import { ValidationError } from 'class-validator';
 import { ApiExtensionError } from '../domain-exception';
+import { AppLoggerService } from '../../logger/app-logger.service';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
-  constructor(protected configService: ConfigService) {}
+  constructor(
+    protected configService: ConfigService,
+    private readonly logger: AppLoggerService,
+  ) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
@@ -24,9 +28,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     if (exception instanceof Error) {
       message = exception.message + exception.stack;
+      this.logger.error(exception.message, exception.stack, 'AllExceptionsFilter');
       if (process.env.NODE_ENV !== 'production') {
         console.log(message);
       }
+    } else {
+      this.logger.error(String(message), undefined, 'AllExceptionsFilter');
     }
 
     const status = HttpStatus.INTERNAL_SERVER_ERROR;

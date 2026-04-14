@@ -9,10 +9,14 @@ import { DomainException } from '../domain-exception';
 import { DomainExceptionCode } from '../domain-exception-codes';
 import { ErrorResponseBody } from './error-response-body.type';
 import { ConfigService } from '@nestjs/config';
+import { AppLoggerService } from '../../logger/app-logger.service';
 
 @Catch(DomainException)
 export class DomainExceptionsFilter implements ExceptionFilter {
-  constructor(protected configService: ConfigService) {}
+  constructor(
+    protected configService: ConfigService,
+    private readonly logger: AppLoggerService,
+  ) {}
 
   catch(exception: DomainException, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
@@ -20,6 +24,13 @@ export class DomainExceptionsFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
 
     const status = this.mapToHttpStatus(exception.code);
+    if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
+      this.logger.error(
+        exception.message,
+        exception.stack,
+        'DomainExceptionsFilter',
+      );
+    }
     const { extensions, code, path, message, timestamp } =
       this.buildResponseBody(exception, request.url);
 

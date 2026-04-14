@@ -31,6 +31,7 @@ import { MyGamesHandler } from './quiz-game/features/pair-game/application/query
 import { GameTaskService } from './quiz-game/features/pair-game/application/services/game-task.sevice';
 import { GameTask } from './quiz-game/domain/game-task/game-task.entity';
 import { GameTaskRepository } from './quiz-game/infrastructure/game-task.repository';
+import { FinalizedGameService } from './quiz-game/features/pair-game/application/services/finalized-game.service';
 
 const questionsHandler = [
   CreateQuestionHandler,
@@ -74,6 +75,7 @@ const services = [GameStatisticService];
     GameStatisticQueryRepository,
     GameTaskRepository,
     GameTaskService,
+    FinalizedGameService,
     ...services,
     ...questionsHandler,
     ...questionQueryHandler,

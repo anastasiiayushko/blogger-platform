@@ -53,6 +53,7 @@ export class GameTaskRepository {
 
     const taskIds = tasks.map((i) => i.id);
     if (!taskIds.length) return null;
+
     const updated = await em
       .createQueryBuilder()
       .update(GameTask)

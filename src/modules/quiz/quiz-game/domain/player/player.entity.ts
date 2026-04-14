@@ -96,6 +96,11 @@ export class Player extends BaseOrmEntity {
   }
 
   getAnswerSummary(): { lastAddedAt: Date; hasOneCorrectStatus: boolean } {
+    this.answers.sort(
+      (a, b) =>
+        //@ts-ignore
+        new Date(a.createdAt as string) - new Date(b.createdAt as string),
+    );
     const lastAnswer = this.answers[this.answers.length - 1];
 
     return {

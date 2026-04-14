@@ -130,7 +130,10 @@ export class Game extends BaseOrmEntity {
 
   private finishedGame() {
     if (this.status !== GameStatusesEnum.active) {
-      throw new Error('The game has an incorrect status for completion.');
+      console.log('this game is already in progress ->', this.status);
+      console.log('this firstPlayer is already in progress ->', this.firstPlayer);
+      console.log('this secondPlayer is already in progress ->', this.secondPlayer);
+      // throw new Error('The game has an incorrect status for completion.');
     }
 
     this.status = GameStatusesEnum.finished;
@@ -152,35 +155,42 @@ export class Game extends BaseOrmEntity {
     return false;
   }
 
-  createMissingAnswersForPlayer(): Answer[] {
-    const firstPlayerFinished =
-      this.firstPlayer.hasAnsweredAllQuestions() &&
-      !this.secondPlayer?.hasAnsweredAllQuestions();
-    const secondPlayerFinished =
-      this.secondPlayer!.hasAnsweredAllQuestions() &&
-      !this.firstPlayer.hasAnsweredAllQuestions();
-
-    const newAutoAnswer: Answer[] = [];
-
-    if (firstPlayerFinished || secondPlayerFinished) {
-      if (!this.firstPlayer.hasAnsweredAllQuestions()) {
-        const answers = this.firstPlayer.addAutoAnswers(
-          this.questions as GameQuestion[],
-        );
-        newAutoAnswer.push(...answers);
-      }
-      if (!this.secondPlayer!.hasAnsweredAllQuestions()) {
-        const answers = this!.secondPlayer!.addAutoAnswers(
-          this.questions as GameQuestion[],
-        );
-        newAutoAnswer.push(...answers);
-      }
-
-      return newAutoAnswer;
-    }
-
-    return [];
+  autoFinalizedGame(){
+    this.firstPlayer.finished();
+    this.secondPlayer!.finished();
+    this.determineWinner();
+    // this.status = GameStatusesEnum.finished;
   }
+  //
+  // createMissingAnswersForPlayer(): Answer[] {
+  //   const firstPlayerFinished =
+  //     this.firstPlayer.hasAnsweredAllQuestions() &&
+  //     !this.secondPlayer?.hasAnsweredAllQuestions();
+  //   const secondPlayerFinished =
+  //     this.secondPlayer!.hasAnsweredAllQuestions() &&
+  //     !this.firstPlayer.hasAnsweredAllQuestions();
+  //
+  //   const newAutoAnswer: Answer[] = [];
+  //
+  //   if (firstPlayerFinished || secondPlayerFinished) {
+  //     if (!this.firstPlayer.hasAnsweredAllQuestions()) {
+  //       const answers = this.firstPlayer.addAutoAnswers(
+  //         this.questions as GameQuestion[],
+  //       );
+  //       newAutoAnswer.push(...answers);
+  //     }
+  //     if (!this.secondPlayer!.hasAnsweredAllQuestions()) {
+  //       const answers = this!.secondPlayer!.addAutoAnswers(
+  //         this.questions as GameQuestion[],
+  //       );
+  //       newAutoAnswer.push(...answers);
+  //     }
+  //
+  //     return newAutoAnswer;
+  //   }
+  //
+  //   return [];
+  // }
 
   getPlayersByUserId(userId: string) {
     const currentPlayerKey =

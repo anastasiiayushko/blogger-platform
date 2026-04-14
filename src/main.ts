@@ -3,11 +3,14 @@ import { AppModule } from './app.module';
 import { appSetup } from './setup/app.setup';
 import cookieParser from 'cookie-parser';
 import { CoreConfig } from './core/config/core.config';
+import { AppLoggerService } from './core/logger/app-logger.service';
 
 async function bootstrap() {
+  const appLogger = new AppLoggerService();
   const app = await NestFactory.create(AppModule, {
-    logger: ['log', 'debug', 'error', 'warn'],
+    logger: appLogger,
   });
+  app.useLogger(appLogger);
 
   const port = app.get<CoreConfig>(CoreConfig)?.port;
   app.use(cookieParser());
