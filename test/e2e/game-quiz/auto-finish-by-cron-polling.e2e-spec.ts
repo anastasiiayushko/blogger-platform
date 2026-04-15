@@ -106,6 +106,10 @@ describe('Quiz game / auto finish by cron polling (e2e)', () => {
     const user_2_MyCurrent = await pairQuizGameApiManager.myCurrent(user_2_Jwt);
     expect(user_2_MyCurrent.status).toBe(HttpStatus.NOT_FOUND);
 
+    // const user_2_connection =
+    //   await pairQuizGameApiManager.connection(user_2_Jwt);
+    // expect(user_2_connection.status).toBe(HttpStatus.OK);
+
     const user_1_GetGame = await pairQuizGameApiManager.getGameById(
       game.id,
       user_1_Jwt,
@@ -247,11 +251,11 @@ describe('Quiz game / auto finish by cron polling (e2e)', () => {
       const dataSource = app.get(DataSource);
 
       const gameRows = await dataSource.query(
-        `select id, status, "finishGameDate" from game where id = $1`,
+        `select id, status, "finish_game_date" from game where id = $1`,
         [gameId],
       );
       const taskRows = await dataSource.query(
-        `select id, status, "executeAt", "lockedUntil"
+        `select id, status, "execute_at", "locked_until"
          from game_task
          where game_id = $1
          order by "createdAt" desc

@@ -39,43 +39,6 @@ export class GameRepository {
     em?: EntityManager,
   ): Promise<Game | null> {
     const repo = this.getRepository(em);
-    if (!em) {
-      return await repo.findOne({
-        relations: {
-          firstPlayer: {
-            answers: true,
-          },
-          secondPlayer: {
-            answers: true,
-          },
-          questions: {
-            question: true,
-          },
-        },
-        where: [
-          {
-            firstPlayer: { userId: userId },
-            status: GameStatusesEnum.active,
-          },
-          {
-            secondPlayer: { userId: userId },
-            status: GameStatusesEnum.active,
-          },
-        ],
-        order: {
-          createdAt: 'DESC',
-          questions: {
-            order: 'ASC',
-          },
-          firstPlayer: {
-            answers: { createdAt: 'ASC' },
-          },
-          secondPlayer: {
-            answers: { createdAt: 'ASC' },
-          },
-        },
-      });
-    }
 
     return await repo
       .createQueryBuilder('game')
@@ -97,6 +60,7 @@ export class GameRepository {
       .addOrderBy('questions.order', 'ASC')
       .addOrderBy('firstplayeranswers.createdAt', 'ASC')
       .addOrderBy('secondplayeranswers.createdAt', 'ASC')
+      //::TODO тут вопрос насчет блокировки игроков, для чего их блоить если все действия выполняет агрегат Игры
       .setLock('pessimistic_write', undefined, [
         'game',
         'firstplayer',

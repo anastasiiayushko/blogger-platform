@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { GameTaskRepository } from '../../../../infrastructure/game-task.repository';
 import { PlayerRepository } from '../../../../infrastructure/player.repository';
 import { GameStatisticService } from './game-statistic.service';
 import { EntityManager } from 'typeorm';
@@ -26,7 +25,12 @@ export class FinalizedGameService {
     // 1) lock only game row (без relations, чтобы не ловить outer join + FOR UPDATE)
     const lockedGame = await trx.getRepository(Game).findOne({
       where: { id: gameId },
-      lock: { mode: 'pessimistic_write' },
+      relations: {
+        questions: true,
+        firstPlayer: { answers: true },
+        secondPlayer: { answers: true },
+      },
+      lock: { mode: 'pessimistic_write', tables: ['game'] },
     });
 
     if (!lockedGame) {
@@ -41,109 +45,26 @@ export class FinalizedGameService {
       return 'done';
     }
 
-    // 3) загрузить нужные relations отдельным запросом
-    const game = (await trx.getRepository(Game).findOne({
-      where: { id: gameId },
-      relations: {
-        questions: true,
-        firstPlayer: { answers: true },
-        secondPlayer: { answers: true },
-      },
-    })) as Game | null;
 
-    if (!game || !game.firstPlayerId || !game.secondPlayerId) {
-      return 'retry';
-    }
 
-    const gameQuestions = game.questions as GameQuestion[];
+    lockedGame.autoFinalizedGame();
 
-    const autoAnswerFirstPlayer = gameQuestions.map((question) =>
-      Answer.createAnswer({
-        questionId: question.questionId,
-        status: AnswerStatusesEnum.incorrect,
-        playerId: game.firstPlayerId,
-      }),
-    );
 
-    const autoAnswerSecondPlayer = gameQuestions.map((question) =>
-      Answer.createAnswer({
-        questionId: question.questionId,
-        status: AnswerStatusesEnum.incorrect,
-        playerId: game.secondPlayerId!,
-      }),
-    );
 
-    const missingAnswers = [
-      ...autoAnswerFirstPlayer,
-      ...autoAnswerSecondPlayer,
-    ];
-
-    if (missingAnswers.length > 0) {
-      await trx
-        .createQueryBuilder()
-        .insert()
-        .into(Answer)
-        .values(missingAnswers)
-        .orIgnore('("playerId", "questionId")')
-        .execute();
-    }
-
-    // 4) атомарно переводим в finished только из active
-    const updateGameResult = await trx
-      .createQueryBuilder()
-      .update(Game)
-      .set({
-        status: GameStatusesEnum.finished,
-        finishGameDate: () => 'NOW()',
-      })
-      .where('id = :idGame', { idGame: game.id })
-      .andWhere('status = :activeStatus AND finishGameDate IS NULL', {
-        activeStatus: GameStatusesEnum.active,
-      })
-
-      .execute();
-
-    if (updateGameResult.affected !== 1) {
-      const alreadyFinished = await trx.query(
-        `SELECT 1 FROM game WHERE id = $1 AND status = $2 AND "finishGameDate" IS NOT NULL`,
-        [game.id, GameStatusesEnum.finished],
-      );
-
-      if (alreadyFinished.length > 0) {
-        return 'done';
-      }
-
-      return 'retry';
-    }
-
-    // 5) перечитываем актуальную игру и применяем доменную логику (score/bonus)
-    const gameFinished = (await trx.getRepository(Game).findOne({
-      where: { id: gameId },
-      relations: {
-        firstPlayer: { answers: true },
-        secondPlayer: { answers: true },
-        questions: true,
-      },
-    })) as Game | null;
-
-    if (!gameFinished?.firstPlayer || !gameFinished.secondPlayer) {
-      return 'retry';
-    }
-
-    gameFinished.autoFinalizedGame();
+    await trx.getRepository(Game).save(lockedGame);
 
     await this.playerRepository.updatePlayerProgress(
-      gameFinished.firstPlayer,
+      lockedGame.firstPlayer,
       trx,
     );
     await this.playerRepository.updatePlayerProgress(
-      gameFinished.secondPlayer as Player,
+      lockedGame.secondPlayer as Player,
       trx,
     );
-    await this.gameStatisticService.recalculateAndSaveGameStatistic(
-      gameFinished,
-      trx,
-    );
+    // await this.gameStatisticService.recalculateAndSaveGameStatistic(
+    //   lockedGame,
+    //   trx,
+    // );
 
     return 'done';
   }

@@ -129,7 +129,6 @@ export class RecordCurrentAnswerHandler
         ) {
           const task = GameTask.createTask(game.id);
           const taskId = await this.gameTaskRepository.createTask(task, em);
-          // console.log('CREATED TASK', taskId);
           game.taskId = taskId;
         }
 

@@ -1,21 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { GameTaskRepository } from '../../../../infrastructure/game-task.repository';
-import {
-  DataSource,
-  IsNull,
-  LockNotSupportedOnGivenDriverError,
-  Not,
-} from 'typeorm';
-import { GameStatusesEnum } from '../../../../domain/game/game-statuses.enum';
+import { DataSource } from 'typeorm';
 import { GameTask } from '../../../../domain/game-task/game-task.entity';
 import { GameTaskStatuses } from '../../../../domain/game-task/game-task.statuses.enum';
-import { Answer } from '../../../../domain/answer/answer.entity';
-import { Game } from '../../../../domain/game/game.entity';
-import { Player } from '../../../../domain/player/player.entity';
 import { PlayerRepository } from '../../../../infrastructure/player.repository';
 import { GameStatisticService } from './game-statistic.service';
-import { GameQuestion } from '../../../../domain/game-question/game-question.entity';
 import { FinalizedGameService } from './finalized-game.service';
 
 @Injectable()
@@ -40,49 +30,41 @@ export class GameTaskService {
     //
     // await queryRunner.startTransaction();
     try {
-      await this.dataSource
-        .transaction(async (trx) => {
-          const tasks = await this.gameTaskRepository.getExecutedTasks(trx);
+      await this.dataSource.transaction(async (trx) => {
+        const task = await this.gameTaskRepository.getExecutedTask(trx);
+        console.log('current task', task);
+        if (!task) return;
 
-          if (!tasks) return;
+        const result = await this.finalizedGameService.finalizeByGameId(
+          task.gameId,
+          trx,
+        );
+        console.log('result ->', result, task.id);
+        if (result === 'done') {
+          await trx
+            .createQueryBuilder()
+            .update(GameTask)
+            .set({
+              status: GameTaskStatuses.DONE,
+              lockedUntil: null,
+            })
+            .where('id = :id', { id: task.id })
+            .execute();
+        }
 
-          for (const task of tasks) {
-              console.log('ONE task:', task);
-
-              const result = await this.finalizedGameService.finalizeByGameId(
-                task.gameId,
-                trx,
-              );
-              if (result === 'done') {
-                await trx
-                  .createQueryBuilder()
-                  .update(GameTask)
-                  .set({
-                    status: GameTaskStatuses.DONE,
-                    lockedUntil: null,
-                  })
-                  .where('id = :id', { id: task.id })
-                  .execute();
-              }
-
-              if (result === 'retry') {
-                await trx
-                  .createQueryBuilder()
-                  .update(GameTask)
-                  .set({
-                    status: GameTaskStatuses.PENDING,
-                    executeAt: "NOW() + INTERVAL '8 seconds'",
-                    lockedUntil: null,
-                  })
-                  .where('id = :id', { id: task.id })
-                  .execute();
-              }
-
-
-          }
-          console.log('ALL tasks:', tasks);
-        })
-
+        if (result === 'retry') {
+          await trx
+            .createQueryBuilder()
+            .update(GameTask)
+            .set({
+              status: GameTaskStatuses.PENDING,
+              executeAt: () => "NOW() + INTERVAL '30 seconds'",
+              lockedUntil: null,
+            })
+            .where('id = :id', { id: task.id })
+            .execute();
+        }
+      });
     } catch (e) {
       console.error(
         'Some error in closed game with game_task:',

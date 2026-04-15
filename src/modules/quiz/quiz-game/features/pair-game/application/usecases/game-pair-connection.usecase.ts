@@ -7,10 +7,8 @@ import { DomainException } from '../../../../../../../core/exceptions/domain-exc
 import { DomainExceptionCode } from '../../../../../../../core/exceptions/domain-exception-codes';
 import { Player } from '../../../../domain/player/player.entity';
 import { QuestionRepository } from '../../../../../sa-question/infrastructure/question.repository';
-import { GameQuestion } from '../../../../domain/game-question/game-question.entity';
 import { Game } from '../../../../domain/game/game.entity';
 import { DataSource, QueryFailedError } from 'typeorm';
-import { GameStatisticService } from '../services/game-statistic.service';
 
 export class GamePairConnectionCmd extends ValidatableCommand {
   @IsUUID()
@@ -30,7 +28,6 @@ export class GamePairConnectionHandler
     private readonly gameRepo: GameRepository,
     private playerRepository: PlayerRepository,
     private questionRepository: QuestionRepository,
-    protected gameStatisticService: GameStatisticService,
     private dataSource: DataSource,
   ) {}
 
@@ -59,11 +56,6 @@ export class GamePairConnectionHandler
         });
       }
 
-      // await this.gameStatisticService.createStatisticForUserIfNotExist(
-      //   cmd.userId,
-      //   em,
-      // );
-
       const gameInAwaitSecondPlayer =
         await this.gameRepo.findGameInStatusPending(cmd.userId, em);
 
@@ -77,13 +69,9 @@ export class GamePairConnectionHandler
         const randomQuestion =
           await this.questionRepository.getRandomQuestion();
 
-        const gameQuestions = GameQuestion.createMany(
-          randomQuestion,
-          gameInAwaitSecondPlayer.id,
-        );
-        gameInAwaitSecondPlayer.assignQuestions(gameQuestions);
-
+        gameInAwaitSecondPlayer.setGameQuestions(randomQuestion);
         gameInAwaitSecondPlayer.startGame();
+
         await this.playerRepository.save(secondPlayer, em);
         await this.gameRepo.save(gameInAwaitSecondPlayer, em);
 
@@ -111,7 +99,7 @@ export class GamePairConnectionHandler
       if (err instanceof QueryFailedError && err.driverError.code === '23505') {
         throw new DomainException({
           code: DomainExceptionCode.Forbidden,
-          message: 'current user is already participating in active pair',
+          message: `call -> Connection -> Error: QueryFailedError && err.driverError.code === '23505'`,
         });
       }
       throw err;

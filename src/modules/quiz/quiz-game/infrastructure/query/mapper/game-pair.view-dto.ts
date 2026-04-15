@@ -87,6 +87,7 @@ export class GamePairViewDto {
       // gameView.questions = game.questions!.map(q=> GameQuestionViewDto.mapToView(q));
     }
 
+
     gameView.status = game.status;
     gameView.pairCreatedDate = game.createdAt.toISOString();
     gameView.finishGameDate = game.finishGameDate

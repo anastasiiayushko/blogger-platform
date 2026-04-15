@@ -8,6 +8,7 @@ import { randomUUID } from 'crypto';
 import { PlayerResultEnum } from '../player/player-result.enum';
 import { GameTask } from '../game-task/game-task.entity';
 import { Answer } from '../answer/answer.entity';
+import { Question } from '../../../sa-question/domain/question.entity';
 
 @Entity('game')
 export class Game extends BaseOrmEntity {
@@ -70,17 +71,18 @@ export class Game extends BaseOrmEntity {
     if (this.status !== GameStatusesEnum.pending) {
       throw new Error('Game is not pending');
     }
+    //::TODO икапсулировать создание игрока
+    // const player =  Player.createPlayer({userId: userId})
     this.secondPlayer = player;
     this.secondPlayerId = player.id;
   }
-
-  assignQuestions(questions: GameQuestion[]) {
+  setGameQuestions(questions: Question[]) {
     if (!Array.isArray(questions) || questions.length !== 5) {
       throw new Error(
         'Questions must be an array and not empty. Count questions must be equal 5.',
       );
     }
-    this.questions = questions;
+    this.questions = GameQuestion.createMany(questions, this.id);
   }
 
   startGame() {
@@ -97,22 +99,65 @@ export class Game extends BaseOrmEntity {
     this.status = GameStatusesEnum.active;
   }
 
-  private determineWinner() {
-    const firstPlayer = this.firstPlayer.getAnswerSummary();
-    const secondPlayer = this.secondPlayer!.getAnswerSummary();
+  private resolveBonusPlayerId() {
+    const firstPlrSummary = this.firstPlayer.getAnswerSummary();
+    const secondPlrSummary = this.secondPlayer!.getAnswerSummary();
 
-    if (
-      firstPlayer.lastAddedAt.getTime() < secondPlayer.lastAddedAt.getTime() &&
-      firstPlayer.hasOneCorrectStatus
-    ) {
-      this.firstPlayer.addBonusPoint();
+    const firstCompleted = firstPlrSummary.hasAllAnswers;
+    const secondCompleted = secondPlrSummary.hasAllAnswers;
+
+    if (firstCompleted && !secondCompleted) {
+      return firstPlrSummary.hasOneCorrectStatus ? this.firstPlayer.id : null;
     }
-    if (
-      secondPlayer.lastAddedAt.getTime() < firstPlayer.lastAddedAt.getTime() &&
-      secondPlayer.hasOneCorrectStatus
-    ) {
-      this!.secondPlayer!.addBonusPoint();
+
+    if (!firstCompleted && secondCompleted) {
+      return secondPlrSummary.hasOneCorrectStatus
+        ? this.secondPlayer!.id
+        : null;
     }
+
+    if (!firstCompleted && !secondCompleted) {
+      return null;
+    }
+
+    const fistPlayerTimeLast = Number(firstPlrSummary.timeLastAnswer);
+    const secondPlayerTimeLast = Number(secondPlrSummary.timeLastAnswer);
+
+    if (fistPlayerTimeLast < secondPlayerTimeLast) {
+      return firstPlrSummary.hasOneCorrectStatus ? this.firstPlayer.id : null;
+    }
+
+    if (secondPlayerTimeLast < fistPlayerTimeLast) {
+      return secondPlrSummary.hasOneCorrectStatus
+        ? this.secondPlayer!.id
+        : null;
+    }
+
+    return null;
+  }
+
+  private determineWinner() {
+    const bonusPlayerId = this.resolveBonusPlayerId();
+
+    if (this.firstPlayerId === bonusPlayerId) {
+      this.firstPlayer.addBonusPoint()
+    }
+    if(this.secondPlayerId === bonusPlayerId) {
+      this.secondPlayer?.addBonusPoint()
+    }
+
+    // if (
+    //   firstPlayer.time < secondPlayer.time &&
+    //   firstPlayer.hasOneCorrectStatus
+    // ) {
+    //   this.firstPlayer.addBonusPoint();
+    // }
+    // if (
+    //   secondPlayer.lastAddedAt.getTime() < firstPlayer.lastAddedAt.getTime() &&
+    //   secondPlayer.hasOneCorrectStatus
+    // ) {
+    //   this!.secondPlayer!.addBonusPoint();
+    // }
     const scorePlr1 = +this.firstPlayer.score;
     const scorePlr2 = +this.secondPlayer!.score;
 
@@ -131,8 +176,14 @@ export class Game extends BaseOrmEntity {
   private finishedGame() {
     if (this.status !== GameStatusesEnum.active) {
       console.log('this game is already in progress ->', this.status);
-      console.log('this firstPlayer is already in progress ->', this.firstPlayer);
-      console.log('this secondPlayer is already in progress ->', this.secondPlayer);
+      console.log(
+        'this firstPlayer is already in progress ->',
+        this.firstPlayer,
+      );
+      console.log(
+        'this secondPlayer is already in progress ->',
+        this.secondPlayer,
+      );
       // throw new Error('The game has an incorrect status for completion.');
     }
 
@@ -155,42 +206,12 @@ export class Game extends BaseOrmEntity {
     return false;
   }
 
-  autoFinalizedGame(){
+  autoFinalizedGame() {
     this.firstPlayer.finished();
     this.secondPlayer!.finished();
     this.determineWinner();
-    // this.status = GameStatusesEnum.finished;
+    this.finishedGame();
   }
-  //
-  // createMissingAnswersForPlayer(): Answer[] {
-  //   const firstPlayerFinished =
-  //     this.firstPlayer.hasAnsweredAllQuestions() &&
-  //     !this.secondPlayer?.hasAnsweredAllQuestions();
-  //   const secondPlayerFinished =
-  //     this.secondPlayer!.hasAnsweredAllQuestions() &&
-  //     !this.firstPlayer.hasAnsweredAllQuestions();
-  //
-  //   const newAutoAnswer: Answer[] = [];
-  //
-  //   if (firstPlayerFinished || secondPlayerFinished) {
-  //     if (!this.firstPlayer.hasAnsweredAllQuestions()) {
-  //       const answers = this.firstPlayer.addAutoAnswers(
-  //         this.questions as GameQuestion[],
-  //       );
-  //       newAutoAnswer.push(...answers);
-  //     }
-  //     if (!this.secondPlayer!.hasAnsweredAllQuestions()) {
-  //       const answers = this!.secondPlayer!.addAutoAnswers(
-  //         this.questions as GameQuestion[],
-  //       );
-  //       newAutoAnswer.push(...answers);
-  //     }
-  //
-  //     return newAutoAnswer;
-  //   }
-  //
-  //   return [];
-  // }
 
   getPlayersByUserId(userId: string) {
     const currentPlayerKey =

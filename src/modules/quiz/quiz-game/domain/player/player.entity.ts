@@ -12,7 +12,7 @@ import { GameQuestion } from '../game-question/game-question.entity';
 @Entity('player')
 @Index('uq_player_active_user', ['userId'], {
   unique: true,
-  // Уникальность будет проверяться только для строк, где статус либо
+  // Уникальность будет проверяться только для строк, где статус joined
   where: `"game_status" IN ('joined')`,
 })
 export class Player extends BaseOrmEntity {
@@ -51,7 +51,7 @@ export class Player extends BaseOrmEntity {
     return player;
   }
 
-  addAutoAnswers(questions: GameQuestion[]): Answer[] {
+  addMissingAnswers(questions: GameQuestion[]): Answer[] {
     // какие вопросы уже отвечены
     const answeredQuestionIds = new Set(this.answers.map((a) => a.questionId));
 
@@ -95,16 +95,16 @@ export class Player extends BaseOrmEntity {
     this.updateAnswerScore();
   }
 
-  getAnswerSummary(): { lastAddedAt: Date; hasOneCorrectStatus: boolean } {
-    this.answers.sort(
-      (a, b) =>
-        //@ts-ignore
-        new Date(a.createdAt as string) - new Date(b.createdAt as string),
-    );
-    const lastAnswer = this.answers[this.answers.length - 1];
-
+  getAnswerSummary(): {
+    timeLastAnswer: number | null;
+    hasOneCorrectStatus: boolean;
+    hasAllAnswers: boolean;
+  } {
     return {
-      lastAddedAt: lastAnswer.createdAt,
+      hasAllAnswers: this.hasAnsweredAllQuestions(),
+      timeLastAnswer: this.hasAnsweredAllQuestions()
+        ? this.answers[this.answers.length - 1].createdAt.getTime()
+        : null,
       hasOneCorrectStatus: this.answers.some(
         (a) => a.status === AnswerStatusesEnum.correct,
       ),
@@ -112,12 +112,10 @@ export class Player extends BaseOrmEntity {
   }
 
   addBonusPoint() {
-    if (!this.hasAnsweredAllQuestions()) {
-      throw Error(`The player did not answer all the questions.`);
-    }
-    // if (this.score >= 0 && this.score < 5) {
-    this.score = this.score + 1;
+    // if (!this.hasAnsweredAllQuestions()) {
+    //   throw Error(`The player did not answer all the questions.`);
     // }
+    this.score = this.score + 1;
   }
 
   finished() {
