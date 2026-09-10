@@ -24,9 +24,9 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: 22
+          node-version: 24
 
       - name: Check Node version
         run: node -v
@@ -39,6 +39,12 @@ jobs:
 
       - name: Print package file
         run: cat package.json
+
+      - name: Install dependency
+        run: npm install
+
+      - name: Run unit tests
+        run: yarn test:unit
 
       - name: Finish massage
         run: echo "Pipeline finished"
