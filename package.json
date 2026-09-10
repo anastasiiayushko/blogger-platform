@@ -19,7 +19,7 @@
     "test-unit:watch": "cross-env NODE_ENV=testing jest --watch --testPathPattern=src",
     "test:cov": "cross-env NODE_ENV=testing jest --coverage",
     "test:debug": "cross-env NODE_ENV=testing node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:unit": "cross-env NODE_ENV=testing jest --testPathPattern=src --runInBand",
+    "test:unit": "cross-env NODE_ENV=testing jest --testRegex='.*\\.spec\\.ts$' --runInBand",
     "test:integration": "cross-env NODE_ENV=testing jest --testPathPattern=test/integration --runInBand --detectOpenHandles --forceExit",
     "test:e2e": "cross-env NODE_ENV=testing jest --testPathPattern=test/e2e --runInBand --detectOpenHandles --forceExit",
     "typeorm": "typeorm-ts-node-commonjs",
