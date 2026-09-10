@@ -21,7 +21,18 @@ jobs:
         run: ls
 
       - name: Checkout repository
-        uses: actions/checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check Node version
+        run: node -v
+
+      - name: Check npm version
+        run: npm -v
 
       - name: Show files after checkout
         run: ls
