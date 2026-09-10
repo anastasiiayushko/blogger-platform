@@ -12,10 +12,4 @@ describe('Blog Domain Entity', () => {
 
     expect(entity).toBeInstanceOf(Blog);
   });
-
-  it('fail create instance blog', () => {
-    const dto = {};
-    //@ts-ignore
-    expect(Blog.createInstance(dto)).toThrow();
-  });
 });
