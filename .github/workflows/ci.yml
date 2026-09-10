@@ -10,18 +10,24 @@ on:
   workflow_dispatch:
 
 jobs:
-  say-hello:
+  first-job:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Print start message
+      - name: First message
         run: echo "Pipeline started"
 
-      - name: Print repository info
-        run: |
-          echo "Repository: ${{ github.repository }}"
-          echo "Branch: ${{ github.ref_name }}"
-          echo "Triggered by: ${{ github.event_name }}"
+      - name: Show files before checkout
+        run: ls
 
-      - name: Print finish message
+      - name: Checkout repository
+        uses: actions/checkout
+
+      - name: Show files after checkout
+        run: ls
+
+      - name: Print package file
+        run: cat package.json
+
+      - name: Finish massage
         run: echo "Pipeline finished"
