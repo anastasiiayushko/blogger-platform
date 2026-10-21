@@ -3,9 +3,7 @@ import { PostRepository } from '../../infrastructure/post.repository';
 import { PostReactionRepository } from '../../infrastructure/post-reaction.repository';
 import { PostReaction } from '../../domain/post-reactions.entity';
 import { LikeStatusEnum } from '../../../../../core/types/like-status.enum';
-import {
-  UserExternalQueryRepository,
-} from '../../../../user-accounts/infrastructure/external-query/user-external.query-repository';
+import { UserExternalQueryRepository } from '../../../../user-accounts/infrastructure/external-query/user-external.query-repository';
 
 export class LikeStatusPostCommand {
   constructor(
@@ -16,9 +14,7 @@ export class LikeStatusPostCommand {
 }
 
 @CommandHandler(LikeStatusPostCommand)
-export class LikeStatusPostHandler
-  implements ICommandHandler<LikeStatusPostCommand>
-{
+export class LikeStatusPostHandler implements ICommandHandler<LikeStatusPostCommand> {
   constructor(
     protected postRepository: PostRepository,
     protected userExternalQueryRepository: UserExternalQueryRepository,
@@ -33,8 +29,8 @@ export class LikeStatusPostHandler
       postId,
       userId,
     );
-    if(!reaction) {
-      if(status === LikeStatusEnum.None) return
+    if (!reaction) {
+      if (status === LikeStatusEnum.None) return;
 
       const newReaction = PostReaction.createInstance({
         status: status,
@@ -46,11 +42,10 @@ export class LikeStatusPostHandler
       return;
     }
 
-
-      const { changed } = reaction.setStatus(status);
-      if (changed) {
-        await this.postReactionRepository.save(reaction);
-      }
-      return;
+    const { changed } = reaction.setStatus(status);
+    if (changed) {
+      await this.postReactionRepository.save(reaction);
+    }
+    return;
   }
 }

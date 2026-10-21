@@ -8,22 +8,14 @@ import {
 import { DataSource } from 'typeorm';
 import { ormDBCleaner } from '../../util/orm-db-cleaner';
 import { FillQuestionsSeed } from '../../../seeds/fill-questions.seed';
-import {
-  RecordCurrentAnswerHandler,
-} from '../../../src/modules/quiz/quiz-game/features/pair-game/application/usecases/record-current-answer.usecase';
-import {
-  GameStatisticQueryRepository,
-} from '../../../src/modules/quiz/quiz-game/infrastructure/query/game-statistic.query-repository';
-import {
-  GameStatisticViewDto,
-} from '../../../src/modules/quiz/quiz-game/infrastructure/query/mapper/game-statistic.view-dto';
+import { RecordCurrentAnswerHandler } from '../../../src/modules/quiz/quiz-game/features/pair-game/application/usecases/record-current-answer.usecase';
+import { GameStatisticQueryRepository } from '../../../src/modules/quiz/quiz-game/infrastructure/query/game-statistic.query-repository';
+import { GameStatisticViewDto } from '../../../src/modules/quiz/quiz-game/infrastructure/query/mapper/game-statistic.view-dto';
 import { gameTestDriver } from '../../helpers/game/game-test-driver';
 import { makeSaCreateUserHelper } from '../../helpers/sa-create-user/make-sa-create-user.helper';
 import { delay } from '../../helpers/delay-helper';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import {
-  MyGamesQuery,
-} from '../../../src/modules/quiz/quiz-game/features/pair-game/application/query-useceses/my-game.query-usecase';
+import { MyGamesQuery } from '../../../src/modules/quiz/quiz-game/features/pair-game/application/query-useceses/my-game.query-usecase';
 import {
   MyGameSortByEnum,
   MyGamesQueryDto,
@@ -93,7 +85,7 @@ describe('Quiz:  my games', () => {
       new GamePairConnectionCmd(firstUserId),
     );
 
-    const gamesQueryDto =new MyGamesQueryDto();
+    const gamesQueryDto = new MyGamesQueryDto();
     gamesQueryDto.sortBy = MyGameSortByEnum.startGameDate;
     gamesQueryDto.sortDirection = SortDirection.Asc;
     const games = await queryBus.execute(

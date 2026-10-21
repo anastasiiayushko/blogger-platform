@@ -41,7 +41,7 @@ describe('Auth /registration-email-resending', () => {
 
     const User = await userRepository.findByEmailOrLogin(userNika.email);
     const emailConfirmation = await emailConfirmationRepository.findByUserId(
-      User!.id as string,
+      User!.id,
     );
     expect(emailConfirmation!.isConfirmed).toBeFalsy();
 
@@ -52,7 +52,7 @@ describe('Auth /registration-email-resending', () => {
     expect(resendingRes.status).toBe(HttpStatus.NO_CONTENT);
 
     const EmailConfirmationResending =
-      await emailConfirmationRepository.findByUserId(User!.id as string);
+      await emailConfirmationRepository.findByUserId(User!.id);
 
     expect(EmailConfirmationResending!.isConfirmed).toBeFalsy();
 
@@ -73,7 +73,7 @@ describe('Auth /registration-email-resending', () => {
   it('Should be return 400 if account was activated', async () => {
     const User = await userRepository.findByEmailOrLogin(userNika.email);
     const emailConfirmation = await emailConfirmationRepository.findByUserId(
-      User!.id as string,
+      User!.id,
     );
     expect(emailConfirmation!.isConfirmed).toBeFalsy();
 
@@ -84,7 +84,7 @@ describe('Auth /registration-email-resending', () => {
     expect(confirmationRes.status).toBe(HttpStatus.NO_CONTENT);
 
     const EmailConfirmed = await emailConfirmationRepository.findByUserId(
-      User!.id as string,
+      User!.id,
     );
 
     expect(EmailConfirmed!.isConfirmed).toBeTruthy();

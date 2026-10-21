@@ -106,11 +106,11 @@ export class CommentReaction<
     return reactionPrimitive;
   }
 
-  setStatus(status: LikeStatusEnum): {changed: boolean} {
+  setStatus(status: LikeStatusEnum): { changed: boolean } {
     if (this._status !== status) {
       this._status = status;
-      return {changed: true};
+      return { changed: true };
     }
-    return {changed: false};
+    return { changed: false };
   }
 }

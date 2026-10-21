@@ -9,7 +9,6 @@ export class UserConfirmationConfig {
     message:
       'Set Env variable USER_EMAIL_CONFIRMATION_EXPIRES_HOURS to be number, example:[0-23]',
   })
-
   public emailExpiresInHours: number;
 
   @IsNotEmpty({

@@ -68,7 +68,7 @@ export class GameTaskRepository {
     //
     // return updated.raw;
 
-    const result = (await em.query(
+    const result = await em.query(
       `
         WITH claimed AS (SELECT gt.id, gt.game_id
                          FROM game_tasks gt
@@ -87,7 +87,7 @@ export class GameTaskRepository {
             , gt.game_id as "gameId";
       `,
       [GameTaskStatuses.PENDING, GameTaskStatuses.PROCESSING],
-    )) as [{ id: string; gameId: string }[], number];
+    );
 
     return result?.[0]?.[0] ?? null;
   }

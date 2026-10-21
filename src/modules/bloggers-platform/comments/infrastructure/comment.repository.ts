@@ -11,8 +11,6 @@ export class CommentRepository {
     @InjectRepository(Comment) protected commentRepository: Repository<Comment>,
   ) {}
 
-
-
   async save(comment: Comment): Promise<Comment> {
     return await this.commentRepository.save(comment);
   }

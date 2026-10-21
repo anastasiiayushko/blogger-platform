@@ -34,6 +34,12 @@ import { GetCommentsByPostWithPagingQueryHandler } from './comments/application/
 import { PostReaction } from './posts/domain/post-reactions.entity';
 import { PostReactionRepository } from './posts/infrastructure/post-reaction.repository';
 import { LikeStatusPostHandler } from './posts/application/usecases/like-status-post.usecase';
+import { PostImage } from './post-images/domain/post-image.entity';
+import { PostImagesController } from './post-images/api/post-images.controller';
+import { UploadPostImageHandler } from './post-images/application/usecase/upload-post-image.usecase';
+import { PostImagesRepositoryPort } from './post-images/application/port/post-images-repository.port';
+import { OrmPostImagesRepository } from './post-images/infrastructure/repositories/orm-post-images.repository';
+import { FileStorageModule } from './post-images/infrastructure/storage/file-storage.module';
 
 const cmdBlogHandler = [
   CreateBlogHandler,
@@ -60,11 +66,19 @@ const cmdCommentHandler = [
   DeleteCommentHandler,
   LikeStatusCommentHandler,
 ];
-
+const cmdPostImageHandler = [UploadPostImageHandler];
 @Module({
   imports: [
+    FileStorageModule,
     // Регистрация сущностей (схем) в модуле
-    TypeOrmModule.forFeature([Blog, Post, Comment, CommentReaction, PostReaction]),
+    TypeOrmModule.forFeature([
+      Blog,
+      Post,
+      Comment,
+      CommentReaction,
+      PostReaction,
+      PostImage,
+    ]),
     // MongooseModule.forFeature([
     //   { name: Blog.name, schema: BlogSchema },
     //   { name: Post.name, schema: PostSchema },
@@ -78,8 +92,13 @@ const cmdCommentHandler = [
     SaBlogController,
     PostController,
     CommentController,
+    PostImagesController,
   ],
   providers: [
+    {
+      provide: PostImagesRepositoryPort,
+      useClass: OrmPostImagesRepository,
+    },
     BlogRepository,
     BlogQueryRepository,
     PostRepository,
@@ -91,6 +110,7 @@ const cmdCommentHandler = [
     ...cmdBlogHandler,
     ...cmdPostHandler,
     ...cmdCommentHandler,
+    ...cmdPostImageHandler,
   ],
 })
 export class BloggersPlatformModule {}

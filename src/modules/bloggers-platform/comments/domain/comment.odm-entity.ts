@@ -65,7 +65,9 @@ export class Comment {
   createdAt: Date;
   updatedAt: Date;
 
-  static createInstance(dto: CreateCommentDomainDto & {userLogin: string}): CommentDocument {
+  static createInstance(
+    dto: CreateCommentDomainDto & { userLogin: string },
+  ): CommentDocument {
     const comment = new this();
     comment.content = dto.content;
     comment.postId = new Types.ObjectId(dto.postId);

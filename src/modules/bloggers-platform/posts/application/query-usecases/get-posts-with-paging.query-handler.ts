@@ -12,9 +12,7 @@ export class GetPostsWithPagingQuery {
 }
 
 @QueryHandler(GetPostsWithPagingQuery)
-export class GetPostWithPagingQueryHandler
-  implements IQueryHandler<GetPostsWithPagingQuery>
-{
+export class GetPostWithPagingQueryHandler implements IQueryHandler<GetPostsWithPagingQuery> {
   constructor(
     protected postQwRepository: PostQueryRepository,
     // protected likeMapQueryService: LikeMapQueryService,

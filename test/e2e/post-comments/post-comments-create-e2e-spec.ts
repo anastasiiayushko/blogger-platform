@@ -85,7 +85,7 @@ describe('Posts/Comments CREATED (e2e) ', () => {
       { title: 'post-1', content: 'content', shortDescription: 'short des' },
     );
     expect(createdBlogRes.status).toBe(HttpStatus.CREATED);
-    postViewDTO = createdPostRes.body as PostViewDTO;
+    postViewDTO = createdPostRes.body;
   });
   afterAll(async () => {
     await app.close();

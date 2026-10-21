@@ -13,9 +13,10 @@ export class CreatePostCommand {
 }
 
 @CommandHandler(CreatePostCommand)
-export class CreatePostHandler
-  implements ICommandHandler<CreatePostCommand, string>
-{
+export class CreatePostHandler implements ICommandHandler<
+  CreatePostCommand,
+  string
+> {
   constructor(
     protected postRepository: PostRepository,
     protected blogQwRepository: BlogQueryRepository,

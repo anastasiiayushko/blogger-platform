@@ -9,9 +9,7 @@ export class EmailConfirmRegistrationEvent {
 }
 
 @EventsHandler(EmailConfirmRegistrationEvent)
-export class EmailConfirmRegistrationHandler
-  implements IEventHandler<EmailConfirmRegistrationEvent>
-{
+export class EmailConfirmRegistrationHandler implements IEventHandler<EmailConfirmRegistrationEvent> {
   constructor(private mailerService: MailerService) {}
 
   handle(event: EmailConfirmRegistrationEvent) {

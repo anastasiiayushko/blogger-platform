@@ -12,9 +12,7 @@ export class UpdateCommentCommand {
 }
 
 @CommandHandler(UpdateCommentCommand)
-export class UpdateCommentHandler
-  implements ICommandHandler<UpdateCommentCommand>
-{
+export class UpdateCommentHandler implements ICommandHandler<UpdateCommentCommand> {
   constructor(protected commentRepository: CommentRepository) {}
 
   async execute({
@@ -23,7 +21,7 @@ export class UpdateCommentHandler
     content,
   }: UpdateCommentCommand): Promise<void> {
     const comment = await this.commentRepository.findOrNotFoundFail(commentId);
-    const isNotMyComment = !comment.isMyComment(userId)
+    const isNotMyComment = !comment.isMyComment(userId);
 
     if (isNotMyComment) {
       throw new DomainException({

@@ -11,9 +11,7 @@ export class GetUserUnfinishedGameQuery extends Query<GamePairViewDto> {
 }
 
 @QueryHandler(GetUserUnfinishedGameQuery)
-export class GetUserUnfinishedGameQueryHandler
-  implements IQueryHandler<GetUserUnfinishedGameQuery>
-{
+export class GetUserUnfinishedGameQueryHandler implements IQueryHandler<GetUserUnfinishedGameQuery> {
   constructor(protected gameQueryRepository: GameQueryRepository) {}
 
   async execute(query: GetUserUnfinishedGameQuery) {

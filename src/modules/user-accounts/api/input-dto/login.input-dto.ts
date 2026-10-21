@@ -3,13 +3,13 @@ import { IsNotEmpty, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class LoginInputDto {
-  @ApiProperty({type: String})
+  @ApiProperty({ type: String })
   @Trim()
   @IsNotEmpty()
   @IsString()
   loginOrEmail: string;
 
-  @ApiProperty({type: String})
+  @ApiProperty({ type: String })
   @Trim()
   @IsNotEmpty()
   @IsString()

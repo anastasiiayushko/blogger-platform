@@ -25,7 +25,7 @@ import { DatabaseConfig } from './database-config';
           logging: databaseConfig.logging,
           namingStrategy: new SnakeNamingStrategy(),
           ssl: false,
-        }
+        };
       },
     }),
   ],

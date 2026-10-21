@@ -9,10 +9,10 @@ export class GetBlogsWithPagingQuery {
 }
 
 @QueryHandler(GetBlogsWithPagingQuery)
-export class GetBlogsWithPagingQueryHandler
-  implements
-    IQueryHandler<GetBlogsWithPagingQuery, PaginatedViewDto<BlogViewDto[]>>
-{
+export class GetBlogsWithPagingQueryHandler implements IQueryHandler<
+  GetBlogsWithPagingQuery,
+  PaginatedViewDto<BlogViewDto[]>
+> {
   constructor(protected blogQRepo: BlogQueryRepository) {}
 
   async execute(

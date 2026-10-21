@@ -55,5 +55,4 @@ export class GameStatistic extends BaseOrmEntity {
       drawsCount: Number(player.result === PlayerResultEnum.draw),
     };
   }
-
 }

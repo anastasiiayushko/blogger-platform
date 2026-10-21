@@ -14,9 +14,7 @@ export class GetGameByIdQuery extends Query<GamePairViewDto> {
 }
 
 @QueryHandler(GetGameByIdQuery)
-export class GetGameByIdHandler
-  implements IQueryHandler<GetGameByIdQuery>
-{
+export class GetGameByIdHandler implements IQueryHandler<GetGameByIdQuery> {
   constructor(protected gameQueryRepository: GameQueryRepository) {}
 
   async execute(query: GetGameByIdQuery) {

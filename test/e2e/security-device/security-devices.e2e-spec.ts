@@ -1,5 +1,8 @@
 import { getAuthHeaderBasicTest } from '../../helpers/auth/basic-auth.helper';
-import { excludeCookiesFromHeaders, getCookieValueByName } from '../../helpers/cookies/cookie.helpers';
+import {
+  excludeCookiesFromHeaders,
+  getCookieValueByName,
+} from '../../helpers/cookies/cookie.helpers';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { UsersApiManagerHelper } from '../../api-manager/users-api-manager-helper';
 import { setupNextAppHttp } from '../../setup-app/setup-next-app-http';
@@ -65,12 +68,7 @@ describe('Security devices', () => {
       'refreshToken',
     ) as string;
 
-    const decode = refreshTokenContext.decode(refreshToken) as {
-      userId: string;
-      deviceId: string;
-      iat: number;
-      exp: number;
-    };
+    const decode = refreshTokenContext.decode(refreshToken);
 
     const sessionDevice = await sessionDeviceRepository.findByDeviceId(
       decode.deviceId,
@@ -115,12 +113,7 @@ describe('Security devices', () => {
       'refreshToken',
     ) as string;
 
-    const decode = refreshTokenContext.decode(refreshToken) as {
-      userId: string;
-      deviceId: string;
-      iat: number;
-      exp: number;
-    };
+    const decode = refreshTokenContext.decode(refreshToken);
 
     const terminateAllResponse =
       await securityDevicesApiManager.deleteAllOtherDeviceSessions(cookies);
@@ -130,9 +123,9 @@ describe('Security devices', () => {
     const allSessionDevice =
       await securityDevicesApiManager.getAllDeviceSessions(cookies);
 
-    expect(allSessionDevice!.body.length).toBe(1);
+    expect(allSessionDevice.body.length).toBe(1);
 
-    const currentSessionDevice = allSessionDevice!.body[0];
+    const currentSessionDevice = allSessionDevice.body[0];
 
     expect(currentSessionDevice.deviceId).toEqual(decode.deviceId);
   });
@@ -152,12 +145,7 @@ describe('Security devices', () => {
       'refreshToken',
     ) as string;
 
-    const decode = refreshTokenContext.decode(refreshToken) as {
-      userId: string;
-      deviceId: string;
-      iat: number;
-      exp: number;
-    };
+    const decode = refreshTokenContext.decode(refreshToken);
 
     const terminateCurrentDeviceResponse =
       await securityDevicesApiManager.deleteDeviceSessionByDeviceId(
@@ -208,14 +196,7 @@ describe('Security devices', () => {
       'refreshToken',
     ) as string;
 
-    const decodeOtherUser = refreshTokenContext.decode(
-      otherUserRefreshToken,
-    ) as {
-      userId: string;
-      deviceId: string;
-      iat: number;
-      exp: number;
-    };
+    const decodeOtherUser = refreshTokenContext.decode(otherUserRefreshToken);
 
     const terminateCurrentDeviceResponse =
       await securityDevicesApiManager.deleteDeviceSessionByDeviceId(

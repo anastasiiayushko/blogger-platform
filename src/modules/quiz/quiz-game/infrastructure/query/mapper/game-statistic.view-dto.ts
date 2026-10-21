@@ -52,10 +52,9 @@ export class GameStatisticViewDto {
       return statisticViewDto;
     }
 
-
     statisticViewDto.gamesCount = statistic.gameCount;
     statisticViewDto.sumScore = statistic.sumScore;
-    statisticViewDto.avgScores =  Number(statistic.avgScore);
+    statisticViewDto.avgScores = Number(statistic.avgScore);
     statisticViewDto.winsCount = statistic.winsCount;
     statisticViewDto.lossesCount = statistic.lossesCount;
     statisticViewDto.drawsCount = statistic.drawsCount;

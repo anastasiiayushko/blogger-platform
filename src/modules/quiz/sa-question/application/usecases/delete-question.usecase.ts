@@ -14,9 +14,7 @@ export class DeleteQuestionCommand extends Command<void> {
 }
 
 @CommandHandler(DeleteQuestionCommand)
-export class DeleteQuestionHandler
-  implements ICommandHandler<DeleteQuestionCommand>
-{
+export class DeleteQuestionHandler implements ICommandHandler<DeleteQuestionCommand> {
   constructor(protected questionRepository: QuestionRepository) {}
 
   async execute(cmd: DeleteQuestionCommand): Promise<void> {

@@ -41,8 +41,8 @@ export class QuestionRepository {
     return !!result.affected;
   }
 
-  async getRandomQuestion(limit = 5, em?:EntityManager): Promise<Question[]> {
-   const repo = this.getRepository(em);
+  async getRandomQuestion(limit = 5, em?: EntityManager): Promise<Question[]> {
+    const repo = this.getRepository(em);
     return await repo
       .createQueryBuilder('question')
       .orderBy('RANDOM()')

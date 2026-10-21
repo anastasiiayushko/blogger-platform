@@ -33,14 +33,10 @@ export default tseslint.config(
     },
   },
   {
-    overrides: [
-      {
-        files: ['**/*.spec.ts', '**/*.test.ts'],
-        rules: {
-          '@typescript-eslint/no-unsafe-assignment': 'off',
-          '@typescript-eslint/no-unsafe-member-access': 'off',
-        },
-      },
-    ],
+    files: ['**/*.spec.ts', '**/*.test.ts'],
+    rules: {
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+    },
   },
 );

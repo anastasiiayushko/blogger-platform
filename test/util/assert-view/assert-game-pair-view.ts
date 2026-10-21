@@ -68,11 +68,11 @@ export const assertGamePairView = (
     expect(actual.status).toEqual(GameStatusesEnum.finished);
     expect(actual.questions).toHaveLength(5);
     expect(new Date(actual.pairCreatedDate)).toBeInstanceOf(Date);
-    expect(new Date(actual!.startGameDate as unknown as string)).toBeInstanceOf(
+    expect(new Date(actual.startGameDate as unknown as string)).toBeInstanceOf(
       Date,
     );
-    expect(
-      new Date(actual!.finishGameDate as unknown as string),
-    ).toBeInstanceOf(Date);
+    expect(new Date(actual.finishGameDate as unknown as string)).toBeInstanceOf(
+      Date,
+    );
   }
 };

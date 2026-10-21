@@ -10,7 +10,6 @@ export enum MyGameSortByEnum {
   startGameDate = 'startGameDate',
   finishGameDate = 'finishGameDate',
   status = 'status',
-
 }
 
 export class MyGamesQueryDto extends BaseQueryParams {
@@ -18,6 +17,4 @@ export class MyGamesQueryDto extends BaseQueryParams {
   @IsOptional()
   @Type(() => String)
   sortBy: MyGameSortByEnum = MyGameSortByEnum.pairCreatedDate;
-
-
 }

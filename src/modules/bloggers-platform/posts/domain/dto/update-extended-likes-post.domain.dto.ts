@@ -1,4 +1,3 @@
-
 export class NewLikePostDomainDTO {
   userId: string;
   login: string;

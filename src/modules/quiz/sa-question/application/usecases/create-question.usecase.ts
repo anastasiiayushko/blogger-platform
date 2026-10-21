@@ -1,7 +1,4 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { QuestionRepository } from '../../infrastructure/question.repository';
-import { Question } from '../../domain/question.entity';
-import { questionBodyConstraints } from '../../domain/question.constrains';
 import {
   ArrayMinSize,
   IsArray,
@@ -10,8 +7,10 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { validateDtoOrFail } from '../../../../../core/validate/validate-dto-or-fail';
 import { ValidatableCommand } from '../../../../../core/validate/validatable-command';
+import { questionBodyConstraints } from '../../domain/question.constrains';
+import { Question } from '../../domain/question.entity';
+import { QuestionRepository } from '../../infrastructure/question.repository';
 
 export class CreateQuestionCommand extends ValidatableCommand {
   @MinLength(questionBodyConstraints.minLength)
@@ -38,9 +37,7 @@ export class CreateQuestionCommand extends ValidatableCommand {
 
 //вынести в абстракцию базовою валидацию
 @CommandHandler(CreateQuestionCommand)
-export class CreateQuestionHandler
-  implements ICommandHandler<CreateQuestionCommand>
-{
+export class CreateQuestionHandler implements ICommandHandler<CreateQuestionCommand> {
   constructor(protected questionRepository: QuestionRepository) {}
 
   async execute(cmd: CreateQuestionCommand) {

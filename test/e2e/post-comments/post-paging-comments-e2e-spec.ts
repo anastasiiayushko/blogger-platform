@@ -55,7 +55,6 @@ describe('POSTS/Comments GET (e2e) ', () => {
     );
 
     expect(commentViewDTOS.length).toBe(totalCountComments);
-
   });
 
   afterAll(async () => {

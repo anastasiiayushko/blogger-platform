@@ -31,7 +31,7 @@ export async function setupTestApp(
   if (providers.length) {
     moduleMetaData['providers'] = providers;
   }
-  let moduleBuilder = Test.createTestingModule(moduleMetaData);
+  const moduleBuilder = Test.createTestingModule(moduleMetaData);
 
   if (override) {
     await override(moduleBuilder);

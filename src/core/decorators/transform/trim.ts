@@ -5,5 +5,3 @@ export const Trim = () => {
     return typeof value === 'string' ? value.trim() : value;
   });
 };
-
-

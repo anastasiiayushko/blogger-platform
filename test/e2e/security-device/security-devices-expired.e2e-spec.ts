@@ -1,5 +1,8 @@
 import { getAuthHeaderBasicTest } from '../../helpers/auth/basic-auth.helper';
-import { excludeCookiesFromHeaders, getCookieValueByName } from '../../helpers/cookies/cookie.helpers';
+import {
+  excludeCookiesFromHeaders,
+  getCookieValueByName,
+} from '../../helpers/cookies/cookie.helpers';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { UsersApiManagerHelper } from '../../api-manager/users-api-manager-helper';
 import { setupNextAppHttp } from '../../setup-app/setup-next-app-http';
@@ -87,12 +90,7 @@ describe('Security devices refresh token expire (2s)', () => {
       'refreshToken',
     ) as string;
 
-    const decode = refreshTokenContext.decode(refreshToken) as {
-      userId: string;
-      deviceId: string;
-      iat: number;
-      exp: number;
-    };
+    const decode = refreshTokenContext.decode(refreshToken);
     await delay(3000);
 
     const sessionDevicesResponse =

@@ -9,9 +9,7 @@ export class TerminateAllOtherDevicesCommand {
 }
 
 @CommandHandler(TerminateAllOtherDevicesCommand)
-export class TerminateAllOtherDevicesHandler
-  implements ICommandHandler<TerminateAllOtherDevicesCommand>
-{
+export class TerminateAllOtherDevicesHandler implements ICommandHandler<TerminateAllOtherDevicesCommand> {
   constructor(private sessionDeviceRepository: SessionDeviceRepository) {}
 
   //::TODO почему нет проверки на существование сессии

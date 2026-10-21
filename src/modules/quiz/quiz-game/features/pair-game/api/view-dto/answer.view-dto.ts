@@ -4,13 +4,13 @@ import { Answer } from '../../../../domain/answer/answer.entity';
 
 export class AnswerViewDto {
   @ApiProperty({ type: String })
-  questionId: string;
+  declare questionId: string;
 
   @ApiProperty({ enum: AnswerStatusesEnum, enumName: 'AnswerStatusesEnum' })
-  answerStatus: AnswerStatusesEnum;
+  declare answerStatus: AnswerStatusesEnum;
 
   @ApiProperty({ type: String, format: 'date-time' })
-  addedAt: string;
+  declare addedAt: string;
 
   static mapToView(answer: Answer): AnswerViewDto {
     const dto = new AnswerViewDto();

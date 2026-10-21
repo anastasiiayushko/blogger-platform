@@ -41,7 +41,7 @@ describe('Auth me ', () => {
       loginOrEmail: userAuthData.login,
       password: userAuthData.password,
     });
-    const { accessToken } = loginResponse.body as AccessTokenViewDto;
+    const { accessToken } = loginResponse.body;
     expect(loginResponse.status).toBe(HttpStatus.OK);
     expect(accessToken).toEqual(expect.any(String));
 
@@ -62,7 +62,7 @@ describe('Auth me ', () => {
       password: userAuthData.password,
     });
     expect(loginRes.status).toBe(HttpStatus.OK);
-    const { accessToken } = loginRes.body as AccessTokenViewDto;
+    const { accessToken } = loginRes.body;
     const decode = jwtService.decode<{
       userId: string;
       iat: number;

@@ -35,7 +35,7 @@ export class PasswordRecovery extends BaseOrmEntity {
     });
     rp.code = randomUUID();
     rp.isConfirmed = false;
-    rp.user ={id: userId} as User;
+    rp.user = { id: userId } as User;
     return rp;
   }
 

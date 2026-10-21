@@ -34,7 +34,7 @@ export class SessionDevice {
   static createInstance(dto: CreateSecurityDeviceDomainDto): SessionDevice {
     return new SessionDevice({
       id: null,
-      deviceId: dto.id as string,
+      deviceId: dto.id,
       userId: dto.userId,
       expirationAt: dto.expirationAt,
       lastActiveAt: dto.lastActiveAt,

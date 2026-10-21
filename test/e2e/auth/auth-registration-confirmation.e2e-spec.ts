@@ -48,7 +48,7 @@ describe('Auth /registration-confirmation', () => {
     expect(User).not.toBeNull();
 
     const emailConfirmation = (await emailConfirmationRepository.findByUserId(
-      User!.id as string,
+      User!.id,
     )) as unknown as EmailConfirmation;
     expect(emailConfirmation.isConfirmed).toBeFalsy();
     expect(typeof emailConfirmation.code).toBe('string');
@@ -61,7 +61,7 @@ describe('Auth /registration-confirmation', () => {
     expect(confirmResponse.status).toBe(HttpStatus.NO_CONTENT);
 
     const emailConfirmed = (await emailConfirmationRepository.findByUserId(
-      User!.id as string,
+      User!.id,
     )) as unknown as EmailConfirmation;
 
     expect(emailConfirmed.isConfirmed).toBeTruthy();
@@ -70,7 +70,7 @@ describe('Auth /registration-confirmation', () => {
   it(`should be return 400 if the code has already been confirmed`, async () => {
     const User = await userRepository.findByEmailOrLogin(userAuthData.email);
     const emailConfirEntity = (await emailConfirmationRepository.findByUserId(
-      User!.id as string,
+      User!.id,
     )) as unknown as EmailConfirmation;
 
     expect(emailConfirEntity.isConfirmed).toBeTruthy();
@@ -96,7 +96,7 @@ describe('Auth /registration-confirmation', () => {
     const User = await userRepository.findByEmailOrLogin('user1@gmail.com');
 
     const emailConfirmation = (await emailConfirmationRepository.findByUserId(
-      User!.id as string,
+      User!.id,
     )) as unknown as EmailConfirmation;
 
     expect(emailConfirmation.isConfirmed).toBeFalsy();
@@ -111,7 +111,7 @@ describe('Auth /registration-confirmation', () => {
     });
 
     const emailConfirmed = (await emailConfirmationRepository.findByUserId(
-      User!.id as string,
+      User!.id,
     )) as unknown as EmailConfirmation;
 
     expect(emailConfirmed.isConfirmed).toBeFalsy();
@@ -141,7 +141,7 @@ describe('Auth /registration-confirmation', () => {
     const User = await userRepository.findByEmailOrLogin('user2@gmail.com');
 
     const EmailConfirmationBeforeConfirm =
-      await emailConfirmationRepository.findByUserId(User!.id as string);
+      await emailConfirmationRepository.findByUserId(User!.id);
 
     expect(EmailConfirmationBeforeConfirm!.isConfirmed).toBeFalsy();
 
@@ -155,7 +155,7 @@ describe('Auth /registration-confirmation', () => {
     });
 
     const EmailConfirmationAfterConfirm =
-      await emailConfirmationRepository.findByUserId(User!.id as string);
+      await emailConfirmationRepository.findByUserId(User!.id);
 
     expect(EmailConfirmationAfterConfirm!.isConfirmed).toBeFalsy();
   });

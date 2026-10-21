@@ -3,7 +3,8 @@ import { QuestionRepository } from '../../infrastructure/question.repository';
 import { validateDtoOrFail } from '../../../../../core/validate/validate-dto-or-fail';
 import {
   ArrayMinSize,
-  IsArray, IsNotEmpty,
+  IsArray,
+  IsNotEmpty,
   IsString,
   IsUUID,
   MaxLength,
@@ -28,7 +29,6 @@ export class UpdateQuestionCommand extends Command<void> {
   })
   // Проверяет, что КАЖДЫЙ элемент массива не является пустой строкой (не null, не undefined и длина > 0)
   @IsNotEmpty({ each: true, message: 'Строка ответа не может быть пустой.' })
-
   correctAnswers: string[];
 
   constructor(questionId: string, body: string, correctAnswers: string[]) {
@@ -40,9 +40,7 @@ export class UpdateQuestionCommand extends Command<void> {
 }
 
 @CommandHandler(UpdateQuestionCommand)
-export class UpdateQuestionHandler
-  implements ICommandHandler<UpdateQuestionCommand>
-{
+export class UpdateQuestionHandler implements ICommandHandler<UpdateQuestionCommand> {
   constructor(protected questionRepository: QuestionRepository) {}
 
   async execute(cmd: UpdateQuestionCommand): Promise<void> {

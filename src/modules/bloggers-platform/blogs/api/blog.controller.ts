@@ -10,9 +10,7 @@ import { UuidValidationPipe } from '../../../../core/pipes/uuid-validation-trans
 import { BearerOptionalJwtAuthGuard } from '../../../user-accounts/guards/bearer/bearer-optional-jwt-auth.guard';
 import { GetPostQueryParams } from '../../posts/api/input-dto/get-post-query-params.input-dto';
 import { UserContextDto } from '../../../user-accounts/decorators/param/user-context.dto';
-import {
-  OptionalCurrentUserFormRequest
-} from '../../../user-accounts/decorators/param/options-current-user-from-request.decorator';
+import { OptionalCurrentUserFormRequest } from '../../../user-accounts/decorators/param/options-current-user-from-request.decorator';
 import { PostViewDTO } from '../../posts/api/view-dto/post.view-dto';
 import { PostQueryRepository } from '../../posts/infrastructure/query-repository/post.query-repository';
 

@@ -21,9 +21,7 @@ export class GamePairConnectionCmd extends ValidatableCommand {
 }
 
 @CommandHandler(GamePairConnectionCmd)
-export class GamePairConnectionHandler
-  implements ICommandHandler<GamePairConnectionCmd>
-{
+export class GamePairConnectionHandler implements ICommandHandler<GamePairConnectionCmd> {
   constructor(
     private readonly gameRepo: GameRepository,
     private playerRepository: PlayerRepository,

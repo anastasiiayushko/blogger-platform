@@ -79,7 +79,7 @@ describe('Quiz: Automatically finished game', () => {
     //user A send answer on 3 question
     for await (const i of [0, 1, 2]) {
       //@ts-ignore
-      const question = gameQuestions[i].question as unknown as Question;
+      const question = gameQuestions[i].question;
       const correctAnswerIndex = [0, 1, 2];
       const answer = correctAnswerIndex.includes(i)
         ? question.answers[0]
@@ -91,7 +91,7 @@ describe('Quiz: Automatically finished game', () => {
     //user B send answer on 2 question
     for await (const i of [0, 1]) {
       //@ts-ignore
-      const question = gameQuestions[i].question as unknown as Question;
+      const question = gameQuestions[i].question;
       const correctAnswerIndex = [0, 1];
       const answer = correctAnswerIndex.includes(i)
         ? question.answers[0]
@@ -103,7 +103,7 @@ describe('Quiz: Automatically finished game', () => {
     //user A send answer on last 2 question. Init game_task for auto cancel game
     for await (const i of [3, 4]) {
       //@ts-ignore
-      const question = gameQuestions[i].question as unknown as Question;
+      const question = gameQuestions[i].question;
       const correctAnswerIndex = [0, 1, 2];
       const answer = correctAnswerIndex.includes(i)
         ? question.answers[0]

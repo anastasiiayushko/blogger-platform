@@ -172,7 +172,9 @@ describe('POSTS/LIKE-STATUS UPDATE (e2e) ', () => {
 
     expect(postRes.body.extendedLikesInfo.likesCount).toBe(0);
     expect(postRes.body.extendedLikesInfo.dislikesCount).toBe(1);
-    expect(postRes.body.extendedLikesInfo.myStatus).toBe(LikeStatusEnum.Dislike);
+    expect(postRes.body.extendedLikesInfo.myStatus).toBe(
+      LikeStatusEnum.Dislike,
+    );
     expect(postRes.body.extendedLikesInfo.newestLikes.length).toBe(0);
   });
   it('should toggle like status on a post', async () => {
@@ -291,6 +293,4 @@ describe('POSTS/LIKE-STATUS UPDATE (e2e) ', () => {
 
     expect(reactionErrorRes.status).toBe(HttpStatus.NOT_FOUND);
   });
-
-
 });

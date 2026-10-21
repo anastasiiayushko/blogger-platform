@@ -6,9 +6,7 @@ import { UsersApiManagerHelper } from '../../api-manager/users-api-manager-helpe
 import { User } from '../../../src/modules/user-accounts/domin/sql-entity/user.sql-entity';
 import { ThrottlerConfig } from '../../../src/core/config/throttler.config';
 import { UserRepository } from '../../../src/modules/user-accounts/infrastructure/user-repository';
-import {
-  EmailConfirmationRepository,
-} from '../../../src/modules/user-accounts/infrastructure/email-confirmation.repository';
+import { EmailConfirmationRepository } from '../../../src/modules/user-accounts/infrastructure/email-confirmation.repository';
 import { EmailConfirmation } from '../../../src/modules/user-accounts/domin/email-confirmation.entity';
 import { loginConstraints } from '../../../src/modules/user-accounts/domin/user.constraints';
 import { generateRandomStringForTest } from '../../util/random/generate-random-text';
@@ -62,7 +60,7 @@ describe('Auth /registration', () => {
     expect(User?.id).toBeDefined();
 
     const emailConfirmation = (await emailConfirmationRepository.findByUserId(
-      User!.id as string,
+      User!.id,
     )) as unknown as EmailConfirmation;
 
     expect(emailConfirmation.isConfirmed).toBeFalsy();
@@ -150,5 +148,4 @@ describe('Auth /registration', () => {
       { field: expect.any(String), message: expect.any(String) },
     ]);
   });
-
 });

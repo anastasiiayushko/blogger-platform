@@ -19,8 +19,7 @@ export const GetGameByIdDocDecorator = () => {
     ApiBearerAuth(),
     ApiOkResponse({ type: GamePairViewDto }),
     ApiNotFoundResponse({
-      description:
-        'If game not found',
+      description: 'If game not found',
     }),
     ApiUnauthorizedResponse({
       description: 'Unauthorized',

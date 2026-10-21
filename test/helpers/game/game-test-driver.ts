@@ -39,8 +39,8 @@ export function gameTestDriver(app: INestApplication) {
     firsPlayerUserId: string,
     secondPlayerUserId: string,
   ) {
-    const answersPlayer1:string[] = [];
-    const answersPlayer2:string[] = [];
+    const answersPlayer1: string[] = [];
+    const answersPlayer2: string[] = [];
 
     const gameId = await newGame(firsPlayerUserId, secondPlayerUserId);
     const game = await dataSource.getRepository(Game).findOne({
@@ -67,7 +67,7 @@ export function gameTestDriver(app: INestApplication) {
 
     for (const i of positionQuestion) {
       //@ts-ignore
-      const question = gameQuestions[i].question as unknown as Question;
+      const question = gameQuestions[i].question;
       const answerPlayer1 = correctAnswersForPlayers[
         whoStartFirst === 'first' ? 'first' : 'second'
       ].includes(i)

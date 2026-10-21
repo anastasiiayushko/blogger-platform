@@ -51,7 +51,7 @@ export class BlogQueryRepository {
   async getAll(
     query: GetBlogsQueryParamsInputDto,
   ): Promise<PaginatedViewDto<BlogViewDto[]>> {
-    let whereOptions: any[] = [];
+    const whereOptions: any[] = [];
 
     if (query.searchNameTerm) {
       whereOptions.push({ name: ILike(`%${query.searchNameTerm.trim()}%`) });

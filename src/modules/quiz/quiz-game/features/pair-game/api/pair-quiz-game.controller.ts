@@ -46,7 +46,9 @@ export class PairQuizGameController {
   @Public()
   @Get('/users/top')
   async getUsersTop(@Query() queryParamsDto: TopPlayersQueryParamsDto) {
-    return await this.gameStatisticQueryRepository.getTopPlayers(queryParamsDto);
+    return await this.gameStatisticQueryRepository.getTopPlayers(
+      queryParamsDto,
+    );
   }
 
   @Get('/users/my-statistic')

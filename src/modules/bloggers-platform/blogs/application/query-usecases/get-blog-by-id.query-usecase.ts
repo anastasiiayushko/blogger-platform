@@ -7,9 +7,10 @@ export class GetBlogByIdQuery {
 }
 
 @QueryHandler(GetBlogByIdQuery)
-export class GetBlogByIdQueryHandler
-  implements IQueryHandler<GetBlogByIdQuery, BlogViewDto>
-{
+export class GetBlogByIdQueryHandler implements IQueryHandler<
+  GetBlogByIdQuery,
+  BlogViewDto
+> {
   constructor(protected blogQRepo: BlogQueryRepository) {}
 
   async execute({ id }: GetBlogByIdQuery): Promise<BlogViewDto> {

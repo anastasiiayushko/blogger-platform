@@ -45,10 +45,10 @@ describe('UserController PAGINATION (e2e) ', () => {
     expect(data.pagesCount).toBe(1);
 
     expect(data.items[0]).toEqual<UserViewDto>({
-      email: expect.any(String) as unknown as string,
-      login: expect.any(String) as unknown as string,
-      id: expect.any(String) as unknown as string,
-      createdAt: expect.any(String) as unknown as string,
+      email: expect.any(String),
+      login: expect.any(String),
+      id: expect.any(String),
+      createdAt: expect.any(String),
     });
   });
 

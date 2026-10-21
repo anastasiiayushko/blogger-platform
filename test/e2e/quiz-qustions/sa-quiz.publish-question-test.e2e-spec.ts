@@ -47,7 +47,7 @@ describe('SaQuiz - published question (e2e)', () => {
   it('Should not be toggle published a question if Unauthorized', async () => {
     const badReq = await saQuizQuestionApiManager.togglePublish(
       storeQuestion.id,
-      { published: true } as PublishInputDto,
+      { published: true },
       getAuthHeaderBasicTest('bla:bla'),
     );
 
@@ -79,14 +79,14 @@ describe('SaQuiz - published question (e2e)', () => {
   it('Should not be update a question if not exist', async () => {
     const resUpd = await saQuizQuestionApiManager.togglePublish(randomUUID(), {
       published: true,
-    } as PublishInputDto);
+    });
     expect(resUpd.status).toBe(HttpStatus.NOT_FOUND);
   });
 
   it('Should be switch published a question', async () => {
     const resUpd = await saQuizQuestionApiManager.togglePublish(
       storeQuestion.id,
-      { published: true } as PublishInputDto,
+      { published: true },
     );
     expect(resUpd.status).toBe(HttpStatus.NO_CONTENT);
 

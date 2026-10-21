@@ -4,9 +4,9 @@ import { GameQuestion } from '../../../domain/game-question/game-question.entity
 import { ApiProperty } from '@nestjs/swagger';
 
 export class GameQuestionViewDto {
-  @ApiProperty({type: String})
+  @ApiProperty({ type: String })
   id: string;
-  @ApiProperty({type: String})
+  @ApiProperty({ type: String })
   body: string;
 
   static mapToView(question: GameQuestion): GameQuestionViewDto {

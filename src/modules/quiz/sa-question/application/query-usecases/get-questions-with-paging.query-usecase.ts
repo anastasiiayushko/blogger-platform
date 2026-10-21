@@ -14,9 +14,7 @@ export class GetQuestionsWithPagingQuery extends Query<
 }
 
 @QueryHandler(GetQuestionsWithPagingQuery)
-export class GetQuestionsWithPagingHandler
-  implements IQueryHandler<GetQuestionsWithPagingQuery>
-{
+export class GetQuestionsWithPagingHandler implements IQueryHandler<GetQuestionsWithPagingQuery> {
   constructor(protected questionQueryRepository: QuestionQueryRepository) {}
 
   async execute({

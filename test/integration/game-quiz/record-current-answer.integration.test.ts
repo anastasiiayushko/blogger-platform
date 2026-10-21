@@ -72,7 +72,7 @@ describe('Quiz: Sync AnswerQuestion Integration', () => {
     const positionQuestion = [0, 1, 2, 3, 4];
     for await (const i of positionQuestion) {
       //@ts-ignore
-      const question = gameQuestions[i].question as unknown as Question;
+      const question = gameQuestions[i].question;
       const correctAnswerIndex = [0, 2, 3];
       const answer = correctAnswerIndex.includes(i)
         ? question.answers[0]
@@ -84,7 +84,7 @@ describe('Quiz: Sync AnswerQuestion Integration', () => {
 
     for await (const i of positionQuestion) {
       //@ts-ignore
-      const question = gameQuestions[i].question as unknown as Question;
+      const question = gameQuestions[i].question;
       const correctAnswerIndex = [1, 3, 4];
       const answer = correctAnswerIndex.includes(i)
         ? question.answers[0]
@@ -209,7 +209,7 @@ describe('Quiz: Sync AnswerQuestion Integration', () => {
 
     for (const i of [0, 1, 2, 3, 4]) {
       //@ts-ignore
-      const question = gameQuestions[i].question as unknown as Question;
+      const question = gameQuestions[i].question;
       await recordCurrentAnswerHandler.execute(
         new RecordCurrentAnswerCommand(userA, question.answers[0]),
       );
@@ -236,7 +236,7 @@ describe('Quiz: Sync AnswerQuestion Integration', () => {
 
     for (const i of [0, 1, 2, 3, 4]) {
       //@ts-ignore
-      const question = gameQuestions[i].question as unknown as Question;
+      const question = gameQuestions[i].question;
       const answer = [0, 1].includes(i) ? question.answers[0] : 'some answer';
       await recordCurrentAnswerHandler.execute(
         new RecordCurrentAnswerCommand(userB, answer),
@@ -245,7 +245,7 @@ describe('Quiz: Sync AnswerQuestion Integration', () => {
 
     for (const i of [0, 1, 2, 3, 4]) {
       //@ts-ignore
-      const question = gameQuestions[i].question as Question;
+      const question = gameQuestions[i].question;
       const answer = [0, 1].includes(i) ? question.answers[0] : 'some answer';
       await recordCurrentAnswerHandler.execute(
         new RecordCurrentAnswerCommand(userA, answer),

@@ -39,8 +39,7 @@ export class User extends BaseOrmEntity {
   @OneToMany(() => Player, (p) => p.user, {})
   players: Player[];
 
-
-  @OneToOne(()=>GameStatistic, (game) => game.user, {})
+  @OneToOne(() => GameStatistic, (game) => game.user, {})
   gameStatistic: GameStatistic;
 
   static createInstance(userInput: {

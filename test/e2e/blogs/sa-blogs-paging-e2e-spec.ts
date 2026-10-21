@@ -38,7 +38,7 @@ describe('SaBlogController PAGING (e2e) ', () => {
     const blogsRes = await blogApiManger.saGetAllBlogs();
     expect(blogsRes.status).toBe(HttpStatus.OK);
 
-    const pagingBlogs = blogsRes.body as PaginatedViewDto<BlogViewDto[]>;
+    const pagingBlogs = blogsRes.body;
 
     expect(pagingBlogs.totalCount).toBe(15);
     expect(pagingBlogs.pageSize).toBe(10);
@@ -55,7 +55,7 @@ describe('SaBlogController PAGING (e2e) ', () => {
 
     expect(blogsRes.status).toBe(HttpStatus.OK);
 
-    const pagingBlogs = blogsRes.body as PaginatedViewDto<BlogViewDto[]>;
+    const pagingBlogs = blogsRes.body;
 
     expect(pagingBlogs.totalCount).toBe(15);
     expect(pagingBlogs.pagesCount).toBe(Math.floor(15 / 5));
@@ -74,7 +74,7 @@ describe('SaBlogController PAGING (e2e) ', () => {
     });
     expect(blogsRes.status).toBe(HttpStatus.OK);
 
-    const pagingBlogs = blogsRes.body as PaginatedViewDto<BlogViewDto[]>;
+    const pagingBlogs = blogsRes.body;
 
     expect(pagingBlogs.pageSize).toBe(5);
     expect(pagingBlogs.totalCount).toBe(1);

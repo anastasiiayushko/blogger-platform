@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
-import { App } from 'supertest/types';
 import { Test, TestingModule } from '@nestjs/testing';
+import { App } from 'supertest/types';
 import { AppModule } from '../../../app.module';
 
 describe('User_root create (e2e)', () => {

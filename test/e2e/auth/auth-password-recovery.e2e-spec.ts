@@ -41,7 +41,7 @@ describe('Auth /password-recovery', () => {
     );
     expect(createdUserRes.status).toBe(HttpStatus.CREATED);
     expect(createdUserRes.body.id).toBeDefined();
-    registeredUserId = createdUserRes.body.id as string;
+    registeredUserId = createdUserRes.body.id;
   });
 
   afterAll(async () => {
@@ -62,9 +62,6 @@ describe('Auth /password-recovery', () => {
       await passwordRecoveryRepository.findByUserId(registeredUserId);
     expect(passwordRecovery!.isConfirmed).toBeFalsy();
   });
-
-
-
 
   it('Should be return 400 if inputModel has invalid email ', async () => {
     const recovery = await request(app.getHttpServer())
