@@ -1,0 +1,50 @@
+name: First CI Pipeline
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  first-job:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: First message
+        run: echo "Pipeline started"
+
+      - name: Show files before checkout
+        run: ls
+
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      - name: Check Node version
+        run: node -v
+
+      - name: Check npm version
+        run: npm -v
+
+      - name: Show files after checkout
+        run: ls
+
+      - name: Print package file
+        run: cat package.json
+
+      - name: Install dependency
+        run: npm install
+
+      - name: Run unit tests
+        run: yarn test:unit
+
+      - name: Finish massage
+        run: echo "Pipeline finished"
