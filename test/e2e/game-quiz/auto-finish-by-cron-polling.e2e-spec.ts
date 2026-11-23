@@ -117,8 +117,8 @@ describe('Quiz game / auto finish by cron polling (e2e)', () => {
     expect(user_1_GetGame.status).toBe(HttpStatus.OK);
     expect(user_1_GetGame.body.status).toBe(GameStatusesEnum.finished);
     expect(user_1_GetGame.body.firstPlayerProgress.score).toBe(6);
-    expect(user_1_GetGame.body!.secondPlayerProgress!.score).toBe(3);
-    expect(user_1_GetGame.body!.finishGameDate).not.toBeNull();
+    expect(user_1_GetGame.body.secondPlayerProgress!.score).toBe(3);
+    expect(user_1_GetGame.body.finishGameDate).not.toBeNull();
 
     console.log(user_1_GetGame.body);
   }, 100_000);
@@ -189,95 +189,91 @@ describe('Quiz game / auto finish by cron polling (e2e)', () => {
     expect(user_1_GetGame.status).toBe(HttpStatus.OK);
     expect(user_1_GetGame.body.status).toBe(GameStatusesEnum.finished);
     expect(user_1_GetGame.body.firstPlayerProgress.score).toBe(6);
-    expect(user_1_GetGame.body!.secondPlayerProgress!.score).toBe(3);
-    expect(user_1_GetGame.body!.finishGameDate).not.toBeNull();
+    expect(user_1_GetGame.body.secondPlayerProgress!.score).toBe(3);
+    expect(user_1_GetGame.body.finishGameDate).not.toBeNull();
 
     console.log(user_1_GetGame.body);
   }, 100_000);
 
-  it(
-    'reproduce race: task can be DONE while game still active',
-    async () => {
-      const user_1_Jwt = (
-        await userApiManager.login({
-          loginOrEmail: user1.login,
-          password: user1.password,
-        })
-      ).body.accessToken;
+  it('reproduce race: task can be DONE while game still active', async () => {
+    const user_1_Jwt = (
+      await userApiManager.login({
+        loginOrEmail: user1.login,
+        password: user1.password,
+      })
+    ).body.accessToken;
 
-      const user_2_Jwt = (
-        await userApiManager.login({
-          loginOrEmail: user2.login,
-          password: user2.password,
-        })
-      ).body.accessToken;
+    const user_2_Jwt = (
+      await userApiManager.login({
+        loginOrEmail: user2.login,
+        password: user2.password,
+      })
+    ).body.accessToken;
 
-      const createGame = await pairQuizGameApiManager.connection(user_1_Jwt);
-      expect(createGame.status).toBe(HttpStatus.OK);
+    const createGame = await pairQuizGameApiManager.connection(user_1_Jwt);
+    expect(createGame.status).toBe(HttpStatus.OK);
 
-      const startGame = await pairQuizGameApiManager.connection(user_2_Jwt);
-      expect(startGame.status).toBe(HttpStatus.OK);
+    const startGame = await pairQuizGameApiManager.connection(user_2_Jwt);
+    expect(startGame.status).toBe(HttpStatus.OK);
 
-      const gameId = startGame.body.id as string;
+    const gameId = startGame.body.id;
 
-      for (let i = 0; i < 3; i++) {
-        const res = await pairQuizGameApiManager.answer(
-          { answer: 'correct' },
-          user_2_Jwt,
-        );
-        expect(res.status).toBe(HttpStatus.OK);
-      }
-
-      for (let i = 0; i < 5; i++) {
-        const res = await pairQuizGameApiManager.answer(
-          { answer: 'correct' },
-          user_1_Jwt,
-        );
-        expect(res.status).toBe(HttpStatus.OK);
-      }
-
-      // Попадаем в окно гонки (до "гарантированного" авто-финиша)
-      await new Promise((resolve) => setTimeout(resolve, 8_500));
-
-      const [myCurrentA, myCurrentB] = await Promise.all([
-        pairQuizGameApiManager.myCurrent(user_2_Jwt),
-        pairQuizGameApiManager.myCurrent(user_2_Jwt),
-      ]);
-
-      // Иногда тут уже 404, иногда еще 200 — это сигнал race
-      expect([HttpStatus.OK, HttpStatus.NOT_FOUND]).toContain(myCurrentA.status);
-      expect([HttpStatus.OK, HttpStatus.NOT_FOUND]).toContain(myCurrentB.status);
-
-      const dataSource = app.get(DataSource);
-
-      const gameRows = await dataSource.query(
-        `select id, status, "finish_game_date" from game where id = $1`,
-        [gameId],
+    for (let i = 0; i < 3; i++) {
+      const res = await pairQuizGameApiManager.answer(
+        { answer: 'correct' },
+        user_2_Jwt,
       );
-      const taskRows = await dataSource.query(
-        `select id, status, "execute_at", "locked_until"
+      expect(res.status).toBe(HttpStatus.OK);
+    }
+
+    for (let i = 0; i < 5; i++) {
+      const res = await pairQuizGameApiManager.answer(
+        { answer: 'correct' },
+        user_1_Jwt,
+      );
+      expect(res.status).toBe(HttpStatus.OK);
+    }
+
+    // Попадаем в окно гонки (до "гарантированного" авто-финиша)
+    await new Promise((resolve) => setTimeout(resolve, 8_500));
+
+    const [myCurrentA, myCurrentB] = await Promise.all([
+      pairQuizGameApiManager.myCurrent(user_2_Jwt),
+      pairQuizGameApiManager.myCurrent(user_2_Jwt),
+    ]);
+
+    // Иногда тут уже 404, иногда еще 200 — это сигнал race
+    expect([HttpStatus.OK, HttpStatus.NOT_FOUND]).toContain(myCurrentA.status);
+    expect([HttpStatus.OK, HttpStatus.NOT_FOUND]).toContain(myCurrentB.status);
+
+    const dataSource = app.get(DataSource);
+
+    const gameRows = await dataSource.query(
+      `select id, status, "finish_game_date" from game where id = $1`,
+      [gameId],
+    );
+    const taskRows = await dataSource.query(
+      `select id, status, "execute_at", "locked_until"
          from game_task
          where game_id = $1
          order by "createdAt" desc
          limit 1`,
-        [gameId],
-      );
+      [gameId],
+    );
 
-      expect(gameRows.length).toBe(1);
-      expect(taskRows.length).toBe(1);
+    expect(gameRows.length).toBe(1);
+    expect(taskRows.length).toBe(1);
 
-      const gameRow = gameRows[0];
-      const taskRow = taskRows[0];
+    const gameRow = gameRows[0];
+    const taskRow = taskRows[0];
 
-      console.log('RACE CHECK game:', gameRow);
-      console.log('RACE CHECK task:', taskRow);
+    console.log('RACE CHECK game:', gameRow);
+    console.log('RACE CHECK task:', taskRow);
 
-      // Целевая проверка: если task уже DONE, игра обязана быть finished
-      if (taskRow.status === 'DONE') {
-        expect(gameRow.status).toBe(GameStatusesEnum.finished);
-        expect(gameRow.finishGameDate).not.toBeNull();
-      }
-    },
-    100_000,
-  );
+    // Целевая проверка: если task уже DONE, игра обязана быть finished
+    if (taskRow.status === 'DONE') {
+      expect(gameRow.status).toBe(GameStatusesEnum.finished);
+      expect(gameRow.finishGameDate).not.toBeNull();
+    }
+  }, 100_000);
 });

@@ -8,9 +8,7 @@ export class RegistrationConfirmationCommand {
 }
 
 @CommandHandler(RegistrationConfirmationCommand)
-export class RegistrationConfirmationCommandHandler
-  implements ICommandHandler<RegistrationConfirmationCommand>
-{
+export class RegistrationConfirmationCommandHandler implements ICommandHandler<RegistrationConfirmationCommand> {
   constructor(
     protected emailConfirmationRepository: EmailConfirmationRepository,
   ) {}

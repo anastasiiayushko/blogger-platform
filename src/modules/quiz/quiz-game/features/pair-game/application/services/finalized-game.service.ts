@@ -45,11 +45,7 @@ export class FinalizedGameService {
       return 'done';
     }
 
-
-
     lockedGame.autoFinalizedGame();
-
-
 
     await trx.getRepository(Game).save(lockedGame);
 

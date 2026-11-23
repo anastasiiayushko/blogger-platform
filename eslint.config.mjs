@@ -1,6 +1,5 @@
 // @ts-check
 import eslint from '@eslint/js';
-import prettier from 'eslint-config-prettier';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
@@ -31,8 +30,10 @@ export default tseslint.config(
     },
   },
   {
-    files: ['**/*.spec.ts', '**/*.test.ts', 'test/**/*.ts'],
-    languageOptions: { globals: globals.jest },
+    files: ['**/*.spec.ts', '**/*.test.ts'],
+    rules: {
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+    },
   },
-  prettier,
 );

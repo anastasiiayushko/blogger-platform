@@ -35,9 +35,7 @@ export class RecordCurrentAnswerCommand extends ValidatableCommand {
 // в результате игра для T2 не консистента
 
 @CommandHandler(RecordCurrentAnswerCommand)
-export class RecordCurrentAnswerHandler
-  implements ICommandHandler<RecordCurrentAnswerCommand>
-{
+export class RecordCurrentAnswerHandler implements ICommandHandler<RecordCurrentAnswerCommand> {
   constructor(
     protected gameRepository: GameRepository,
     protected playerRepository: PlayerRepository,

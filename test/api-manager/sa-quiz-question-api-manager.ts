@@ -49,7 +49,7 @@ export class SaQuizQuestionApiManager {
       .set('Authorization', basicAuth);
   }
 
-  async togglePublish<T=null>(
+  async togglePublish<T = null>(
     questionId: string,
     inputDto: PublishInputDto,
     basicAuth = this.basicAuth,

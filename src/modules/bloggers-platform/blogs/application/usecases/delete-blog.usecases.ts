@@ -7,9 +7,10 @@ export class DeleteBlogCommand {
 }
 
 @CommandHandler(DeleteBlogCommand)
-export class DeleteBlogHandler
-  implements ICommandHandler<DeleteBlogCommand, void>
-{
+export class DeleteBlogHandler implements ICommandHandler<
+  DeleteBlogCommand,
+  void
+> {
   constructor(
     private blogRepo: BlogRepository,
     private postRepository: PostRepository,

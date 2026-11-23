@@ -12,9 +12,7 @@ export class CreateCommentCommand {
 }
 
 @CommandHandler(CreateCommentCommand)
-export class CreateCommentHandler
-  implements ICommandHandler<CreateCommentCommand>
-{
+export class CreateCommentHandler implements ICommandHandler<CreateCommentCommand> {
   constructor(
     protected postQueryRepository: PostQueryRepository,
     // protected userExternalQRepo: UsersExternalQuerySqlRepository,

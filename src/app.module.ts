@@ -15,6 +15,7 @@ import { BloggersPlatformModule } from './modules/bloggers-platform/bloggers-pla
 import { QuizGameModule } from './modules/quiz/quiz-game.module';
 import { DatabaseModule } from './core/database/database.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { PostImagesModule } from './modules/post-images/post-images.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     BloggersPlatformModule,
     TestingModule,
     QuizGameModule,
+    PostImagesModule,
     ThrottlerModule.forRootAsync({
       inject: [ThrottlerConfig],
       useFactory: (config: ThrottlerConfig) => {

@@ -12,9 +12,7 @@ export class DeleteCommentCommand {
 }
 
 @CommandHandler(DeleteCommentCommand)
-export class DeleteCommentHandler
-  implements ICommandHandler<DeleteCommentCommand>
-{
+export class DeleteCommentHandler implements ICommandHandler<DeleteCommentCommand> {
   constructor(
     protected commentRepository: CommentRepository,
     protected commentReactionRepository: CommentReactionRepository,
@@ -31,7 +29,9 @@ export class DeleteCommentHandler
     //::TODO в каком слои нужно создавать транзакцию
 
     await this.commentRepository.softDeleteById(commentId);
-    await this.commentReactionRepository.softDeleteAllReactionByCommentId(commentId);
+    await this.commentReactionRepository.softDeleteAllReactionByCommentId(
+      commentId,
+    );
 
     return;
   }

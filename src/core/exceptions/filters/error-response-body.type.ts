@@ -18,6 +18,6 @@ class FieldError {
 }
 
 export class ApiErrorResult {
-  @ApiProperty({ type: ()=> FieldError, isArray: true })
+  @ApiProperty({ type: () => FieldError, isArray: true })
   errorMessages: FieldError[];
 }

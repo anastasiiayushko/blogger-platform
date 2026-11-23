@@ -11,9 +11,10 @@ export class RegistrationEmailResendingCommand {
 }
 
 @CommandHandler(RegistrationEmailResendingCommand)
-export class RegistrationEmailResendingHandler
-  implements ICommandHandler<RegistrationEmailResendingCommand, void>
-{
+export class RegistrationEmailResendingHandler implements ICommandHandler<
+  RegistrationEmailResendingCommand,
+  void
+> {
   constructor(
     protected userConfirmationConfig: UserConfirmationConfig,
     protected userRepository: UserRepository,
@@ -25,7 +26,7 @@ export class RegistrationEmailResendingHandler
     const user = await this.userRepository.findByEmailOrLogin(cmd.email);
 
     const emailConfirmation = user
-      ? await this.emailConfirmationRepository.findByUserId(user?.id as string)
+      ? await this.emailConfirmationRepository.findByUserId(user?.id)
       : null;
 
     if (!user || !emailConfirmation || emailConfirmation.isConfirmed) {

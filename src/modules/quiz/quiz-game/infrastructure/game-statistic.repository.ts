@@ -73,10 +73,7 @@ export class GameStatisticRepository {
    *   ловить исключение и повторять чтение.
    *
    * */
-  async createIfNotExists(
-    userId: string,
-    em: EntityManager,
-  ): Promise<void> {
+  async createIfNotExists(userId: string, em: EntityManager): Promise<void> {
     const repo = this.getRepository(em);
     await repo
       .createQueryBuilder()

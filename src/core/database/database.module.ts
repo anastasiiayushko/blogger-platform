@@ -20,6 +20,7 @@ import { DatabaseConfig } from './database-config';
           autoLoadEntities: databaseConfig.autoLoadEntities,
           logging: databaseConfig.logging,
           namingStrategy: new SnakeNamingStrategy(),
+          ssl: false,
         };
       },
     }),

@@ -2,11 +2,11 @@ import { QuestionRowRaw } from '../../infrastructure/question.query-repository';
 import { Question } from '../../domain/question.entity';
 
 export class QuestionViewDto {
-  id: string;
-  body: string;
-  correctAnswers: string[];
-  published: boolean;
-  createdAt: string;
+  declare id: string;
+  declare body: string;
+  declare correctAnswers: string[];
+  declare published: boolean;
+  declare createdAt: string;
   updatedAt: string | null = null;
 
   static mapToView(raw: QuestionRowRaw | Question): QuestionViewDto {

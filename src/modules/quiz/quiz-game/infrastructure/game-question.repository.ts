@@ -19,8 +19,6 @@ export class GameQuestionRepository {
     private readonly gameQuestionRepository: Repository<GameQuestion>,
   ) {}
 
-
-
   async save(gameQ: GameQuestion): Promise<void> {
     await this.gameRepo.save(gameQ);
   }

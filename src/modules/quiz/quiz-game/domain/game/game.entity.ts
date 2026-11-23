@@ -140,10 +140,10 @@ export class Game extends BaseOrmEntity {
     const bonusPlayerId = this.resolveBonusPlayerId();
 
     if (this.firstPlayerId === bonusPlayerId) {
-      this.firstPlayer.addBonusPoint()
+      this.firstPlayer.addBonusPoint();
     }
-    if(this.secondPlayerId === bonusPlayerId) {
-      this.secondPlayer?.addBonusPoint()
+    if (this.secondPlayerId === bonusPlayerId) {
+      this.secondPlayer?.addBonusPoint();
     }
 
     // if (
@@ -163,12 +163,12 @@ export class Game extends BaseOrmEntity {
 
     if (scorePlr1 < scorePlr2) {
       this.secondPlayer!.result = PlayerResultEnum.win;
-      this.firstPlayer!.result = PlayerResultEnum.lose;
+      this.firstPlayer.result = PlayerResultEnum.lose;
     } else if (scorePlr1 > scorePlr2) {
-      this.firstPlayer!.result = PlayerResultEnum.win;
+      this.firstPlayer.result = PlayerResultEnum.win;
       this.secondPlayer!.result = PlayerResultEnum.lose;
     } else {
-      this.firstPlayer!.result = PlayerResultEnum.draw;
+      this.firstPlayer.result = PlayerResultEnum.draw;
       this.secondPlayer!.result = PlayerResultEnum.draw;
     }
   }
@@ -197,7 +197,7 @@ export class Game extends BaseOrmEntity {
       this.secondPlayer?.hasAnsweredAllQuestions()
     ) {
       this.firstPlayer.finished();
-      this.secondPlayer!.finished();
+      this.secondPlayer.finished();
       this.determineWinner();
       this.finishedGame();
       return true;

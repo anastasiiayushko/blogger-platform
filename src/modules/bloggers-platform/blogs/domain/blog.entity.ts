@@ -6,18 +6,18 @@ import { Post } from '../../posts/domain/post.entity';
 @Entity()
 export class Blog extends BaseOrmEntity {
   @Column({ type: 'text', collation: 'C' })
-  name: string;
+  declare name: string;
   @Column({ type: 'text' })
-  description: string;
+  declare description: string;
 
   @Column({ type: 'text' })
-  websiteUrl: string;
+  declare websiteUrl: string;
 
   @Column({ type: 'boolean', default: false })
-  isMembership: boolean;
+  declare isMembership: boolean;
 
   @OneToMany(() => Post, (post) => post.blog)
-  posts: Post[];
+  declare posts: Post[];
 
   static createInstance(dto: CreateBlogDomainDto): Blog {
     const blog = new Blog();

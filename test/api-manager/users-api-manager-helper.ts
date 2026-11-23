@@ -65,7 +65,7 @@ export class UsersApiManagerHelper {
 
     const users: UserViewDto[] = resolved.map((response) => {
       expect(response.status).toBe(HttpStatus.CREATED);
-      return response.body as unknown as UserViewDto;
+      return response.body;
     });
 
     return users;

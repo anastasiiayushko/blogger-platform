@@ -13,9 +13,10 @@ export class UpdatePasswordCommand {
 }
 
 @CommandHandler(UpdatePasswordCommand)
-export class UpdatePasswordCommandHandler
-  implements ICommandHandler<UpdatePasswordCommand, void>
-{
+export class UpdatePasswordCommandHandler implements ICommandHandler<
+  UpdatePasswordCommand,
+  void
+> {
   constructor(
     protected recoveryPasswordRepository: PasswordRecoveryRepository,
     protected usersRepository: UserRepository,

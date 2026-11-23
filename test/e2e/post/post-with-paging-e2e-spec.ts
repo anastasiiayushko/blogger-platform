@@ -22,7 +22,7 @@ describe('Returns post with paging /posts/:postId', () => {
 
   let severalBlogs: BlogViewDto[];
   let postsForBlog1: PostViewDTO[]; // total posts 7
-  let userCredential: CreateUsersInputDto = {
+  const userCredential: CreateUsersInputDto = {
     login: 'login_user',
     password: 'loginuser123',
     email: 'loginuser@example.com',

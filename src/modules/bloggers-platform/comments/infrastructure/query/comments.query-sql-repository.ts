@@ -109,7 +109,7 @@ export class CommentsQueryRepository {
 
     const commentsView = commentRows.map((comment) =>
       //@ts-expect-error
-        CommentViewDTO.mapToView(comment),
+      CommentViewDTO.mapToView(comment),
     );
     return PaginatedViewDto.mapToView({
       items: commentsView,

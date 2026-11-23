@@ -10,9 +10,10 @@ export class GetCommentByIdQuery {
 }
 
 @QueryHandler(GetCommentByIdQuery)
-export class GetCommentByIdQueryHandler
-  implements IQueryHandler<GetCommentByIdQuery, CommentViewDTO>
-{
+export class GetCommentByIdQueryHandler implements IQueryHandler<
+  GetCommentByIdQuery,
+  CommentViewDTO
+> {
   constructor(
     private readonly commentQRepo: CommentsQueryRepository,
     // private readonly likeMapQueryService: LikeMapQueryService,

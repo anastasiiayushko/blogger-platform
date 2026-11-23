@@ -96,9 +96,10 @@ const configs = [UserAccountConfig, UserConfirmationConfig];
     {
       provide: ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
       useFactory: (userAccountConfig: UserAccountConfig): JwtService => {
+        const expiresIn = Number(userAccountConfig.assessTokenExpiresIn);
         return new JwtService({
           secret: userAccountConfig.assessTokenSecret,
-          signOptions: { expiresIn: userAccountConfig.assessTokenExpiresIn },
+          signOptions: { expiresIn: expiresIn },
         });
       },
       inject: [UserAccountConfig],
@@ -106,9 +107,10 @@ const configs = [UserAccountConfig, UserConfirmationConfig];
     {
       provide: REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
       useFactory: (userAccountConfig: UserAccountConfig): JwtService => {
+        const expiresIn = Number(userAccountConfig.refreshTokenExpiresIn);
         return new JwtService({
           secret: userAccountConfig.refreshTokenSecret,
-          signOptions: { expiresIn: userAccountConfig.refreshTokenExpiresIn },
+          signOptions: { expiresIn: Number(expiresIn) },
         });
       },
       inject: [UserAccountConfig],

@@ -4,6 +4,7 @@ import { BaseOrmEntity } from '../../../../core/base-orm-entity/base-orm-entity'
 import { Blog } from '../../blogs/domain/blog.entity';
 import { UpdatePostDomainDto } from './dto/update-post.domain.dto';
 import { PostReaction } from './post-reactions.entity';
+import { PostImage } from '../../post-images/domain/post-image.entity';
 
 @Entity()
 export class Post extends BaseOrmEntity {
@@ -27,6 +28,9 @@ export class Post extends BaseOrmEntity {
 
   @OneToMany(() => PostReaction, (cr) => cr.post)
   reactions: PostReaction[];
+
+  @OneToMany(() => PostImage, (pi) => pi.post)
+  images: PostImage[];
 
   static createInstance(dto: CreatePostDomainDto): Post {
     const post = new Post();

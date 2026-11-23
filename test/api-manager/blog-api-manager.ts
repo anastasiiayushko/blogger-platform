@@ -87,7 +87,7 @@ export class BlogApiManager {
           newestLikes: [],
         },
       });
-      return response.body as unknown as PostViewDTO;
+      return response.body;
     });
 
     return posts;

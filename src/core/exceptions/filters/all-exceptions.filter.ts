@@ -28,7 +28,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     if (exception instanceof Error) {
       message = exception.message + exception.stack;
-      this.logger.error(exception.message, exception.stack, 'AllExceptionsFilter');
+      this.logger.error(
+        exception.message,
+        exception.stack,
+        'AllExceptionsFilter',
+      );
       if (process.env.NODE_ENV !== 'production') {
         console.log(message);
       }

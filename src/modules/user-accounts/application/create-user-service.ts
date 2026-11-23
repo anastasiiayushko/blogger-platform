@@ -1,12 +1,12 @@
-import { CryptoService } from './crypto.service';
+import { Injectable } from '@nestjs/common';
 import { DomainException } from '../../../core/exceptions/domain-exception';
 import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
 import { CreateUsersInputDto } from '../api/input-dto/create-users.input-dto';
-import { Injectable } from '@nestjs/common';
-import { UserRepository } from '../infrastructure/user-repository';
-import { User } from '../domin/user.entity';
-import { EmailConfirmation } from '../domin/email-confirmation.entity';
 import { UserConfirmationConfig } from '../config/user-confirmation.config';
+import { EmailConfirmation } from '../domin/email-confirmation.entity';
+import { User } from '../domin/user.entity';
+import { UserRepository } from '../infrastructure/user-repository';
+import { CryptoService } from './crypto.service';
 
 @Injectable()
 export class CreateUserService {

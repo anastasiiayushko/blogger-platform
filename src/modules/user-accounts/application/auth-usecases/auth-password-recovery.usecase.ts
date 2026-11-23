@@ -10,9 +10,7 @@ export class PasswordRecoveryCommand {
 }
 
 @CommandHandler(PasswordRecoveryCommand)
-export class PasswordRecoveryHandler
-  implements ICommandHandler<PasswordRecoveryCommand>
-{
+export class PasswordRecoveryHandler implements ICommandHandler<PasswordRecoveryCommand> {
   private expiresInHours: number;
   private expiresInMin: number;
 
@@ -35,7 +33,7 @@ export class PasswordRecoveryHandler
     }
 
     const recoveryExisting = await this.recoveryPasswordRepository.findByUserId(
-      user.id as string,
+      user.id,
     );
 
     const recovery = recoveryExisting

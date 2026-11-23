@@ -1,17 +1,17 @@
 import { Injectable } from '@nestjs/common';
+import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { QuestionViewDto } from '../api/input-dto/question.view-dto';
+import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
+import { DomainException } from '../../../../core/exceptions/domain-exception';
+import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
+import { toTypeOrmOrderDir } from '../../../../core/utils/sort/to-type-orm-order-dir';
 import {
   QuestionPublishStatusEnum,
   QuestionQueryParams,
   QuestionSortByEnum,
 } from '../api/input-dto/question-query-params.input-dto';
-import { InjectDataSource } from '@nestjs/typeorm';
+import { QuestionViewDto } from '../api/input-dto/question.view-dto';
 import { Question } from '../domain/question.entity';
-import { toTypeOrmOrderDir } from '../../../../core/utils/sort/to-type-orm-order-dir';
-import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
-import { DomainException } from '../../../../core/exceptions/domain-exception';
-import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 
 export type QuestionRowRaw = {
   id: string;
@@ -80,11 +80,11 @@ export class QuestionQueryRepository {
     const SORT_BY_FIELD_MAP: Record<QuestionSortByEnum, string> = {
       ['createdAt']: 'created_at',
       ['updatedAt']: 'updated_at',
-      ['body']: 'body'
+      ['body']: 'body',
     };
 
     const whereCondition: string[] = [];
-    const filterParam: any = {};
+    const filterParam: Record<string, unknown> = {};
     if (queryParams.bodySearchTerm) {
       whereCondition.push('body ILIKE :bodySearchTerm');
       filterParam.bodySearchTerm = `%${queryParams?.bodySearchTerm ?? ''}%`;

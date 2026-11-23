@@ -11,9 +11,7 @@ export class DeleteDeviceByIdCommand {
 }
 
 @CommandHandler(DeleteDeviceByIdCommand)
-export class DeleteDeviceByIdHandler
-  implements ICommandHandler<DeleteDeviceByIdCommand>
-{
+export class DeleteDeviceByIdHandler implements ICommandHandler<DeleteDeviceByIdCommand> {
   constructor(
     private readonly sessionDeviceRepository: SessionDeviceRepository,
   ) {}

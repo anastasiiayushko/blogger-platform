@@ -194,6 +194,8 @@ export class SaBlogController {
     @Param('postId', UuidValidationPipe) postId: string,
   ): Promise<void> {
     await this.blogQueryRepository.findOrNotFoundFail(blogId);
-    return this.commandBus.execute<DeletePostCommand>(new DeletePostCommand(postId));
+    return this.commandBus.execute<DeletePostCommand>(
+      new DeletePostCommand(postId),
+    );
   }
 }

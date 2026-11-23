@@ -9,9 +9,7 @@ export class GetPostByIdQuery {
 }
 
 @QueryHandler(GetPostByIdQuery)
-export class GetPostByIdQueryHandler
-  implements IQueryHandler<GetPostByIdQuery>
-{
+export class GetPostByIdQueryHandler implements IQueryHandler<GetPostByIdQuery> {
   constructor(
     protected postQwRepository: PostQueryRepository,
     // protected likeMapQueryService: LikeMapQueryService,

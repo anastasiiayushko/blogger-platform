@@ -16,9 +16,10 @@ export class SaCreateUserCommand {
 }
 
 @CommandHandler(SaCreateUserCommand)
-export class SaCreateUserHandler
-  implements ICommandHandler<SaCreateUserCommand, string>
-{
+export class SaCreateUserHandler implements ICommandHandler<
+  SaCreateUserCommand,
+  string
+> {
   constructor(
     protected createUserService: CreateUserService,
     protected userConfirmationConfig: UserConfirmationConfig,

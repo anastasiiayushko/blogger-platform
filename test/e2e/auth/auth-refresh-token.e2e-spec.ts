@@ -1,5 +1,9 @@
 import { getAuthHeaderBasicTest } from '../../helpers/auth/basic-auth.helper';
-import { excludeCookiesFromHeaders, findCookieByName, getCookieValueByName } from '../../helpers/cookies/cookie.helpers';
+import {
+  excludeCookiesFromHeaders,
+  findCookieByName,
+  getCookieValueByName,
+} from '../../helpers/cookies/cookie.helpers';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { setupNextAppHttp } from '../../setup-app/setup-next-app-http';
 import { UsersApiManagerHelper } from '../../api-manager/users-api-manager-helper';
@@ -57,7 +61,7 @@ describe('Auth /refresh-token', () => {
       'Chrome v100.0.4896.127',
     );
     expect(resLoginUser.status).toBe(HttpStatus.OK);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
     validateJwtTokenRegex(resLoginUser.body.accessToken);
 
     const cookiesLogin = excludeCookiesFromHeaders(resLoginUser.headers);
@@ -76,12 +80,12 @@ describe('Auth /refresh-token', () => {
     const resGetDevices =
       await securityDevicesApiManger.getAllDeviceSessions(cookiesLogin);
 
-    const deviceList = resGetDevices.body as SecurityDeviceViewDto[];
+    const deviceList = resGetDevices.body;
     expect(resGetDevices.status).toBe(HttpStatus.OK);
     expect(deviceList.length).toEqual(1);
 
     const currentDevice = deviceList[0];
-    const user = resCreated.body as UserViewDto;
+    const user = resCreated.body;
     // const decodeRefresh = await refreshTokenContext.decode(refreshToken);
 
     await decodeAndValidateRefreshToken(
@@ -95,8 +99,7 @@ describe('Auth /refresh-token', () => {
     const resRefresh = await authApiManager.refreshToken(cookiesLogin);
     expect(resRefresh.status).toBe(HttpStatus.OK);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    const accessToken = resRefresh.body.accessToken as string;
+    const accessToken = resRefresh.body.accessToken;
 
     validateJwtTokenRegex(accessToken);
 
@@ -118,8 +121,7 @@ describe('Auth /refresh-token', () => {
     const resGetDevicesAfterUpdate =
       await securityDevicesApiManger.getAllDeviceSessions(cookiesRefresh);
 
-    const devicesList =
-      resGetDevicesAfterUpdate.body as SecurityDeviceViewDto[];
+    const devicesList = resGetDevicesAfterUpdate.body;
 
     const deviceAfterUpdate: SecurityDeviceViewDto = devicesList[0];
 

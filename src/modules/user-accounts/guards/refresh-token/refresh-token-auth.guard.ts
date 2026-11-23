@@ -33,7 +33,6 @@ export class RefreshTokenAuthGuard implements CanActivate {
     const refreshToken: string | null = request.cookies['refreshToken'] ?? null;
 
     if (!refreshToken) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       // response.clearCookie('refreshToken');
       throw new DomainException({
         code: DomainExceptionCode.Unauthorized,

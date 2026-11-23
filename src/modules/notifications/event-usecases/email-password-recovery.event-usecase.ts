@@ -9,9 +9,7 @@ export class EmailPasswordRecoveryEvent {
 }
 
 @EventsHandler(EmailPasswordRecoveryEvent)
-export class EmailPasswordRecoveryHandler
-  implements IEventHandler<EmailPasswordRecoveryEvent>
-{
+export class EmailPasswordRecoveryHandler implements IEventHandler<EmailPasswordRecoveryEvent> {
   constructor(private mailerService: MailerService) {}
 
   handle(event: EmailPasswordRecoveryEvent) {

@@ -24,8 +24,8 @@ export class GameStatisticService {
       em,
     );
     const result1 = statFirstPlayer.prepareDataByPlayer(game.firstPlayer);
-    const result2 = statSecondPlayer!.prepareDataByPlayer(
-      game!.secondPlayer as Player,
+    const result2 = statSecondPlayer.prepareDataByPlayer(
+      game.secondPlayer as Player,
     );
     await this.gameStatisticRepository.setStatistic(result1, em);
     await this.gameStatisticRepository.setStatistic(result2, em);

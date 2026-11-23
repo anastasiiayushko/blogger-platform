@@ -14,13 +14,10 @@ export class GetCommentsByPostWithPagingQuery {
 }
 
 @QueryHandler(GetCommentsByPostWithPagingQuery)
-export class GetCommentsByPostWithPagingQueryHandler
-  implements
-    IQueryHandler<
-      GetCommentsByPostWithPagingQuery,
-      PaginatedViewDto<CommentViewDTO[]>
-    >
-{
+export class GetCommentsByPostWithPagingQueryHandler implements IQueryHandler<
+  GetCommentsByPostWithPagingQuery,
+  PaginatedViewDto<CommentViewDTO[]>
+> {
   constructor(
     protected commentsQueryRepository: CommentsQueryRepository,
     protected postQueryRepository: PostQueryRepository,

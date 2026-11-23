@@ -14,9 +14,7 @@ export class LikeStatusCommentCommand {
 }
 
 @CommandHandler(LikeStatusCommentCommand)
-export class LikeStatusCommentHandler
-  implements ICommandHandler<LikeStatusCommentCommand>
-{
+export class LikeStatusCommentHandler implements ICommandHandler<LikeStatusCommentCommand> {
   constructor(
     protected commentRepository: CommentRepository,
     protected userExternalQueryRepository: UserExternalQueryRepository,

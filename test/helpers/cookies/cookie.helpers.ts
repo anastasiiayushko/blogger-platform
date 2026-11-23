@@ -2,7 +2,7 @@ export const getCookieValueByName = (cookies: string[], cookieName: string) => {
   for (let i = 0; i < cookies.length; i++) {
     const cookiesString = cookies[i];
     const name = cookiesString.split(';')[i].split('=')[0];
-    const value = cookiesString.split(';')[i].split('=')[1] as string;
+    const value = cookiesString.split(';')[i].split('=')[1];
     if (name === cookieName) {
       return value;
     }

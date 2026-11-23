@@ -89,7 +89,7 @@ describe('Quiz: Concurrency AnswerQuestion Integration', () => {
 
     for (const i of positionQuestion) {
       //@ts-ignore
-      const question = gameQuestions[i].question as unknown as Question;
+      const question = gameQuestions[i].question;
       const answerPlayer1 = correctAnswerIndexPlayer1.includes(i)
         ? question.answers[0]
         : 'some answer';

@@ -8,7 +8,7 @@ export class AppLoggerService extends ConsoleLogger implements LoggerService {
   private readonly errorLogFilePath = join(this.logsDirPath, 'error.log');
 
   override error(message: unknown, ...optionalParams: unknown[]): void {
-    super.error(message as string, ...(optionalParams as [string?]));
+    super.error(message, ...(optionalParams as [string?]));
 
     this.ensureLogsDirectory();
     const context = this.extractContext(optionalParams);

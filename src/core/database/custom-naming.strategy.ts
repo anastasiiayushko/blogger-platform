@@ -18,7 +18,9 @@ export class CustomSnakeNamingStrategy extends SnakeNamingStrategy {
   }
 
   private clampName(name: string): string {
-    return name.length > POSTGRES_NAME_LIMIT ? name.slice(0, POSTGRES_NAME_LIMIT) : name;
+    return name.length > POSTGRES_NAME_LIMIT
+      ? name.slice(0, POSTGRES_NAME_LIMIT)
+      : name;
   }
 
   foreignKeyName(
@@ -32,7 +34,10 @@ export class CustomSnakeNamingStrategy extends SnakeNamingStrategy {
     return this.clampName(baseName);
   }
 
-  uniqueConstraintName(tableOrName: Table | string, columnNames: string[]): string {
+  uniqueConstraintName(
+    tableOrName: Table | string,
+    columnNames: string[],
+  ): string {
     const sortedColumns = [...columnNames].sort();
     const baseName = `UQ_${this.formatTableName(tableOrName)}_${this.formatColumnSegment(sortedColumns)}`;
     return this.clampName(baseName);

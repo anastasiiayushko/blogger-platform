@@ -14,9 +14,10 @@ class UpdateBlogDTO {
 export class UpdateBlogCommand extends ResourceWithIdCommand<UpdateBlogDTO> {}
 
 @CommandHandler(UpdateBlogCommand)
-export class UpdateBlogHandler
-  implements ICommandHandler<UpdateBlogCommand, void>
-{
+export class UpdateBlogHandler implements ICommandHandler<
+  UpdateBlogCommand,
+  void
+> {
   constructor(private blogRepo: BlogRepository) {}
 
   async execute(command: UpdateBlogCommand): Promise<void> {

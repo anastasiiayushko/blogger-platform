@@ -6,9 +6,7 @@ export class SaDeleteUserCommand {
 }
 
 @CommandHandler(SaDeleteUserCommand)
-export class SaDeleteUserHandler
-  implements ICommandHandler<SaDeleteUserCommand>
-{
+export class SaDeleteUserHandler implements ICommandHandler<SaDeleteUserCommand> {
   constructor(
     protected userRepository: UserRepository,
     // protected passwordRecoverySqlRepository: PasswordRecoverySqlRepository,

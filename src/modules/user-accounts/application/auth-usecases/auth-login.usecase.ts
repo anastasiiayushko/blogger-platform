@@ -24,9 +24,10 @@ type AuthLoginResponse = {
 };
 
 @CommandHandler(AuthLoginCommand)
-export class AuthLoginHandler
-  implements ICommandHandler<AuthLoginCommand, AuthLoginResponse>
-{
+export class AuthLoginHandler implements ICommandHandler<
+  AuthLoginCommand,
+  AuthLoginResponse
+> {
   constructor(
     @Inject(ACCESS_TOKEN_STRATEGY_INJECT_TOKEN)
     private accessTokenContext: JwtService,

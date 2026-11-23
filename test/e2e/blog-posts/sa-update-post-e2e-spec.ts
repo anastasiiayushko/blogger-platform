@@ -62,7 +62,7 @@ describe('Sa update post for specific blog /blogs/:blogId/posts/:postId', () => 
       shortDescription: 'update shortDescription',
     };
 
-    for (let field in fields) {
+    for (const field in fields) {
       const bodyForUpdate = {
         ...postFakeData,
         [field]: fields[field],
@@ -95,7 +95,7 @@ describe('Sa update post for specific blog /blogs/:blogId/posts/:postId', () => 
       ),
     };
 
-    for (let field in fields) {
+    for (const field in fields) {
       const bodyForUpdate = {
         ...postFakeData,
         [field]: fields[field],

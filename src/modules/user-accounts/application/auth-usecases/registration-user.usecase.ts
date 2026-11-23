@@ -16,9 +16,10 @@ export class RegistrationUserCommand {
 }
 
 @CommandHandler(RegistrationUserCommand)
-export class RegistrationUserHandler
-  implements ICommandHandler<RegistrationUserCommand, void>
-{
+export class RegistrationUserHandler implements ICommandHandler<
+  RegistrationUserCommand,
+  void
+> {
   constructor(
     protected createUserService: CreateUserService,
     protected eventBus: EventBus,

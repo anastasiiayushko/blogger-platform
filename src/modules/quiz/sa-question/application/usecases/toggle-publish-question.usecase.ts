@@ -19,9 +19,7 @@ export class TogglePublishQuestionCommand extends Command<void> {
 }
 
 @CommandHandler(TogglePublishQuestionCommand)
-export class TogglePublishQuestionHandler
-  implements ICommandHandler<TogglePublishQuestionCommand>
-{
+export class TogglePublishQuestionHandler implements ICommandHandler<TogglePublishQuestionCommand> {
   constructor(protected questionRepository: QuestionRepository) {}
 
   async execute(cmd: {

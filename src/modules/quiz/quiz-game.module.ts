@@ -74,7 +74,7 @@ const services = [GameStatisticService];
     GameStatisticRepository,
     GameStatisticQueryRepository,
     GameTaskRepository,
-    GameTaskService,
+    // GameTaskService,
     FinalizedGameService,
     ...services,
     ...questionsHandler,

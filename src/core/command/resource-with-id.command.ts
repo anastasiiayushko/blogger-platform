@@ -1,4 +1,4 @@
-export abstract class ResourceWithIdCommand<T=null> {
+export abstract class ResourceWithIdCommand<T = null> {
   constructor(
     public id: string,
     public inputModel: T,

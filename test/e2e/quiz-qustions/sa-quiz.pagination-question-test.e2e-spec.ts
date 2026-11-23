@@ -33,7 +33,7 @@ describe('SaQuiz - get question (e2e)', () => {
     // await saQuizQuestionApiManager.getAllWithPaging();
     const res = await saQuizQuestionApiManager.getAllWithPaging({
       sortDirection: SortDirection.Asc,
-      sortBy:  QuestionSortByEnum.body,
+      sortBy: QuestionSortByEnum.body,
       publishedStatus: QuestionPublishStatusEnum.published,
     });
     console.log('res', res.body);

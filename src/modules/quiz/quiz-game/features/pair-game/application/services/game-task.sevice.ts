@@ -22,13 +22,6 @@ export class GameTaskService {
     name: 'GameTask',
   })
   async handleCron() {
-    // const queryRunner = this.dataSource.createQueryRunner();
-    //
-    // // establish real database connection using our new query runner
-    // await queryRunner.connect();
-    //
-    //
-    // await queryRunner.startTransaction();
     try {
       await this.dataSource.transaction(async (trx) => {
         const task = await this.gameTaskRepository.getExecutedTask(trx);

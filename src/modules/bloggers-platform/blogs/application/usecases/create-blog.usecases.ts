@@ -11,9 +11,10 @@ export class CreateBlogCommand {
 }
 
 @CommandHandler(CreateBlogCommand)
-export class CreateBlogHandler
-  implements ICommandHandler<CreateBlogCommand, string>
-{
+export class CreateBlogHandler implements ICommandHandler<
+  CreateBlogCommand,
+  string
+> {
   constructor(private blogRepo: BlogRepository) {}
 
   async execute(command: CreateBlogCommand): Promise<string> {

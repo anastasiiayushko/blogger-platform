@@ -33,9 +33,10 @@ export class AuthRefreshTokenCommand {
 }
 
 @CommandHandler(AuthRefreshTokenCommand)
-export class AuthRefreshTokenHandler
-  implements ICommandHandler<AuthRefreshTokenCmdType, AuthRefreshTokenResponse>
-{
+export class AuthRefreshTokenHandler implements ICommandHandler<
+  AuthRefreshTokenCmdType,
+  AuthRefreshTokenResponse
+> {
   constructor(
     @Inject(ACCESS_TOKEN_STRATEGY_INJECT_TOKEN)
     private accessTokenContext: JwtService,
