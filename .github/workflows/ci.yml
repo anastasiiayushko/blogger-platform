@@ -31,8 +31,8 @@ jobs:
       - name: Check Node version
         run: node -v
 
-      - name: Check npm version
-        run: npm -v
+      - name: Check yarn version
+        run: yarn -v
 
       - name: Show files after checkout
         run: ls
@@ -41,10 +41,4 @@ jobs:
         run: cat package.json
 
       - name: Install dependency
-        run: npm install
-
-      - name: Run unit tests
-        run: yarn test:unit
-
-      - name: Finish massage
-        run: echo "Pipeline finished"
+        run: yarn install

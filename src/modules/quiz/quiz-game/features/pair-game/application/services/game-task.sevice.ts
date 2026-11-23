@@ -32,7 +32,6 @@ export class GameTaskService {
     try {
       await this.dataSource.transaction(async (trx) => {
         const task = await this.gameTaskRepository.getExecutedTask(trx);
-        console.log('current task', task);
         if (!task) return;
 
         const result = await this.finalizedGameService.finalizeByGameId(

@@ -1,37 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { IsNotEmpty, IsNumber } from 'class-validator';
+import { IsNotEmpty } from 'class-validator';
 import { configValidationUtility } from '../../setup/config-validation.utility';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class DatabaseConfig {
   @IsNotEmpty({
-    message: 'Set Env variable PG_DATABASE_HOST, example: localhost',
+    message: 'Set Env variable DATABASE_URL',
   })
-  host: string;
-
-  @IsNumber(
-    {},
-    {
-      message: 'Set Env variable PG_DATABASE_PORT, example: 5432',
-    },
-  )
-  port: number;
-
-  @IsNotEmpty({
-    message: 'Set Env variable PG_DATABASE_NAME, example: DataBaseName',
-  })
-  database: string;
-
-  @IsNotEmpty({
-    message: 'Set Env variable PG_DATABASE_USERNAME, example: postgres',
-  })
-  username: string;
-
-  @IsNotEmpty({
-    message: 'Set Env variable PG_DATABASE_PASS, example: somePassword',
-  })
-  password: string;
+  url: string;
 
   @IsNotEmpty({
     message: 'Set Env variable PG_DATABASE_SYN, example: false',
@@ -49,13 +26,7 @@ export class DatabaseConfig {
   logging: boolean;
 
   constructor(private configService: ConfigService<any, true>) {
-    this.port = configValidationUtility.convertToNumber(
-      this.configService.get('PG_DATABASE_PORT'),
-    );
-    this.host = this.configService.get('PG_DATABASE_HOST');
-    this.database = this.configService.get('PG_DATABASE_NAME');
-    this.username = this.configService.get('PG_DATABASE_USERNAME');
-    this.password = this.configService.get('PG_DATABASE_PASS');
+    this.url = this.configService.get('DATABASE_URL');
     this.synchronize = configValidationUtility.convertToBoolean(
       this.configService.get('PG_DATABASE_SYN'),
     );

@@ -27,9 +27,18 @@
 
 ## Project setup
 
+Use Node.js 24, matching CI. The version is recorded in `.nvmrc`.
+NestJS 11 requires Node.js 20 or newer; older runtimes can fail during
+TypeORM initialization with `ReferenceError: crypto is not defined`.
+
 ```bash
+$ nvm install
+$ nvm use
 $ yarn install
 ```
+
+In WebStorm, select the same Node.js 24 interpreter for the project and its
+Run/Debug configurations, then restart any running development server.
 
 ## Compile and run the project
 
