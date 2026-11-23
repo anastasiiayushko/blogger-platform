@@ -15,11 +15,7 @@ import { DatabaseConfig } from './database-config';
         // console.log('database config', databaseConfig);
         return {
           type: 'postgres',
-          host: databaseConfig.host,
-          port: databaseConfig.port,
-          username: databaseConfig.username,
-          password: databaseConfig.password,
-          database: databaseConfig.database,
+          url: databaseConfig.url,
           synchronize: false,
           autoLoadEntities: databaseConfig.autoLoadEntities,
           logging: databaseConfig.logging,

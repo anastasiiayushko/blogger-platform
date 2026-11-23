@@ -2,8 +2,7 @@ import { DataSource, DataSourceOptions, Table } from 'typeorm';
 import { config } from 'dotenv';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import * as process from 'node:process';
-import { envFilePaths } from './src/dynamic-config-module';
-import { snakeCase } from 'typeorm/util/StringUtils';
+import { envFilePaths } from './src/env-file-paths';
 import { SeederOptions } from 'typeorm-extension';
 
 config({ path: envFilePaths });
@@ -17,8 +16,10 @@ class CustomSnakeNamingStrategy extends SnakeNamingStrategy {
   foreignKeyName(tableOrName: Table | string, columnNames: string[]): string {
     const table =
       typeof tableOrName === 'string' ? tableOrName : tableOrName.name;
-    const columns = columnNames.map((column) => snakeCase(column)).join('_');
-    return `FK_${snakeCase(table)}_${columns}`;
+    const columns = columnNames
+      .map((column) => this.relationName(column))
+      .join('_');
+    return `FK_${this.relationName(table)}_${columns}`;
   }
   // uniqueConstraintName(
   //   tableOrName: Table | string,
@@ -37,12 +38,7 @@ class CustomSnakeNamingStrategy extends SnakeNamingStrategy {
 // нужен как “едининый источник правды” для подключения к БД, который понимает и ваше приложение
 export const dataSourceOptions: DataSourceOptions & SeederOptions = {
   type: 'postgres',
-  host: process.env.PG_DATABASE_HOST,
-  //@ts-expect-error
-  port: process.env.PG_DATABASE_PORT,
-  username: process.env.PG_DATABASE_USERNAME,
-  password: process.env.PG_DATABASE_PASS,
-  database: process.env.PG_DATABASE_NAME,
+  url: process.env.DATABASE_URL,
   // entities: [User],
   entities: ['src/**/*.entity.ts'],
   migrations: ['migrations/**/*.ts'],
